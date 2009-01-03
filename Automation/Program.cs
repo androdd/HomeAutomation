@@ -10,6 +10,8 @@ namespace HomeAutomation
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
+    using Microsoft.SPOT.Hardware;
+
     using Configuration = HomeAutomation.Tools.Configuration;
 
     public class Program
@@ -112,6 +114,17 @@ namespace HomeAutomation
 #endif
 
             _log.Write("Started");
+
+            using (var led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, false))
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    Thread.Sleep(300);
+                    led.Write(true);
+                    Thread.Sleep(400);
+                    led.Write(false);
+                }
+            }
 
             Thread.Sleep(Timeout.Infinite);
         }
