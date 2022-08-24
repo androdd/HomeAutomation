@@ -7,5 +7,10 @@ namespace HomeAutomation
         public DateTime Timestamp { get; set; }
 
         public int Pressure { get; set; }
+
+        public override string ToString()
+        {
+            return Timestamp.ToString("s") + " - " + Pressure.ToString();
+        }
     }
 }

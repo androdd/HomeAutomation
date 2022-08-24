@@ -1,16 +1,13 @@
-using Microsoft.SPOT;
-using Microsoft.SPOT.Hardware;
-using System.Threading;
-using GHIElectronics.NETMF.FEZ;
-using GHIElectronics.NETMF.IO;
-using Microsoft.SPOT.IO;
-using System.IO;
-using System.Collections;
-using GHIElectronics.NETMF.Hardware;
-
 namespace HomeAutomation
 {
-    using System;
+    using System.Collections;
+    using System.Threading;
+
+    using GHIElectronics.NETMF.FEZ;
+    using GHIElectronics.NETMF.Hardware;
+
+    using Microsoft.SPOT;
+    using Microsoft.SPOT.Hardware;
 
     public class Program
     {
@@ -19,45 +16,35 @@ namespace HomeAutomation
         static InputPort pressureSensor;
 
         static ArrayList pressureData;
-
+        
         public static void Main()
         {
             //RealTimeClock.SetTime(new DateTime(2022, 8, 17, 14, 48, 0));
 
+            var sdCard = new SdCard();
 
+            string sunToday;
+
+            var now = RealTimeClock.GetTime();
+
+            string month = now.Month.ToString();
+            if (month.Length == 1)
+            {
+                month = "0" + month;
+            }
+
+            if (sdCard.TryReadFixedLengthLine("SunDst" + month + ".txt", 19, now.Day, out sunToday))
+            {
+                Debug.Print(sunToday);
+            }
+            
             pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
 
             pressureData = new ArrayList();
 
-            Timer pressureSensorTimer = new Timer(new TimerCallback(pressureSensorTimer_Execute), null, 1000, 1000);
+            //Timer pressureSensorTimer = new Timer(new TimerCallback(pressureSensorTimer_Execute), null, 3000, 3000);
 
-            return;
-
-            PersistentStorage sdPS = new PersistentStorage("SD");
-
-            sdPS.MountFileSystem();
-
-            Debug.Print("Getting files and folders:");
-
-            if (VolumeInfo.GetVolumes()[0].IsFormatted)
-            {
-                string rootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
-                string[] files = Directory.GetFiles(rootDirectory);
-                string[] folders = Directory.GetDirectories(rootDirectory);
-                Debug.Print("Files available on " + rootDirectory + ":");
-                for (int i = 0; i < files.Length; i++)
-                    Debug.Print(files[i]);
-
-                Debug.Print("Folders available on " + rootDirectory + ":");
-                for (int i = 0; i < folders.Length; i++) Debug.Print(folders[i]);
-            }
-            else
-            {
-                Debug.Print("Storage is not formatted. Format on PC with                              FAT32/FAT16 first.");
-            }
-
-            // Unmount            
-            sdPS.UnmountFileSystem();
+            Thread.Sleep(Timeout.Infinite);
         }
 
         public static void MainOld()
@@ -108,32 +95,6 @@ namespace HomeAutomation
 
                 Thread.Sleep(1000);
             }
-                  
-            PersistentStorage sdPS = new PersistentStorage("SD");
-
-            sdPS.MountFileSystem();
-
-            Debug.Print("Getting files and folders:");
-
-            if (VolumeInfo.GetVolumes()[0].IsFormatted)
-            {
-                string rootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
-                string[] files = Directory.GetFiles(rootDirectory);
-                string[] folders = Directory.GetDirectories(rootDirectory);
-                Debug.Print("Files available on " + rootDirectory + ":");
-                for (int i = 0; i < files.Length; i++)
-                    Debug.Print(files[i]);
-
-                Debug.Print("Folders available on " + rootDirectory + ":");
-                for (int i = 0; i < folders.Length; i++) Debug.Print(folders[i]);
-            }
-            else
-            {
-                Debug.Print("Storage is not formatted. Format on PC with                              FAT32/FAT16 first.");
-            }
-
-            // Unmount            
-            sdPS.UnmountFileSystem();
         }
 
         static void remote_OnLegoButtonPress(Message msg)
@@ -158,7 +119,10 @@ namespace HomeAutomation
 
             var hasPressure = pressureSensor.Read();
 
-            pressureData.Add(new WaterData { Timestamp = RealTimeClock.GetTime(), Pressure = hasPressure ? 1 : 0 });
+            var waterData = new WaterData { Timestamp = RealTimeClock.GetTime(), Pressure = hasPressure ? 1 : 0 };
+            pressureData.Add(waterData);
+
+            Debug.Print(waterData.ToString());
         }
     }
 }

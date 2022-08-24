@@ -39,6 +39,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SdCard.cs" />
     <Compile Include="WaterData.cs" />
   </ItemGroup>
   <ItemGroup>
