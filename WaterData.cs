@@ -10,7 +10,7 @@ namespace HomeAutomation
 
         public override string ToString()
         {
-            return Timestamp.ToString("s") + " - " + Pressure.ToString();
+            return Timestamp.ToString("s") + " - " + Pressure;
         }
     }
 }

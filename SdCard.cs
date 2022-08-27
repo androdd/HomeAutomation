@@ -30,10 +30,10 @@ namespace HomeAutomation
                 return false;
             }
 
-            string path;
-            if (!TryGetPath(filename, out path))
+            string path = GetPath(filename);
+            if (!File.Exists(path))
             {
-                Thread.Sleep(200);
+                //Thread.Sleep(200);
                 result = null;
                 return false;
             }
@@ -44,12 +44,12 @@ namespace HomeAutomation
 
             if (result == null)
             {
-                Thread.Sleep(200);
+                //Thread.Sleep(200);
                 result = null;
                 return false;
             }
 
-            Thread.Sleep(200);
+            //Thread.Sleep(200);
             return true;
         }
 
@@ -63,10 +63,10 @@ namespace HomeAutomation
                 return false;
             }
 
-            string path;
-            if (!TryGetPath(filename, out path))
+            string path = GetPath(filename);
+            if (!File.Exists(path))
             {
-                Thread.Sleep(200);
+                //Thread.Sleep(200);
                 result = null;
                 return false;
             }
@@ -78,7 +78,7 @@ namespace HomeAutomation
                 var seekPosition = (lineLength + 2) * (lineNumber - 1);
                 if (seekPosition > stream.Length)
                 {
-                    Thread.Sleep(200);
+                    //Thread.Sleep(200);
                     result = null;
                     return false;
                 }
@@ -92,12 +92,36 @@ namespace HomeAutomation
 
             if (result == null)
             {
-                Thread.Sleep(200);
+                //Thread.Sleep(200);
                 result = null;
                 return false;
             }
 
-            Thread.Sleep(200);
+            //Thread.Sleep(200);
+            return true;
+        }
+
+        public bool TryAppend(string filename, string text)
+        {
+            InitCard();
+
+            if (!_isLoaded)
+            {
+                return false;
+            }
+
+            string path = GetPath(filename);
+
+            using (var stream = File.OpenWrite(path))
+            {
+                var bytes = Encoding.UTF8.GetBytes(text);
+
+                stream.Seek(0, SeekOrigin.End);
+
+                stream.Write(bytes, 0, bytes.Length);
+            }
+
+            //Thread.Sleep(200);
             return true;
         }
 
@@ -109,7 +133,7 @@ namespace HomeAutomation
             }
 
             _sdCard.UnmountFileSystem();
-            Thread.Sleep(200);
+            //Thread.Sleep(200);
         }
 
         public void Dispose()
@@ -143,15 +167,14 @@ namespace HomeAutomation
             }
         }
 
-        private static bool TryGetPath(string filename, out string path)
+        private static string GetPath(string filename)
         {
             if (filename[0] == '\\')
             {
                 filename = filename.Substring(1);
             }
 
-            path = Path.Combine("\\SD", filename);
-            return File.Exists(path);
+            return Path.Combine("\\SD", filename);
         }
 
         private static ArrayList GetUtf8Lines(byte[] data)

@@ -16,12 +16,16 @@ namespace HomeAutomation
         static InputPort pressureSensor;
 
         static ArrayList pressureData;
+
+        private static Log log;
         
         public static void Main()
         {
             //RealTimeClock.SetTime(new DateTime(2022, 8, 17, 14, 48, 0));
 
+
             var sdCard = new SdCard();
+            log = new Log(sdCard);
 
             string sunToday;
 
@@ -35,14 +39,14 @@ namespace HomeAutomation
 
             if (sdCard.TryReadFixedLengthLine("SunDst" + month + ".txt", 19, now.Day, out sunToday))
             {
-                Debug.Print(sunToday);
+                log.Write(sunToday);
             }
             
             pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
 
             pressureData = new ArrayList();
 
-            //Timer pressureSensorTimer = new Timer(new TimerCallback(pressureSensorTimer_Execute), null, 3000, 3000);
+            Timer pressureSensorTimer = new Timer(pressureSensorTimer_Execute, null, 3000, 3000);
 
             Thread.Sleep(Timeout.Infinite);
         }
@@ -122,7 +126,7 @@ namespace HomeAutomation
             var waterData = new WaterData { Timestamp = RealTimeClock.GetTime(), Pressure = hasPressure ? 1 : 0 };
             pressureData.Add(waterData);
 
-            Debug.Print(waterData.ToString());
+            log.Write(waterData.ToString());
         }
     }
 }
