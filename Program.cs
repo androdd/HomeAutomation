@@ -23,24 +23,13 @@ namespace HomeAutomation
         {
             //RealTimeClock.SetTime(new DateTime(2022, 8, 17, 14, 48, 0));
 
-
             var sdCard = new SdCard();
             log = new Log(sdCard);
 
-            string sunToday;
+            Configuration config = new Configuration(sdCard, log);
+            config.Load();
 
-            var now = RealTimeClock.GetTime();
-
-            string month = now.Month.ToString();
-            if (month.Length == 1)
-            {
-                month = "0" + month;
-            }
-
-            if (sdCard.TryReadFixedLengthLine("SunDst" + month + ".txt", 19, now.Day, out sunToday))
-            {
-                log.Write(sunToday);
-            }
+            
             
             pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
 

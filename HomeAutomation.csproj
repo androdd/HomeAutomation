@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
     <Compile Include="LegoRemote.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Message.cs" />
