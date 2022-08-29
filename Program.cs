@@ -11,6 +11,7 @@ namespace HomeAutomation
 
     public class Program
     {
+        private const bool RelayTrue = false;
         static OutputPort[] relays;
 
         static InputPort pressureSensor;
@@ -29,13 +30,30 @@ namespace HomeAutomation
             Configuration config = new Configuration(sdCard, log);
             config.Load();
 
-            
-            
+            InitRelays();
+
             pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
+
+            while (true)
+            {
+                var now = RealTimeClock.GetTime();
+
+                if (now.Hour == 0 && now.Minute == 0)
+                {
+                    config.Load();
+                }
+
+                var lightsOn = config.Sunrise >= now || now >= config.Sunset;
+
+                relays[0].Write(!lightsOn);
+
+                Thread.Sleep(1000);
+            }
+
 
             pressureData = new ArrayList();
 
-            Timer pressureSensorTimer = new Timer(pressureSensorTimer_Execute, null, 3000, 3000);
+            //Timer pressureSensorTimer = new Timer(pressureSensorTimer_Execute, null, 3000, 3000);
 
             Thread.Sleep(Timeout.Infinite);
         }
@@ -43,24 +61,6 @@ namespace HomeAutomation
         public static void MainOld()
         {
             OutputPort led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, false);
-
-            bool relayTrue = false;
-            relays = new OutputPort[8];
-            Cpu.Pin[] diPins = new Cpu.Pin[8] {
-                (Cpu.Pin)FEZ_Pin.Digital.Di0,
-                (Cpu.Pin)FEZ_Pin.Digital.Di1,
-                (Cpu.Pin)FEZ_Pin.Digital.Di2,
-                (Cpu.Pin)FEZ_Pin.Digital.Di3,
-                (Cpu.Pin)FEZ_Pin.Digital.Di4,
-                (Cpu.Pin)FEZ_Pin.Digital.Di5,
-                (Cpu.Pin)FEZ_Pin.Digital.Di6,
-                (Cpu.Pin)FEZ_Pin.Digital.Di7
-            };
-            
-            for (int i = 0; i < relays.Length; i++)
-            {
-                relays[i] = new OutputPort(diPins[i], !relayTrue);
-            }
 
             LegoRemote remote = new LegoRemote((Cpu.Pin)FEZ_Pin.Interrupt.Di11);
             remote.OnLegoButtonPress += remote_OnLegoButtonPress;
@@ -74,9 +74,9 @@ namespace HomeAutomation
 
             for (int i = 0; i < relays.Length; i++)
             {
-                relays[i].Write(relayTrue);
+                relays[i].Write(RelayTrue);
                 Thread.Sleep(600);
-                relays[i].Write(!relayTrue);
+                relays[i].Write(!RelayTrue);
                 Thread.Sleep(600);
             }
 
@@ -87,6 +87,27 @@ namespace HomeAutomation
                 relays[5].Write(hasPressure);
 
                 Thread.Sleep(1000);
+            }
+        }
+
+        private static void InitRelays()
+        {
+            relays = new OutputPort[8];
+            Cpu.Pin[] diPins = new Cpu.Pin[8]
+            {
+                (Cpu.Pin)FEZ_Pin.Digital.Di0,
+                (Cpu.Pin)FEZ_Pin.Digital.Di1,
+                (Cpu.Pin)FEZ_Pin.Digital.Di2,
+                (Cpu.Pin)FEZ_Pin.Digital.Di3,
+                (Cpu.Pin)FEZ_Pin.Digital.Di4,
+                (Cpu.Pin)FEZ_Pin.Digital.Di5,
+                (Cpu.Pin)FEZ_Pin.Digital.Di6,
+                (Cpu.Pin)FEZ_Pin.Digital.Di7
+            };
+
+            for (int i = 0; i < relays.Length; i++)
+            {
+                relays[i] = new OutputPort(diPins[i], !RelayTrue);
             }
         }
 
