@@ -1,38 +1,37 @@
 namespace HomeAutomation
 {
+    using System;
     using System.Collections;
     using System.Threading;
 
     using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
-    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class Program
     {
-        private const bool RelayTrue = false;
-        static OutputPort[] relays;
+        private static InputPort _pressureSensor;
 
-        static InputPort pressureSensor;
+        private static ArrayList _pressureData;
 
-        static ArrayList pressureData;
+        private static Log _log;
+        private static RelaysManager _relaysManager;
 
-        private static Log log;
-        
         public static void Main()
         {
             //RealTimeClock.SetTime(new DateTime(2022, 8, 17, 14, 48, 0));
 
             var sdCard = new SdCard();
-            log = new Log(sdCard);
+            _log = new Log(sdCard);
 
-            Configuration config = new Configuration(sdCard, log);
+            Configuration config = new Configuration(sdCard, _log);
             config.Load();
 
-            InitRelays();
+            _relaysManager = new RelaysManager();
+            _relaysManager.Init();
 
-            pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
+            _pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
 
             while (true)
             {
@@ -43,19 +42,24 @@ namespace HomeAutomation
                     config.Load();
                 }
 
-                var lightsOn = config.Sunrise >= now || now >= config.Sunset;
-
-                relays[0].Write(!lightsOn);
+                ManageLights(config, now);
 
                 Thread.Sleep(1000);
             }
 
 
-            pressureData = new ArrayList();
+            _pressureData = new ArrayList();
 
             //Timer pressureSensorTimer = new Timer(pressureSensorTimer_Execute, null, 3000, 3000);
 
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void ManageLights(Configuration config, DateTime now)
+        {
+            var lightsOn = config.Sunrise >= now || now >= config.Sunset;
+
+            _relaysManager.Set(0, lightsOn);
         }
 
         public static void MainOld()
@@ -72,42 +76,13 @@ namespace HomeAutomation
             led.Write(false);
             Thread.Sleep(600);
 
-            for (int i = 0; i < relays.Length; i++)
-            {
-                relays[i].Write(RelayTrue);
-                Thread.Sleep(600);
-                relays[i].Write(!RelayTrue);
-                Thread.Sleep(600);
-            }
-
             while (true)
             {
                 var hasPressure = pressureSensor.Read();
 
-                relays[5].Write(hasPressure);
+                _relaysManager.Set(5, hasPressure);
 
                 Thread.Sleep(1000);
-            }
-        }
-
-        private static void InitRelays()
-        {
-            relays = new OutputPort[8];
-            Cpu.Pin[] diPins = new Cpu.Pin[8]
-            {
-                (Cpu.Pin)FEZ_Pin.Digital.Di0,
-                (Cpu.Pin)FEZ_Pin.Digital.Di1,
-                (Cpu.Pin)FEZ_Pin.Digital.Di2,
-                (Cpu.Pin)FEZ_Pin.Digital.Di3,
-                (Cpu.Pin)FEZ_Pin.Digital.Di4,
-                (Cpu.Pin)FEZ_Pin.Digital.Di5,
-                (Cpu.Pin)FEZ_Pin.Digital.Di6,
-                (Cpu.Pin)FEZ_Pin.Digital.Di7
-            };
-
-            for (int i = 0; i < relays.Length; i++)
-            {
-                relays[i] = new OutputPort(diPins[i], !RelayTrue);
             }
         }
 
@@ -115,28 +90,28 @@ namespace HomeAutomation
         {
             if (msg.CommandA == Command.ComboDirectForward)
             {
-                relays[4].Write(false);
+                _relaysManager.Set(4, true);
             }
 
             if (msg.CommandA == Command.ComboDirectBackward)
             {
-                relays[4].Write(true);
+                _relaysManager.Set(4, true);
             }
         }
 
         static void pressureSensorTimer_Execute(object state)
         {
-            if (pressureData.Count > 10)
+            if (_pressureData.Count > 10)
             {
-                pressureData.Clear();
+                _pressureData.Clear();
             }
 
-            var hasPressure = pressureSensor.Read();
+            var hasPressure = _pressureSensor.Read();
 
             var waterData = new WaterData { Timestamp = RealTimeClock.GetTime(), Pressure = hasPressure ? 1 : 0 };
-            pressureData.Add(waterData);
+            _pressureData.Add(waterData);
 
-            log.Write(waterData.ToString());
+            _log.Write(waterData.ToString());
         }
     }
 }
