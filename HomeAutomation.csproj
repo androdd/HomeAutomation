@@ -43,6 +43,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="SdCard.cs" />
+    <Compile Include="TimerEx.cs" />
     <Compile Include="WaterData.cs" />
   </ItemGroup>
   <ItemGroup>
