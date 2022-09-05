@@ -43,11 +43,16 @@ namespace HomeAutomation
             {
                 _log.Write("Config: " + sunToday);
             }
-
-            var sunParts = sunToday.Split('\t');
-
+            else
+            {
+                _log.Write("Config is missing");
+                return;
+            }
+            
             try
             {
+                var sunParts = sunToday.Split('\t');
+
                 int day = int.Parse(sunParts[0]);
 
                 if (day != now.Day)
