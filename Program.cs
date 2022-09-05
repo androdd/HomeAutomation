@@ -1,7 +1,6 @@
 namespace HomeAutomation
 {
     using System;
-    using System.Collections;
     using System.Threading;
 
     using GHIElectronics.NETMF.FEZ;
@@ -11,12 +10,9 @@ namespace HomeAutomation
 
     public class Program
     {
-        private static InputPort _pressureSensor;
-
-        private static ArrayList _pressureData;
-
         private static Log _log;
         private static RelaysManager _relaysManager;
+        private static Configuration _config;
 
         public static void Main()
         {
@@ -25,34 +21,53 @@ namespace HomeAutomation
             var sdCard = new SdCard();
             _log = new Log(sdCard);
 
-            Configuration config = new Configuration(sdCard, _log);
-            config.Load();
+            _config = new Configuration(sdCard, _log);
+            _config.Load();
 
             _relaysManager = new RelaysManager();
             _relaysManager.Init();
 
-            _pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
+            TimerEx timerEx = new TimerEx(_log);
 
-            while (true)
-            {
-                var now = RealTimeClock.GetTime();
+            _log.Write("Starting...");
+            
+            InterruptPort interrupt = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.An0,
+                false,
+                Port.ResistorMode.Disabled,
+                Port.InterruptMode.InterruptEdgeBoth);
 
-                if (now.Hour == 0 && now.Minute == 0)
-                {
-                    config.Load();
-                }
+            interrupt.OnInterrupt += Interrupt_OnInterrupt;
 
-                ManageLights(config, now);
+            var now = RealTimeClock.GetTime();
 
-                Thread.Sleep(1000);
-            }
+            var nextDay = now.AddDays(1);
+            var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day);
+            
+            timerEx.TryScheduleRunAt(nextMidnight, ReloadConfig, new TimeSpan(24, 0, 0));
 
+            var nextRun = now.AddSeconds(20);
 
-            _pressureData = new ArrayList();
+            timerEx.TryScheduleRunAt(nextRun, NextRun);
 
-            //Timer pressureSensorTimer = new Timer(pressureSensorTimer_Execute, null, 3000, 3000);
+            _log.Write("Started");
 
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void NextRun(object state)
+        {
+            _relaysManager.Set(4, true);
+        }
+
+        private static void ReloadConfig(object state)
+        {
+            _config.Load();
+        }
+
+        private static void Interrupt_OnInterrupt(uint data1, uint data2, DateTime time)
+        {
+            _config.Load();
+            
         }
 
         private static void ManageLights(Configuration config, DateTime now)
@@ -97,21 +112,6 @@ namespace HomeAutomation
             {
                 _relaysManager.Set(4, true);
             }
-        }
-
-        static void pressureSensorTimer_Execute(object state)
-        {
-            if (_pressureData.Count > 10)
-            {
-                _pressureData.Clear();
-            }
-
-            var hasPressure = _pressureSensor.Read();
-
-            var waterData = new WaterData { Timestamp = RealTimeClock.GetTime(), Pressure = hasPressure ? 1 : 0 };
-            _pressureData.Add(waterData);
-
-            _log.Write(waterData.ToString());
         }
     }
 }
