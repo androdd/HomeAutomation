@@ -149,6 +149,14 @@ namespace HomeAutomation
 
         private void InitCard()
         {
+            if (!PersistentStorage.DetectSDCard())
+            {
+                Debug.Print("SD card missing");
+                _isLoaded = false;
+                _sdCard = null;
+                return;
+            }
+
             if (_sdCard != null)
             {
                 return;
