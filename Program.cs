@@ -79,34 +79,38 @@ namespace HomeAutomation
         private static void ReloadConfig()
         {
             _config.Load();
-            ScheduleLights();
+            ScheduleLights(true);
         }
 
         #endregion
 
         #region Turn On/Off Lights
 
-        private static void ScheduleLights()
+        private static void ScheduleLights(bool onReload)
         {
             var now = Now;
 
-            var sunrise = _config.Sunrise.AddMinutes(_config.SunriseOffsetMin); 
+            var sunrise = _config.Sunrise.AddMinutes(_config.SunriseOffsetMin);
             var sunset = _config.Sunset.AddMinutes(_config.SunsetOffsetMin);
-            if (now <= sunrise)
+            if (now < sunrise)
             {
                 _timerEx.TryScheduleRunAt(sunrise, SunriseAction);
             }
-            else if (now <= sunset)
+            else if (now < sunset)
             {
                 _timerEx.TryScheduleRunAt(sunset, SunsetAction);
             }
 
-            var lightsOn = sunset <= now || now <= sunrise;
-            SetLights(lightsOn);
+            if (onReload)
+            {
+                var lightsOn = now < sunrise || sunset <= now;
+                SetLights(lightsOn);
+            }
         }
 
         private static void SunriseAction(object state)
         {
+            ScheduleLights(false);
             SetLights(false);
             _timerEx.TryDispose((Guid)state);
         }
