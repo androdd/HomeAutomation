@@ -7,6 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAutomation", "HomeAutom
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{475B2E12-C60F-4DBA-AF5E-165393298931}"
 	ProjectSection(SolutionItems) = preProject
+		config.txt = config.txt
 		Schedules.xlsx = Schedules.xlsx
 		SunDst.txt = SunDst.txt
 		SunDst01.txt = SunDst01.txt

@@ -1,0 +1,3 @@
+SunriseOffset: -10 ;Minutes
+SunsetOffset:   10 ;Minutes
+;;End of file is important!!

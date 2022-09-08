@@ -1,6 +1,7 @@
 namespace HomeAutomation
 {
     using System;
+    using System.Collections;
 
     using GHIElectronics.NETMF.Hardware;
 
@@ -10,8 +11,9 @@ namespace HomeAutomation
         private readonly Log _log;
 
         public DateTime Sunrise { get; private set;  }
-
         public DateTime Sunset { get; private set; }
+        public int SunriseOffsetMin { get; private set; }
+        public int SunsetOffsetMin { get; private set; }
 
         public Configuration(SdCard sdCard, Log log)
         {
@@ -22,6 +24,45 @@ namespace HomeAutomation
         public void Load()
         {
             ReadSunConfiguration();
+
+            ReadConfiguration();
+        }
+
+        private void ReadConfiguration()
+        {
+            ArrayList configLines;
+            if (_sdCard.TryReadAllLines("config.txt", out configLines))
+            {
+                _log.Write("Config: loaded");
+            }
+            else
+            {
+                _log.Write("Config is missing");
+                return;
+            }
+
+            foreach (var configLine in configLines)
+            {
+                try
+                {
+                    var configParts = configLine.ToString().Split(':', ';');
+                    var name = configParts[0].Trim();
+                    var value = configParts[1].Trim();
+                    switch (name)
+                    {
+                        case "SunriseOffset":
+                            SunriseOffsetMin = int.Parse(value);
+                            break;
+                        case "SunsetOffset":
+                            SunsetOffsetMin = int.Parse(value);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.Write("Config line (" + configLine + ") Err: " + ex.Message);
+                }
+            }
         }
 
         private void ReadSunConfiguration()
@@ -41,11 +82,11 @@ namespace HomeAutomation
 
             if (_sdCard.TryReadFixedLengthLine("SunDst" + month + ".txt", 19, now.Day, out sunToday))
             {
-                _log.Write("Config: " + sunToday);
+                _log.Write("Config SunDst: " + sunToday);
             }
             else
             {
-                _log.Write("Config is missing");
+                _log.Write("Config SunDst is missing");
                 return;
             }
             
@@ -57,15 +98,15 @@ namespace HomeAutomation
 
                 if (day != now.Day)
                 {
-                    _log.Write("Config Wrn: Wrong day");
+                    _log.Write("Config SunDst Wrn: Wrong day");
                 }
 
                 Sunrise = ToTime(now, sunParts[1]);
                 Sunset = ToTime(now, sunParts[2]);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _log.Write("Config Err: Bad Sun config");
+                _log.Write("Config SunDst Err: " + ex.Message);
             }
         }
 
