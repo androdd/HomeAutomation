@@ -9,14 +9,14 @@ namespace HomeAutomation
     internal class TimerEx : IDisposable
     {
         private readonly Log _log;
-        private readonly ArrayList _timers;
+        private readonly Hashtable _hashtable;
 
         private static readonly TimeSpan InfiniteTimeSpan = new TimeSpan(0, 0, 0, 0, -1);
 
         public TimerEx(Log log)
         {
             _log = log;
-            _timers = new ArrayList();
+            _hashtable = new Hashtable();
         }
 
         public bool TryScheduleRunAt(DateTime dueDateTime, TimerCallback timerCallback)
@@ -35,8 +35,9 @@ namespace HomeAutomation
 
             var interval = dueDateTime - now;
 
-            var timer = new Timer(timerCallback, null, interval, period);
-            _timers.Add(timer);
+            Guid key = Guid.NewGuid();
+            var timer = new Timer(timerCallback, key, interval, period);
+            _hashtable.Add(key, timer);
 
             if (period == InfiniteTimeSpan)
             {
@@ -50,9 +51,24 @@ namespace HomeAutomation
             return true;
         }
 
+        public bool TryDispose(Guid key)
+        {
+            var timer = _hashtable[key] as Timer;
+
+            if (timer == null)
+            {
+                return false;
+            }
+
+            timer.Dispose();
+            _hashtable.Remove(key);
+
+            return true;
+        }
+
         public void Dispose()
         {
-            foreach (var timer in _timers)
+            foreach (var timer in _hashtable.Values)
             {
                 ((Timer)timer).Dispose();
             }
