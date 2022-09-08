@@ -13,68 +13,127 @@ namespace HomeAutomation
         private static Log _log;
         private static RelaysManager _relaysManager;
         private static Configuration _config;
+        private static TimerEx _timerEx;
+
+        public static DateTime Now
+        {
+            get
+            {
+                return RealTimeClock.GetTime();
+            }
+            set
+            {
+                RealTimeClock.SetTime(value);
+            }
+        }
 
         public static void Main()
         {
-            //RealTimeClock.SetTime(new DateTime(2022, 8, 17, 14, 48, 0));
+            //Now = new DateTime(2022, 8, 17, 14, 48, 0);
 
             var sdCard = new SdCard();
             _log = new Log(sdCard);
-
             _config = new Configuration(sdCard, _log);
-            _config.Load();
-
             _relaysManager = new RelaysManager();
-            _relaysManager.Init();
-
-            TimerEx timerEx = new TimerEx(_log);
+            _timerEx = new TimerEx(_log);
 
             _log.Write("Starting...");
+
+            _relaysManager.Init();
+            ReloadConfig();
             
-            InterruptPort interrupt = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.An0,
-                false,
-                Port.ResistorMode.Disabled,
-                Port.InterruptMode.InterruptEdgeBoth);
+            ScheduleConfigReload();
 
-            interrupt.OnInterrupt += Interrupt_OnInterrupt;
 
-            var now = RealTimeClock.GetTime();
+            //InterruptPort interrupt = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.An0,
+            //    false,
+            //    Port.ResistorMode.Disabled,
+            //    Port.InterruptMode.InterruptEdgeBoth);
 
-            var nextDay = now.AddDays(1);
-            var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day);
+            //interrupt.OnInterrupt += Interrupt_OnInterrupt;
             
-            timerEx.TryScheduleRunAt(nextMidnight, ReloadConfig, new TimeSpan(24, 0, 0));
+            //var nextRun = now.AddSeconds(20);
 
-            var nextRun = now.AddSeconds(20);
-
-            timerEx.TryScheduleRunAt(nextRun, NextRun);
+            //timerEx.TryScheduleRunAt(nextRun, NextRun);
 
             _log.Write("Started");
 
             Thread.Sleep(Timeout.Infinite);
         }
 
+        #region Reload Configuration
+
+        private static void ScheduleConfigReload()
+        {
+            var nextDay = Now.AddDays(1);
+            var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day);
+
+            _timerEx.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0));
+        }
+
+        private static void ReloadConfigCallback(object state)
+        {
+            ReloadConfig();
+        }
+
+        private static void ReloadConfig()
+        {
+            _config.Load();
+            ScheduleLights();
+        }
+
+        #endregion
+
+        #region Turn On/Off Lights
+
+        private static void ScheduleLights()
+        {
+            var now = Now;
+
+            var sunrise = _config.Sunrise.AddMinutes(_config.SunriseOffsetMin); 
+            var sunset = _config.Sunset.AddMinutes(_config.SunsetOffsetMin);
+            if (now <= sunrise)
+            {
+                _timerEx.TryScheduleRunAt(sunrise, SunriseAction);
+            }
+            else if (now <= sunset)
+            {
+                _timerEx.TryScheduleRunAt(sunset, SunsetAction);
+            }
+
+            var lightsOn = sunset <= now || now <= sunrise;
+            SetLights(lightsOn);
+        }
+
+        private static void SunriseAction(object state)
+        {
+            SetLights(false);
+            _timerEx.TryDispose((Guid)state);
+        }
+
+        private static void SunsetAction(object state)
+        {
+            SetLights(true);
+            _timerEx.TryDispose((Guid)state);
+        }
+
+        private static void SetLights(bool lightsOn)
+        {
+            _relaysManager.Set(3, lightsOn);
+            _log.Write("Lights" + (lightsOn ? "ON" : "OFF"));
+        }
+
+        #endregion
+
         private static void NextRun(object state)
         {
             _relaysManager.Set(4, true);
-        }
-
-        private static void ReloadConfig(object state)
-        {
-            _config.Load();
         }
 
         private static void Interrupt_OnInterrupt(uint data1, uint data2, DateTime time)
         {
             _config.Load();
             
-        }
-
-        private static void ManageLights(Configuration config, DateTime now)
-        {
-            var lightsOn = config.Sunrise >= now || now >= config.Sunset;
-
-            _relaysManager.Set(0, lightsOn);
         }
 
         public static void MainOld()
