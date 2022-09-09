@@ -7,6 +7,10 @@ namespace HomeAutomation
 
     internal class Configuration
     {
+        private const string DstCfg = "dst.cfg";
+        private const string DstStartCfg = "dstStart.cfg";
+        private const string DstEndCfg = "dstEnd.cfg";
+
         private readonly SdCard _sdCard;
         private readonly Log _log;
 
@@ -14,6 +18,9 @@ namespace HomeAutomation
         public DateTime Sunset { get; private set; }
         public int SunriseOffsetMin { get; private set; }
         public int SunsetOffsetMin { get; private set; }
+        public bool IsDst { get; private set; }
+        public bool ManualStartDst { get; private set; }
+        public bool ManualEndDst { get; private set; }
 
         public Configuration(SdCard sdCard, Log log)
         {
@@ -23,12 +30,90 @@ namespace HomeAutomation
 
         public void Load()
         {
-            ReadSunConfiguration();
-
-            ReadConfiguration();
+            ReadSun();
+            ReadDst();
+            Read();
         }
 
-        private void ReadConfiguration()
+        public void SaveDst()
+        {
+            _sdCard.TryAppend(DstCfg, "");
+            _sdCard.TryDelete(DstStartCfg);
+        }
+
+        public void DeleteDst()
+        {
+            _sdCard.TryDelete(DstCfg);
+            _sdCard.TryDelete(DstEndCfg);
+        }
+
+        private void ReadSun()
+        {
+            Sunrise = DateTime.MinValue;
+            Sunset = DateTime.MaxValue;
+
+            var now = RealTimeClock.GetTime();
+
+            string month = now.Month.ToString();
+            if (month.Length == 1)
+            {
+                month = "0" + month;
+            }
+
+            string sunToday;
+
+            if (_sdCard.TryReadFixedLengthLine("Sun" + month + ".txt", 19, now.Day, out sunToday))
+            {
+                _log.Write("Config SunDst: " + sunToday);
+            }
+            else
+            {
+                _log.Write("Config SunDst is missing");
+                return;
+            }
+            
+            try
+            {
+                var sunParts = sunToday.Split('\t');
+
+                int day = int.Parse(sunParts[0]);
+
+                if (day != now.Day)
+                {
+                    _log.Write("Config SunDst Wrn: Wrong day");
+                }
+
+                Sunrise = ToTime(now, sunParts[1]);
+                Sunset = ToTime(now, sunParts[2]);
+            }
+            catch (Exception ex)
+            {
+                _log.Write("Config SunDst Err: " + ex.Message);
+            }
+        }
+
+        private void ReadDst()
+        {
+            bool dstExists;
+            if (_sdCard.TryIsExists(DstCfg, out dstExists))
+            {
+                IsDst = dstExists;
+            }
+
+            bool dstStartExists;
+            if (_sdCard.TryIsExists(DstStartCfg, out dstStartExists))
+            {
+                ManualStartDst = dstStartExists;
+            }
+
+            bool dstEndExists;
+            if (_sdCard.TryIsExists(DstEndCfg, out dstEndExists))
+            {
+                ManualEndDst = dstEndExists;
+            }
+        }
+
+        private void Read()
         {
             ArrayList configLines;
             if (_sdCard.TryReadAllLines("config.txt", out configLines))
@@ -62,51 +147,6 @@ namespace HomeAutomation
                 {
                     _log.Write("Config line (" + configLine + ") Err: " + ex.Message);
                 }
-            }
-        }
-
-        private void ReadSunConfiguration()
-        {
-            Sunrise = DateTime.MinValue;
-            Sunset = DateTime.MaxValue;
-
-            var now = RealTimeClock.GetTime();
-
-            string month = now.Month.ToString();
-            if (month.Length == 1)
-            {
-                month = "0" + month;
-            }
-
-            string sunToday;
-
-            if (_sdCard.TryReadFixedLengthLine("SunDst" + month + ".txt", 19, now.Day, out sunToday))
-            {
-                _log.Write("Config SunDst: " + sunToday);
-            }
-            else
-            {
-                _log.Write("Config SunDst is missing");
-                return;
-            }
-            
-            try
-            {
-                var sunParts = sunToday.Split('\t');
-
-                int day = int.Parse(sunParts[0]);
-
-                if (day != now.Day)
-                {
-                    _log.Write("Config SunDst Wrn: Wrong day");
-                }
-
-                Sunrise = ToTime(now, sunParts[1]);
-                Sunset = ToTime(now, sunParts[2]);
-            }
-            catch (Exception ex)
-            {
-                _log.Write("Config SunDst Err: " + ex.Message);
             }
         }
 

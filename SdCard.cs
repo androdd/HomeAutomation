@@ -53,6 +53,35 @@ namespace HomeAutomation
             return true;
         }
 
+        public bool TryIsExists(string filename, out bool result)
+        {
+            InitCard();
+
+            if (!_isLoaded)
+            {
+                result = false;
+                return false;
+            }
+
+            string path = GetPath(filename);
+            result = File.Exists(path);
+            return true;
+        }
+
+        public bool TryDelete(string filename)
+        {
+            InitCard();
+
+            if (!_isLoaded)
+            {
+                return false;
+            }
+
+            string path = GetPath(filename);
+            File.Delete(path);
+            return true;
+        }
+
         public bool TryReadFixedLengthLine(string filename, int lineLength, int lineNumber, out string result)
         {
             InitCard();

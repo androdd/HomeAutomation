@@ -10,6 +10,7 @@ namespace HomeAutomation
 
     public class Program
     {
+        private static SdCard _sdCard;
         private static Log _log;
         private static RelaysManager _relaysManager;
         private static Configuration _config;
@@ -31,9 +32,9 @@ namespace HomeAutomation
         {
             //Now = new DateTime(2022, 9, 09, 21, 28, 3);
             
-            var sdCard = new SdCard();
-            _log = new Log(sdCard);
-            _config = new Configuration(sdCard, _log);
+            _sdCard = new SdCard();
+            _log = new Log(_sdCard);
+            _config = new Configuration(_sdCard, _log);
             _relaysManager = new RelaysManager();
             _timerEx = new TimerEx(_log);
 
@@ -41,6 +42,20 @@ namespace HomeAutomation
 
             _relaysManager.Init();
             ReloadConfig();
+
+            if (_config.ManualStartDst)
+            {
+                _config.SaveDst();
+                Now = Now.AddHours(1);
+                _log.Write("Time manually adjusted with 1 hour.");
+            }
+
+            if (_config.ManualEndDst)
+            {
+                _config.DeleteDst();
+                Now = Now.AddHours(-1);
+                _log.Write("Time manually adjusted with -1 hour.");
+            }
             
             ScheduleConfigReload();
 
@@ -126,11 +141,15 @@ namespace HomeAutomation
 
         private static void DstStart(object state)
         {
+            _config.SaveDst();
+
             AdjustTimeAndRestart(1);
         }
 
         private static void DstEnd(object state)
         {
+            _config.DeleteDst();
+
             AdjustTimeAndRestart(-1);
         }
 
@@ -155,6 +174,13 @@ namespace HomeAutomation
 
             var sunrise = _config.Sunrise.AddMinutes(_config.SunriseOffsetMin);
             var sunset = _config.Sunset.AddMinutes(_config.SunsetOffsetMin);
+
+            if (_config.IsDst)
+            {
+                sunrise = sunrise.AddHours(1);
+                sunset = sunset.AddHours(1);
+            }
+
             if (now < sunrise)
             {
                 _timerEx.TryScheduleRunAt(sunrise, SunriseAction, "Sunrise ");

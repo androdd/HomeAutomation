@@ -8,20 +8,22 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{475B2E12-C60F-4DBA-AF5E-165393298931}"
 	ProjectSection(SolutionItems) = preProject
 		config.txt = config.txt
+		dst.cfg = dst.cfg
+		dstEnd.cfg = dstEnd.cfg
+		dstStart.cfg = dstStart.cfg
 		Schedules.xlsx = Schedules.xlsx
-		SunDst.txt = SunDst.txt
-		SunDst01.txt = SunDst01.txt
-		SunDst02.txt = SunDst02.txt
-		SunDst03.txt = SunDst03.txt
-		SunDst04.txt = SunDst04.txt
-		SunDst05.txt = SunDst05.txt
-		SunDst06.txt = SunDst06.txt
-		SunDst07.txt = SunDst07.txt
-		SunDst08.txt = SunDst08.txt
-		SunDst09.txt = SunDst09.txt
-		SunDst10.txt = SunDst10.txt
-		SunDst11.txt = SunDst11.txt
-		SunDst12.txt = SunDst12.txt
+		Sun01.txt = Sun01.txt
+		Sun02.txt = Sun02.txt
+		Sun03.txt = Sun03.txt
+		Sun04.txt = Sun04.txt
+		Sun05.txt = Sun05.txt
+		Sun06.txt = Sun06.txt
+		Sun07.txt = Sun07.txt
+		Sun08.txt = Sun08.txt
+		Sun09.txt = Sun09.txt
+		Sun10.txt = Sun10.txt
+		Sun11.txt = Sun11.txt
+		Sun12.txt = Sun12.txt
 	EndProjectSection
 EndProject
 Global
