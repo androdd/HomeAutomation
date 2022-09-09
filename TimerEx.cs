@@ -6,7 +6,7 @@ namespace HomeAutomation
 
     using GHIElectronics.NETMF.Hardware;
 
-    internal class TimerEx : IDisposable
+    internal class TimerEx
     {
         private readonly Log _log;
         private readonly Hashtable _hashtable;
@@ -19,12 +19,12 @@ namespace HomeAutomation
             _hashtable = new Hashtable();
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, TimerCallback timerCallback)
+        public bool TryScheduleRunAt(DateTime dueDateTime, TimerCallback timerCallback, string name = "")
         {
-            return TryScheduleRunAt(dueDateTime, timerCallback, InfiniteTimeSpan);
+            return TryScheduleRunAt(dueDateTime, timerCallback, InfiniteTimeSpan, name);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, TimerCallback timerCallback, TimeSpan period)
+        public bool TryScheduleRunAt(DateTime dueDateTime, TimerCallback timerCallback, TimeSpan period, string name = "")
         {
             var now = RealTimeClock.GetTime();
 
@@ -41,11 +41,11 @@ namespace HomeAutomation
 
             if (period == InfiniteTimeSpan)
             {
-                _log.Write("Timer set for: " + dueDateTime.ToString("G"));
+                _log.Write(name + "Timer set for: " + dueDateTime.ToString("u"));
             }
             else
             {
-                _log.Write("Timer set for: " + dueDateTime.ToString("G") + " with period: " + period);
+                _log.Write(name + "Timer set for: " + dueDateTime.ToString("u") + " with period: " + period);
             }
 
             return true;
@@ -66,12 +66,14 @@ namespace HomeAutomation
             return true;
         }
 
-        public void Dispose()
+        public void DisposeAll()
         {
             foreach (var timer in _hashtable.Values)
             {
                 ((Timer)timer).Dispose();
             }
+
+            _hashtable.Clear();
         }
     }
 }

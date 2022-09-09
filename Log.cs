@@ -15,8 +15,9 @@ namespace HomeAutomation
 
         public void Write(string message)
         {
-            Debug.Print(message);
-            _sdCard.TryAppend("Log.txt", RealTimeClock.GetTime().ToString("u") + " - " + message + "\r\n");
+            var text = RealTimeClock.GetTime().ToString("u") + " - " + message;
+            Debug.Print(text);
+            _sdCard.TryAppend("Log.txt", text + "\r\n");
         }
     }
 }

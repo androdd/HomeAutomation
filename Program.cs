@@ -29,8 +29,8 @@ namespace HomeAutomation
 
         public static void Main()
         {
-            //Now = new DateTime(2022, 8, 17, 14, 48, 0);
-
+            //Now = new DateTime(2022, 9, 09, 21, 28, 3);
+            
             var sdCard = new SdCard();
             _log = new Log(sdCard);
             _config = new Configuration(sdCard, _log);
@@ -43,7 +43,6 @@ namespace HomeAutomation
             ReloadConfig();
             
             ScheduleConfigReload();
-
 
             //InterruptPort interrupt = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.An0,
             //    false,
@@ -61,6 +60,27 @@ namespace HomeAutomation
             Thread.Sleep(Timeout.Infinite);
         }
 
+#if DEBUG_DST
+        private static bool _isChanged;
+#endif
+
+        private static bool IsLastSunday(int month)
+        {
+#if DEBUG_DST
+            if (!_isChanged && month == 10)
+            {
+                _log.Write("Last Sunday detected :)");
+                _isChanged = true;
+                return true;
+            }
+#endif
+
+            return Now.Month == month &&
+                   Now.DayOfWeek == DayOfWeek.Sunday &&
+                   Now.Hour == 0 && // returns false when called again at 3 or 4 a clock on restarting
+                   Now.AddDays(7).Month != month;
+        }
+
         #region Reload Configuration
 
         private static void ScheduleConfigReload()
@@ -68,7 +88,7 @@ namespace HomeAutomation
             var nextDay = Now.AddDays(1);
             var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day);
 
-            _timerEx.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0));
+            _timerEx.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0), "Config Reload ");
         }
 
         private static void ReloadConfigCallback(object state)
@@ -79,7 +99,50 @@ namespace HomeAutomation
         private static void ReloadConfig()
         {
             _config.Load();
+
+            #region Daylight Saving Time
+            // https://www.timeanddate.com/time/change/bulgaria
+            if (IsLastSunday(3)) // Last Sunday of March add 1 hour
+            {
+#if DEBUG_DST
+                _timerEx.TryScheduleRunAt(Now.AddMinutes(1), DstStart, "DST Start ");
+#else
+                _timerEx.TryScheduleRunAt(Now.AddHours(3), DstStart, "DST Start ");
+#endif
+            }
+
+            if (IsLastSunday(10)) // Last Sunday of October subtract 1 hour
+            {
+#if DEBUG_DST
+                _timerEx.TryScheduleRunAt(Now.AddMinutes(1), DstEnd, "DST End ");
+#else
+                _timerEx.TryScheduleRunAt(Now.AddHours(4), DstEnd, "DST End ");
+#endif
+            }
+            #endregion
+
             ScheduleLights(true);
+        }
+
+        private static void DstStart(object state)
+        {
+            AdjustTimeAndRestart(1);
+        }
+
+        private static void DstEnd(object state)
+        {
+            AdjustTimeAndRestart(-1);
+        }
+
+        private static void AdjustTimeAndRestart(int hours)
+        {
+            Now = Now.AddHours(hours);
+            _timerEx.DisposeAll();
+
+            _log.Write("Time adjusted with " + hours + " hour.");
+
+            ReloadConfig();
+            ScheduleConfigReload();
         }
 
         #endregion
@@ -94,11 +157,11 @@ namespace HomeAutomation
             var sunset = _config.Sunset.AddMinutes(_config.SunsetOffsetMin);
             if (now < sunrise)
             {
-                _timerEx.TryScheduleRunAt(sunrise, SunriseAction);
+                _timerEx.TryScheduleRunAt(sunrise, SunriseAction, "Sunrise ");
             }
             else if (now < sunset)
             {
-                _timerEx.TryScheduleRunAt(sunset, SunsetAction);
+                _timerEx.TryScheduleRunAt(sunset, SunsetAction, "Sunset ");
             }
 
             if (onReload)
