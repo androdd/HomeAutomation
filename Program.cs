@@ -3,14 +3,11 @@ namespace HomeAutomation
     using System;
     using System.Threading;
 
-    using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
-    using HomeAutomation.Models;
+    using HomeAutomation.Services;
     using HomeAutomation.Tools;
-
-    using Microsoft.SPOT.Hardware;
 
     using Configuration = HomeAutomation.Tools.Configuration;
 
@@ -21,6 +18,7 @@ namespace HomeAutomation
         private static RelaysManager _relaysManager;
         private static Configuration _config;
         private static TimerEx _timerEx;
+        private static LightsService _lightsService;
 
         public static DateTime Now
         {
@@ -43,11 +41,16 @@ namespace HomeAutomation
             _config = new Configuration(_sdCard, _log);
             _relaysManager = new RelaysManager();
             _timerEx = new TimerEx(_log);
+            _lightsService = new LightsService(_log, _config, _timerEx, _relaysManager);
+            var remoteCommandsService = new RemoteCommandsService(_lightsService);
 
             _log.Write("Starting...");
 
+            remoteCommandsService.Init();
             _relaysManager.Init();
             ReloadConfig();
+
+            #region Manual DST Adjustment
 
             if (_config.ManualStartDst)
             {
@@ -62,6 +65,8 @@ namespace HomeAutomation
                 Now = Now.AddHours(-1);
                 _log.Write("Time manually adjusted with -1 hour.");
             }
+
+            #endregion
             
             ScheduleConfigReload();
 
@@ -70,18 +75,13 @@ namespace HomeAutomation
             //    Port.ResistorMode.Disabled,
             //    Port.InterruptMode.InterruptEdgeBoth);
 
-            //interrupt.OnInterrupt += Interrupt_OnInterrupt;
-            
-            //var nextRun = now.AddSeconds(20);
-
-            //timerEx.TryScheduleRunAt(nextRun, NextRun);
-
             _log.Write("Started");
 
             Thread.Sleep(Timeout.Infinite);
         }
 
 #if DEBUG_DST
+        //Automatic DST Adjustment
         private static bool _isChanged;
 #endif
 
@@ -121,7 +121,7 @@ namespace HomeAutomation
         {
             _config.Load();
 
-            #region Daylight Saving Time
+            #region Automatic DST Adjustment
             // https://www.timeanddate.com/time/change/bulgaria
             if (IsLastSunday(3)) // Last Sunday of March add 1 hour
             {
@@ -142,7 +142,7 @@ namespace HomeAutomation
             }
             #endregion
 
-            ScheduleLights(true);
+            _lightsService.ScheduleLights(true);
         }
 
         private static void DstStart(object state)
@@ -171,105 +171,5 @@ namespace HomeAutomation
         }
 
         #endregion
-
-        #region Turn On/Off Lights
-
-        private static void ScheduleLights(bool onReload)
-        {
-            var now = Now;
-
-            var sunrise = _config.Sunrise.AddMinutes(_config.SunriseOffsetMin);
-            var sunset = _config.Sunset.AddMinutes(_config.SunsetOffsetMin);
-
-            if (_config.IsDst)
-            {
-                sunrise = sunrise.AddHours(1);
-                sunset = sunset.AddHours(1);
-            }
-
-            if (now < sunrise)
-            {
-                _timerEx.TryScheduleRunAt(sunrise, SunriseAction, "Sunrise ");
-            }
-            else if (now < sunset)
-            {
-                _timerEx.TryScheduleRunAt(sunset, SunsetAction, "Sunset ");
-            }
-
-            if (onReload)
-            {
-                var lightsOn = now < sunrise || sunset <= now;
-                SetLights(lightsOn);
-            }
-        }
-
-        private static void SunriseAction(object state)
-        {
-            ScheduleLights(false);
-            SetLights(false);
-            _timerEx.TryDispose((Guid)state);
-        }
-
-        private static void SunsetAction(object state)
-        {
-            SetLights(true);
-            _timerEx.TryDispose((Guid)state);
-        }
-
-        private static void SetLights(bool lightsOn)
-        {
-            _relaysManager.Set(3, lightsOn);
-            _log.Write("Lights" + (lightsOn ? "ON" : "OFF"));
-        }
-
-        #endregion
-
-        private static void NextRun(object state)
-        {
-            _relaysManager.Set(4, true);
-        }
-
-        private static void Interrupt_OnInterrupt(uint data1, uint data2, DateTime time)
-        {
-            _config.Load();
-            
-        }
-
-        public static void MainOld()
-        {
-            OutputPort led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, false);
-
-            LegoRemote remote = new LegoRemote((Cpu.Pin)FEZ_Pin.Interrupt.Di11);
-            remote.OnLegoButtonPress += remote_OnLegoButtonPress;
-
-            InputPort pressureSensor = new InputPort((Cpu.Pin)FEZ_Pin.Digital.Di9, false, Port.ResistorMode.PullUp);
-
-            led.Write(true);
-            Thread.Sleep(600);
-            led.Write(false);
-            Thread.Sleep(600);
-
-            while (true)
-            {
-                var hasPressure = pressureSensor.Read();
-
-                _relaysManager.Set(5, hasPressure);
-
-                Thread.Sleep(1000);
-            }
-        }
-
-        static void remote_OnLegoButtonPress(Message msg)
-        {
-            if (msg.CommandA == Command.ComboDirectForward)
-            {
-                _relaysManager.Set(4, true);
-            }
-
-            if (msg.CommandA == Command.ComboDirectBackward)
-            {
-                _relaysManager.Set(4, true);
-            }
-        }
     }
 }

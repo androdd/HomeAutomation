@@ -30,6 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Services\LightsService.cs" />
+    <Compile Include="Services\RemoteCommandsService.cs" />
     <Compile Include="Tools\Configuration.cs" />
     <Compile Include="Hardware\LegoRemote.cs" />
     <Compile Include="Tools\Log.cs" />
