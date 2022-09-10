@@ -1,9 +1,11 @@
-namespace HomeAutomation
+namespace HomeAutomation.Tools
 {
     using System;
     using System.Collections;
 
     using GHIElectronics.NETMF.Hardware;
+
+    using HomeAutomation.Hardware;
 
     internal class Configuration
     {

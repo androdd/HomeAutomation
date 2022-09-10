@@ -1,4 +1,4 @@
-namespace HomeAutomation
+namespace HomeAutomation.Models
 {
     using System;
 

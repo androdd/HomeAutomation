@@ -1,10 +1,13 @@
-using System;
-using System.Collections;
-using System.Threading;
-using Microsoft.SPOT.Hardware;
-
-namespace HomeAutomation
+namespace HomeAutomation.Hardware
 {
+    using System;
+    using System.Collections;
+    using System.Threading;
+
+    using HomeAutomation.Models;
+
+    using Microsoft.SPOT.Hardware;
+
     public class LegoRemote
     {
         private long _lastPulseTime;

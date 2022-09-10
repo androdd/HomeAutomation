@@ -6,7 +6,13 @@ namespace HomeAutomation
     using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
+    using HomeAutomation.Hardware;
+    using HomeAutomation.Models;
+    using HomeAutomation.Tools;
+
     using Microsoft.SPOT.Hardware;
+
+    using Configuration = HomeAutomation.Tools.Configuration;
 
     public class Program
     {

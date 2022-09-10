@@ -1,6 +1,8 @@
-namespace HomeAutomation
+namespace HomeAutomation.Tools
 {
     using GHIElectronics.NETMF.Hardware;
+
+    using HomeAutomation.Hardware;
 
     using Microsoft.SPOT;
 

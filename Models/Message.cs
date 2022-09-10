@@ -1,7 +1,7 @@
-using System;
-
-namespace HomeAutomation
+namespace HomeAutomation.Models
 {
+    using System;
+
     public enum Escape
     {
         Mode = 0,
@@ -18,7 +18,7 @@ namespace HomeAutomation
     {
         Extended = 0,
         ComboDirect = 1,
-        SinglePinContinuos = 2,
+        SinglePinContinuous = 2,
         SinglePinTimeout = 3,
         SingleOutput = 4
     }
@@ -175,7 +175,7 @@ namespace HomeAutomation
                 case Mode.ComboDirect:
                     command = isA ? GetBitsInt(10, 2) : GetBitsInt(8, 2);
                     return (Command)command;
-                case Mode.SinglePinContinuos:
+                case Mode.SinglePinContinuous:
                     throw new NotImplementedException();
                 case Mode.SinglePinTimeout:
                     throw new NotImplementedException();

@@ -1,4 +1,4 @@
-namespace HomeAutomation
+namespace HomeAutomation.Hardware
 {
     using GHIElectronics.NETMF.FEZ;
 

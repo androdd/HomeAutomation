@@ -1,4 +1,4 @@
-namespace HomeAutomation
+namespace HomeAutomation.Tools
 {
     using System;
     using System.Collections;
