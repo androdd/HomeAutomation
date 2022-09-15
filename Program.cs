@@ -17,9 +17,9 @@ namespace HomeAutomation
     {
         private static SdCard _sdCard;
         private static Log _log;
-        private static RelaysManager _relaysManager;
+        private static RelaysArray _relaysArray;
         private static Configuration _config;
-        private static TimerEx _timerEx;
+        private static RealTimer _realTimer;
         private static LightsService _lightsService;
         private static PressureSensor _pressureSensor;
 
@@ -42,18 +42,20 @@ namespace HomeAutomation
             _sdCard = new SdCard();
             _log = new Log(_sdCard);
             _config = new Configuration(_sdCard, _log);
-            _relaysManager = new RelaysManager();
+            _relaysArray = new RelaysArray();
             _pressureSensor = new PressureSensor();
-            _timerEx = new TimerEx(_log);
-            _lightsService = new LightsService(_log, _config, _timerEx, _relaysManager);
+            _realTimer = new RealTimer(_log);
+            _lightsService = new LightsService(_log, _config, _realTimer, _relaysArray);
             var remoteCommandsService = new RemoteCommandsService(_lightsService);
+            var pressureLoggingService = new PressureLoggingService(_sdCard, _pressureSensor);
 
             _log.Write("Starting...");
-
-            remoteCommandsService.Init();
-            _relaysManager.Init();
+            
+            _relaysArray.Init();
             _pressureSensor.Init();
             ReloadConfig();
+            remoteCommandsService.Init();
+            pressureLoggingService.Init(10);
 
             #region Manual DST Adjustment
 
@@ -75,8 +77,6 @@ namespace HomeAutomation
 
             ScheduleConfigReload();
 
-            LogPressure(new TimeSpan(0, 0, 10, 0));
-
             //InterruptPort interrupt = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.An0,
             //    false,
             //    Port.ResistorMode.Disabled,
@@ -86,41 +86,13 @@ namespace HomeAutomation
 
             Thread.Sleep(Timeout.Infinite);
         }
-
-        private static void LogPressure(TimeSpan interval)
-        {
-            _timerEx.TryScheduleRunAt(Now.AddSeconds(5),
-                state =>
-                {
-                    string pressureLog = "Pressure_" + Now.Year + "_" + Now.Month.ToString("D2") + ".csv";
-
-                    bool logExists;
-                    if (!_sdCard.TryIsExists(pressureLog, out logExists))
-                    {
-                        return;
-                    }
-
-                    if (!logExists)
-                    {
-                        const string PressureLogHeader = "Time,Pressure (bar)\r\n";
-                        _sdCard.TryAppend(pressureLog, PressureLogHeader);
-                        Debug.Print(PressureLogHeader);
-                    }
-
-                    var pressureLogText = Now.ToString("u").TrimEnd('Z') + "," + _pressureSensor.Pressure.ToString("F2") + "\r\n";
-                    _sdCard.TryAppend(pressureLog, pressureLogText);
-                    Debug.Print(pressureLogText);
-                },
-                interval,
-                "Pressure Sensor Log ");
-        }
-
+        
         private static void ScheduleConfigReload()
         {
             var nextDay = Now.AddDays(1);
             var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day);
 
-            _timerEx.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0), "Config Reload ");
+            _realTimer.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0), "Config Reload ");
         }
 
         private static void ReloadConfigCallback(object state)
@@ -139,7 +111,7 @@ namespace HomeAutomation
 #if DEBUG_DST
                 _timerEx.TryScheduleRunAt(Now.AddMinutes(1), DstStart, "DST Start ");
 #else
-                _timerEx.TryScheduleRunAt(Now.AddHours(3), DstStart, "DST Start ");
+                _realTimer.TryScheduleRunAt(Now.AddHours(3), DstStart, "DST Start ");
 #endif
             }
 
@@ -148,7 +120,7 @@ namespace HomeAutomation
 #if DEBUG_DST
                 _timerEx.TryScheduleRunAt(Now.AddMinutes(1), DstEnd, "DST End ");
 #else
-                _timerEx.TryScheduleRunAt(Now.AddHours(4), DstEnd, "DST End ");
+                _realTimer.TryScheduleRunAt(Now.AddHours(4), DstEnd, "DST End ");
 #endif
             }
             #endregion
@@ -173,7 +145,7 @@ namespace HomeAutomation
         private static void AdjustTimeAndRestart(int hours)
         {
             Now = Now.AddHours(hours);
-            _timerEx.DisposeAll();
+            _realTimer.DisposeAll();
 
             _log.Write("Time adjusted with " + hours + " hour.");
 

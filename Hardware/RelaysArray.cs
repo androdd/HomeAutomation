@@ -4,7 +4,7 @@ namespace HomeAutomation.Hardware
 
     using Microsoft.SPOT.Hardware;
 
-    internal class RelaysManager
+    internal class RelaysArray
     {
         private const bool RelayTrue = false;
         private OutputPort[] _relays;

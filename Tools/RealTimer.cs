@@ -6,14 +6,14 @@ namespace HomeAutomation.Tools
 
     using GHIElectronics.NETMF.Hardware;
 
-    internal class TimerEx
+    internal class RealTimer
     {
         private readonly Log _log;
         private readonly Hashtable _hashtable;
 
         private static readonly TimeSpan InfiniteTimeSpan = new TimeSpan(0, 0, 0, 0, -1);
 
-        public TimerEx(Log log)
+        public RealTimer(Log log)
         {
             _log = log;
             _hashtable = new Hashtable();

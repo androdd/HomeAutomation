@@ -89,15 +89,15 @@ namespace HomeAutomation.Hardware
             _lastPulseTime = time.Ticks;
         }
 
-        private static byte GetBit(long pusleTime)
+        private static byte GetBit(long pulseTime)
         {
-            if (pusleTime < 316)
+            if (pulseTime < 316)
                 return 11;
-            if (pusleTime > 316 && pusleTime < 526)
+            if (pulseTime > 316 && pulseTime < 526)
                 return 0;
-            if (pusleTime > 526 && pusleTime < 947)
+            if (pulseTime > 526 && pulseTime < 947)
                 return 1;
-            if (pusleTime > 947 && pusleTime < 1579)
+            if (pulseTime > 947 && pulseTime < 1579)
                 return 8;
             return 10;
         }

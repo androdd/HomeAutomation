@@ -11,15 +11,15 @@ namespace HomeAutomation.Services
 
         private readonly Log _log;
         private readonly Configuration _config;
-        private readonly TimerEx _timerEx;
-        private readonly RelaysManager _relaysManager;
+        private readonly RealTimer _realTimer;
+        private readonly RelaysArray _relaysArray;
 
-        public LightsService(Log log, Configuration config, TimerEx timerEx, RelaysManager relaysManager)
+        public LightsService(Log log, Configuration config, RealTimer realTimer, RelaysArray relaysArray)
         {
             _log = log;
             _config = config;
-            _timerEx = timerEx;
-            _relaysManager = relaysManager;
+            _realTimer = realTimer;
+            _relaysArray = relaysArray;
         }
 
         public void ScheduleLights(bool onReload)
@@ -37,11 +37,11 @@ namespace HomeAutomation.Services
 
             if (now < sunrise)
             {
-                _timerEx.TryScheduleRunAt(sunrise, SunriseAction, "Sunrise ");
+                _realTimer.TryScheduleRunAt(sunrise, SunriseAction, "Sunrise ");
             }
             else if (now < sunset)
             {
-                _timerEx.TryScheduleRunAt(sunset, SunsetAction, "Sunset ");
+                _realTimer.TryScheduleRunAt(sunset, SunsetAction, "Sunset ");
             }
 
             if (onReload)
@@ -53,7 +53,7 @@ namespace HomeAutomation.Services
 
         public void SetLights(bool lightsOn, string logPrefix = "")
         {
-            _relaysManager.Set(LightsRelay, lightsOn);
+            _relaysArray.Set(LightsRelay, lightsOn);
             _log.Write(logPrefix + "Lights " + (lightsOn ? "ON" : "OFF"));
         }
 
@@ -61,13 +61,13 @@ namespace HomeAutomation.Services
         {
             ScheduleLights(false);
             SetLights(false, "Sunrise ");
-            _timerEx.TryDispose((Guid)state);
+            _realTimer.TryDispose((Guid)state);
         }
 
         private void SunsetAction(object state)
         {
             SetLights(true, "Sunset ");
-            _timerEx.TryDispose((Guid)state);
+            _realTimer.TryDispose((Guid)state);
         }
     }
 }
