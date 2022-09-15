@@ -3,6 +3,7 @@ namespace HomeAutomation
     using System;
     using System.Threading;
 
+    using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
@@ -22,6 +23,10 @@ namespace HomeAutomation
         private static RealTimer _realTimer;
         private static LightsService _lightsService;
         private static PressureSensor _pressureSensor;
+        private static LegoRemote _legoRemote;
+        private static RemoteCommandsService _remoteCommandsService;
+        private static PressureLoggingService _pressureLoggingService;
+        private static int _lightsRelayId;
 
         public static DateTime Now
         {
@@ -39,23 +44,20 @@ namespace HomeAutomation
         {
             //Now = new DateTime(2022, 9, 09, 21, 28, 3);
             
-            _sdCard = new SdCard();
-            _log = new Log(_sdCard);
-            _config = new Configuration(_sdCard, _log);
-            _relaysArray = new RelaysArray();
-            _pressureSensor = new PressureSensor();
-            _realTimer = new RealTimer(_log);
-            _lightsService = new LightsService(_log, _config, _realTimer, _relaysArray);
-            var remoteCommandsService = new RemoteCommandsService(_lightsService);
-            var pressureLoggingService = new PressureLoggingService(_sdCard, _pressureSensor);
+            SetupHardware();
+
+            SetupToolsAndServices();
 
             _log.Write("Starting...");
             
             _relaysArray.Init();
             _pressureSensor.Init();
+            _legoRemote.Init();
+
             ReloadConfig();
-            remoteCommandsService.Init();
-            pressureLoggingService.Init(10);
+
+            _remoteCommandsService.Init();
+            _pressureLoggingService.Init(_config.PressureLogIntervalMin);
 
             #region Manual DST Adjustment
 
@@ -81,12 +83,43 @@ namespace HomeAutomation
             //    false,
             //    Port.ResistorMode.Disabled,
             //    Port.InterruptMode.InterruptEdgeBoth);
-            
+
             _log.Write("Started");
 
             Thread.Sleep(Timeout.Infinite);
         }
-        
+
+        private static void SetupHardware()
+        {
+            _sdCard = new SdCard();
+            _relaysArray = new RelaysArray(new[]
+            {
+                FEZ_Pin.Digital.Di0,
+                FEZ_Pin.Digital.Di1,
+                FEZ_Pin.Digital.Di2,
+                FEZ_Pin.Digital.Di3,
+                FEZ_Pin.Digital.Di4,
+                FEZ_Pin.Digital.Di5,
+                FEZ_Pin.Digital.Di6,
+                FEZ_Pin.Digital.Di7
+            });
+            _pressureSensor = new PressureSensor(FEZ_Pin.AnalogIn.An1);
+            _legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
+
+            _lightsRelayId = 7;
+        }
+
+        private static void SetupToolsAndServices()
+        {
+            _log = new Log(_sdCard);
+            _config = new Configuration(_sdCard, _log);
+
+            _realTimer = new RealTimer(_log);
+            _lightsService = new LightsService(_log, _config, _realTimer, _relaysArray, _lightsRelayId);
+            _remoteCommandsService = new RemoteCommandsService(_legoRemote, _lightsService);
+            _pressureLoggingService = new PressureLoggingService(_log, _sdCard, _pressureSensor);
+        }
+
         private static void ScheduleConfigReload()
         {
             var nextDay = Now.AddDays(1);

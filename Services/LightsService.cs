@@ -7,19 +7,21 @@ namespace HomeAutomation.Services
 
     internal class LightsService
     {
-        private const int LightsRelay = 7;
+        private readonly int _relayId;
 
         private readonly Log _log;
         private readonly Configuration _config;
         private readonly RealTimer _realTimer;
         private readonly RelaysArray _relaysArray;
 
-        public LightsService(Log log, Configuration config, RealTimer realTimer, RelaysArray relaysArray)
+        public LightsService(Log log, Configuration config, RealTimer realTimer, RelaysArray relaysArray, int relayId)
         {
             _log = log;
             _config = config;
             _realTimer = realTimer;
             _relaysArray = relaysArray;
+
+            _relayId = relayId;
         }
 
         public void ScheduleLights(bool onReload)
@@ -53,7 +55,7 @@ namespace HomeAutomation.Services
 
         public void SetLights(bool lightsOn, string logPrefix = "")
         {
-            _relaysArray.Set(LightsRelay, lightsOn);
+            _relaysArray.Set(_relayId, lightsOn);
             _log.Write(logPrefix + "Lights " + (lightsOn ? "ON" : "OFF"));
         }
 

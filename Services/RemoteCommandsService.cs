@@ -1,25 +1,22 @@
 namespace HomeAutomation.Services
 {
-    using GHIElectronics.NETMF.FEZ;
-
     using HomeAutomation.Hardware;
     using HomeAutomation.Models;
 
-    using Microsoft.SPOT.Hardware;
-
     internal class RemoteCommandsService
     {
+        private readonly LegoRemote _legoRemote;
         private readonly LightsService _lightsService;
 
-        public RemoteCommandsService(LightsService lightsService)
+        public RemoteCommandsService(LegoRemote legoRemote, LightsService lightsService)
         {
+            _legoRemote = legoRemote;
             _lightsService = lightsService;
         }
 
         public void Init()
         {
-            LegoRemote remote = new LegoRemote((Cpu.Pin)FEZ_Pin.Interrupt.Di11);
-            remote.OnLegoButtonPress += remote_OnLegoButtonPress;
+            _legoRemote.OnLegoButtonPress += remote_OnLegoButtonPress;
         }
 
         private void remote_OnLegoButtonPress(Message msg)

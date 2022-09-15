@@ -3,10 +3,11 @@ namespace HomeAutomation.Tools
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
+    using HomeAutomation.Services;
 
     using Microsoft.SPOT;
 
-    internal class Log
+    internal class Log : Base
     {
         private readonly SdCard _sdCard;
 
@@ -17,7 +18,7 @@ namespace HomeAutomation.Tools
 
         public void Write(string message)
         {
-            var text = RealTimeClock.GetTime().ToString("u") + " - " + message;
+            var text = Format(RealTimeClock.GetTime()) + " - " + message;
             Debug.Print(text);
             _sdCard.TryAppend("Log.txt", text + "\r\n");
         }

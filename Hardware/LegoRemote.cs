@@ -4,27 +4,36 @@ namespace HomeAutomation.Hardware
     using System.Collections;
     using System.Threading;
 
+    using GHIElectronics.NETMF.FEZ;
+
     using HomeAutomation.Models;
 
     using Microsoft.SPOT.Hardware;
 
     public class LegoRemote
     {
+        private readonly FEZ_Pin.Interrupt _portId;
+
         private long _lastPulseTime;
         private int _messageIndex = 16;
         private Message _message = new Message();
 
-        private readonly Queue _mQ;
-        private readonly InterruptPort _interruptPort;
-        private readonly Thread _messageDispatcherThread;
+        private Queue _mQ;
+        private InterruptPort _interruptPort;
+        private Thread _messageDispatcherThread;
 
         public delegate void LegoButtonPressEventHandler(Message msg);
 
         public event LegoButtonPressEventHandler OnLegoButtonPress;
 
-        public LegoRemote(Cpu.Pin portId)
+        public LegoRemote(FEZ_Pin.Interrupt portId)
         {
-            _interruptPort = new InterruptPort(portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
+            _portId = portId;
+        }
+
+        public void Init()
+        {
+            _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
             _interruptPort.OnInterrupt += irm_OnInterrupt;
 
             _mQ = new Queue();

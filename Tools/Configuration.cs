@@ -18,8 +18,11 @@ namespace HomeAutomation.Tools
 
         public DateTime Sunrise { get; private set;  }
         public DateTime Sunset { get; private set; }
+        
         public int SunriseOffsetMin { get; private set; }
         public int SunsetOffsetMin { get; private set; }
+        public int PressureLogIntervalMin { get; set; }
+
         public bool IsDst { get; private set; }
         public bool ManualStartDst { get; private set; }
         public bool ManualEndDst { get; private set; }
@@ -142,6 +145,9 @@ namespace HomeAutomation.Tools
                             break;
                         case "SunsetOffset":
                             SunsetOffsetMin = int.Parse(value);
+                            break;
+                        case "PressureLogInterval":
+                            PressureLogIntervalMin = int.Parse(value);
                             break;
                     }
                 }

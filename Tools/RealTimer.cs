@@ -6,7 +6,9 @@ namespace HomeAutomation.Tools
 
     using GHIElectronics.NETMF.Hardware;
 
-    internal class RealTimer
+    using HomeAutomation.Services;
+
+    internal class RealTimer : Base
     {
         private readonly Log _log;
         private readonly Hashtable _hashtable;
@@ -41,11 +43,11 @@ namespace HomeAutomation.Tools
 
             if (period == InfiniteTimeSpan)
             {
-                _log.Write(name + "Timer set for: " + dueDateTime.ToString("u"));
+                _log.Write(name + "Timer set for: " + Format(dueDateTime));
             }
             else
             {
-                _log.Write(name + "Timer set for: " + dueDateTime.ToString("u") + " with period: " + period);
+                _log.Write(name + "Timer set for: " + Format(dueDateTime) + " with period: " + period);
             }
 
             return true;

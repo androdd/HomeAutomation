@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Hardware\PressureSensor.cs" />
+    <Compile Include="Base.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />
     <Compile Include="Services\RemoteCommandsService.cs" />

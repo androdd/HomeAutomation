@@ -6,31 +6,44 @@ namespace HomeAutomation.Services
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
+    using HomeAutomation.Tools;
 
     using Microsoft.SPOT;
 
-    internal class PressureLoggingService : IDisposable
+    internal class PressureLoggingService : Base, IDisposable
     {
+        private readonly Log _log;
         private readonly SdCard _sdCard;
         private readonly PressureSensor _pressureSensor;
         private Timer _timer;
 
-        public PressureLoggingService(SdCard sdCard, PressureSensor pressureSensor)
+        public PressureLoggingService(Log log, SdCard sdCard, PressureSensor pressureSensor)
         {
+            _log = log;
             _sdCard = sdCard;
             _pressureSensor = pressureSensor;
         }
 
         public void Init(int minutes)
         {
-            _timer = new Timer(Log, null, new TimeSpan(0, 0, 3), new TimeSpan(0, minutes, 0));
+            var startDelay = new TimeSpan(0, 0, 3);
+
+            _timer = new Timer(Log, null, startDelay, new TimeSpan(0, minutes, 0));
+
+            _log.Write("Pressure Logging Timer set for: " + Format(RealTimeClock.GetTime().Add(startDelay)) + " with period: " + minutes + " m");
         }
 
         private void Log(object state)
         {
             var now = RealTimeClock.GetTime();
 
-            string pressureLog = "Pressure_" + now.Year + "_" + now.Month.ToString("D2") + ".csv";
+            var month = now.Month.ToString();
+            if (month.Length == 1)
+            {
+                month = "0" + month;
+            }
+
+            string pressureLog = "Pressure_" + now.Year + "_" + month + ".csv";
 
             bool logExists;
             if (!_sdCard.TryIsExists(pressureLog, out logExists))
@@ -42,10 +55,10 @@ namespace HomeAutomation.Services
             {
                 const string PressureLogHeader = "Time,Pressure (bar)\r\n";
                 _sdCard.TryAppend(pressureLog, PressureLogHeader);
-                Debug.Print(PressureLogHeader);
+                _log.Write("Created " + pressureLog + " file.");
             }
 
-            var pressureLogText = now.ToString("u").TrimEnd('Z') + "," + _pressureSensor.Pressure.ToString("F2") + "\r\n";
+            var pressureLogText = Format(now) + "," + _pressureSensor.Pressure.ToString("F2") + "\r\n";
             _sdCard.TryAppend(pressureLog, pressureLogText);
             Debug.Print(pressureLogText);
         }

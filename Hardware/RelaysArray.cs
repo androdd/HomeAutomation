@@ -6,6 +6,7 @@ namespace HomeAutomation.Hardware
 
     internal class RelaysArray
     {
+        private readonly FEZ_Pin.Digital[] _portIds;
         private const bool RelayTrue = false;
         private OutputPort[] _relays;
 
@@ -14,24 +15,18 @@ namespace HomeAutomation.Hardware
             get { return _relays.Length; }
         }
 
+        public RelaysArray(FEZ_Pin.Digital[] portIds)
+        {
+            _portIds = portIds;
+        }
+
         public void Init()
         {
-            Cpu.Pin[] diPins = {
-                (Cpu.Pin)FEZ_Pin.Digital.Di0,
-                (Cpu.Pin)FEZ_Pin.Digital.Di1,
-                (Cpu.Pin)FEZ_Pin.Digital.Di2,
-                (Cpu.Pin)FEZ_Pin.Digital.Di3,
-                (Cpu.Pin)FEZ_Pin.Digital.Di4,
-                (Cpu.Pin)FEZ_Pin.Digital.Di5,
-                (Cpu.Pin)FEZ_Pin.Digital.Di6,
-                (Cpu.Pin)FEZ_Pin.Digital.Di7
-            };
-            
-            _relays = new OutputPort[diPins.Length];
+            _relays = new OutputPort[_portIds.Length];
 
-            for (int i = 0; i < diPins.Length; i++)
+            for (int i = 0; i < _portIds.Length; i++)
             {
-                _relays[i] = new OutputPort(diPins[i], !RelayTrue);
+                _relays[i] = new OutputPort((Cpu.Pin)_portIds[i], !RelayTrue);
             }
         }
 

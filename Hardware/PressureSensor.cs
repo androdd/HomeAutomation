@@ -5,7 +5,13 @@ namespace HomeAutomation.Hardware
 
     internal class PressureSensor
     {
+        private readonly FEZ_Pin.AnalogIn _portId;
         private AnalogIn _pressureSensor;
+
+        public PressureSensor(FEZ_Pin.AnalogIn portId)
+        {
+            _portId = portId;
+        }
 
         public double Voltage
         {
@@ -19,7 +25,7 @@ namespace HomeAutomation.Hardware
 
         public void Init()
         {
-            _pressureSensor = new AnalogIn((AnalogIn.Pin)FEZ_Pin.AnalogIn.An1);
+            _pressureSensor = new AnalogIn((AnalogIn.Pin)_portId);
             _pressureSensor.SetLinearScale(0, 3300 * 2); // Voltage divider is installed
         }
     }
