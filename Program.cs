@@ -9,6 +9,8 @@ namespace HomeAutomation
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
+    using Microsoft.SPOT;
+
     using Configuration = HomeAutomation.Tools.Configuration;
 
     public class Program
@@ -19,6 +21,7 @@ namespace HomeAutomation
         private static Configuration _config;
         private static TimerEx _timerEx;
         private static LightsService _lightsService;
+        private static PressureSensor _pressureSensor;
 
         public static DateTime Now
         {
@@ -40,6 +43,7 @@ namespace HomeAutomation
             _log = new Log(_sdCard);
             _config = new Configuration(_sdCard, _log);
             _relaysManager = new RelaysManager();
+            _pressureSensor = new PressureSensor();
             _timerEx = new TimerEx(_log);
             _lightsService = new LightsService(_log, _config, _timerEx, _relaysManager);
             var remoteCommandsService = new RemoteCommandsService(_lightsService);
@@ -48,6 +52,7 @@ namespace HomeAutomation
 
             remoteCommandsService.Init();
             _relaysManager.Init();
+            _pressureSensor.Init();
             ReloadConfig();
 
             #region Manual DST Adjustment
@@ -67,42 +72,48 @@ namespace HomeAutomation
             }
 
             #endregion
-            
+
             ScheduleConfigReload();
+
+            LogPressure(new TimeSpan(0, 0, 10, 0));
 
             //InterruptPort interrupt = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.An0,
             //    false,
             //    Port.ResistorMode.Disabled,
             //    Port.InterruptMode.InterruptEdgeBoth);
-
+            
             _log.Write("Started");
 
             Thread.Sleep(Timeout.Infinite);
         }
 
-#if DEBUG_DST
-        //Automatic DST Adjustment
-        private static bool _isChanged;
-#endif
-
-        private static bool IsLastSunday(int month)
+        private static void LogPressure(TimeSpan interval)
         {
-#if DEBUG_DST
-            if (!_isChanged && month == 10)
-            {
-                _log.Write("Last Sunday detected :)");
-                _isChanged = true;
-                return true;
-            }
-#endif
+            _timerEx.TryScheduleRunAt(Now.AddSeconds(5),
+                state =>
+                {
+                    string pressureLog = "Pressure_" + Now.Year + "_" + Now.Month.ToString("D2") + ".csv";
 
-            return Now.Month == month &&
-                   Now.DayOfWeek == DayOfWeek.Sunday &&
-                   Now.Hour == 0 && // returns false when called again at 3 or 4 a clock on restarting
-                   Now.AddDays(7).Month != month;
+                    bool logExists;
+                    if (!_sdCard.TryIsExists(pressureLog, out logExists))
+                    {
+                        return;
+                    }
+
+                    if (!logExists)
+                    {
+                        const string PressureLogHeader = "Time,Pressure (bar)\r\n";
+                        _sdCard.TryAppend(pressureLog, PressureLogHeader);
+                        Debug.Print(PressureLogHeader);
+                    }
+
+                    var pressureLogText = Now.ToString("u").TrimEnd('Z') + "," + _pressureSensor.Pressure.ToString("F2") + "\r\n";
+                    _sdCard.TryAppend(pressureLog, pressureLogText);
+                    Debug.Print(pressureLogText);
+                },
+                interval,
+                "Pressure Sensor Log ");
         }
-
-        #region Reload Configuration
 
         private static void ScheduleConfigReload()
         {
@@ -170,6 +181,26 @@ namespace HomeAutomation
             ScheduleConfigReload();
         }
 
-        #endregion
+#if DEBUG_DST
+        //Automatic DST Adjustment
+        private static bool _isChanged;
+#endif
+
+        private static bool IsLastSunday(int month)
+        {
+#if DEBUG_DST
+            if (!_isChanged && month == 10)
+            {
+                _log.Write("Last Sunday detected :)");
+                _isChanged = true;
+                return true;
+            }
+#endif
+
+            return Now.Month == month &&
+                   Now.DayOfWeek == DayOfWeek.Sunday &&
+                   Now.Hour == 0 && // returns false when called again at 3 or 4 o'clock on restarting
+                   Now.AddDays(7).Month != month;
+        }
     }
 }

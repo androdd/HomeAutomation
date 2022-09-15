@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Hardware\PressureSensor.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\RemoteCommandsService.cs" />
     <Compile Include="Tools\Configuration.cs" />
