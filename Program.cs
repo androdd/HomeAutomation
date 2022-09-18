@@ -10,8 +10,6 @@ namespace HomeAutomation
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
-    using Microsoft.SPOT;
-
     using Configuration = HomeAutomation.Tools.Configuration;
 
     public class Program
@@ -22,11 +20,15 @@ namespace HomeAutomation
         private static Configuration _config;
         private static RealTimer _realTimer;
         private static LightsService _lightsService;
+        private static AutoTurnOffPumpService _autoTurnOffPumpService;
         private static PressureSensor _pressureSensor;
+        private static PumpStateSensor _pumpStateSensor;
         private static LegoRemote _legoRemote;
         private static RemoteCommandsService _remoteCommandsService;
         private static PressureLoggingService _pressureLoggingService;
+
         private static int _lightsRelayId;
+        private static int _autoTurnOffPumpRelayId;
 
         public static DateTime Now
         {
@@ -52,12 +54,14 @@ namespace HomeAutomation
             
             _relaysArray.Init();
             _pressureSensor.Init();
+            _pumpStateSensor.Init();
             _legoRemote.Init();
 
             ReloadConfig();
 
             _remoteCommandsService.Init();
             _pressureLoggingService.Init(_config.PressureLogIntervalMin);
+            _autoTurnOffPumpService.Init();
 
             #region Manual DST Adjustment
 
@@ -84,6 +88,29 @@ namespace HomeAutomation
             //    Port.ResistorMode.Disabled,
             //    Port.InterruptMode.InterruptEdgeBoth);
 
+#if DEBUG_PRESSURE_SENSOR
+            while (true)
+            {
+                var pressure = _pressureSensor.Pressure;
+                var voltage = _pressureSensor.Voltage;
+                
+                pressure = pressure < 0
+                    ? 0
+                    : pressure;
+
+                var pressureByte = (byte)MathEx.Truncate(pressure * 50); // Fit up to 5 bar in 1 byte 5 * 50 = 250 < 256
+
+                Debug.Print("Voltage: " + voltage + " V; Pressure: " + pressure.ToString("F") + " bar; PressureByte: " + pressureByte);
+                
+                for (int i = 0; i <= 7; i++)
+                {
+                    _relaysArray.Set(7 - i, (pressureByte & (1 << i)) == 1 << i);
+                }
+
+                Thread.Sleep(10 * 1000);
+            };
+#endif
+
             _log.Write("Started");
 
             Thread.Sleep(Timeout.Infinite);
@@ -104,9 +131,11 @@ namespace HomeAutomation
                 FEZ_Pin.Digital.Di7
             });
             _pressureSensor = new PressureSensor(FEZ_Pin.AnalogIn.An1);
+            _pumpStateSensor = new PumpStateSensor(FEZ_Pin.Digital.An0);
             _legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
 
             _lightsRelayId = 7;
+            _autoTurnOffPumpRelayId = 5;
         }
 
         private static void SetupToolsAndServices()
@@ -116,6 +145,7 @@ namespace HomeAutomation
 
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _config, _realTimer, _relaysArray, _lightsRelayId);
+            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _pressureSensor, _pumpStateSensor, _relaysArray, _autoTurnOffPumpRelayId);
             _remoteCommandsService = new RemoteCommandsService(_legoRemote, _lightsService);
             _pressureLoggingService = new PressureLoggingService(_log, _sdCard, _pressureSensor);
         }
