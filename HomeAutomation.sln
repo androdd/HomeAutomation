@@ -3,28 +3,28 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAutomation", "HomeAutomation.csproj", "{837BA826-91F1-42CC-96E4-B20259B862CF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{475B2E12-C60F-4DBA-AF5E-165393298931}"
 	ProjectSection(SolutionItems) = preProject
-		config.txt = config.txt
-		dst.cfg = dst.cfg
-		dstEnd.cfg = dstEnd.cfg
-		dstStart.cfg = dstStart.cfg
-		Schedules.xlsx = Schedules.xlsx
-		Sun01.txt = Sun01.txt
-		Sun02.txt = Sun02.txt
-		Sun03.txt = Sun03.txt
-		Sun04.txt = Sun04.txt
-		Sun05.txt = Sun05.txt
-		Sun06.txt = Sun06.txt
-		Sun07.txt = Sun07.txt
-		Sun08.txt = Sun08.txt
-		Sun09.txt = Sun09.txt
-		Sun10.txt = Sun10.txt
-		Sun11.txt = Sun11.txt
-		Sun12.txt = Sun12.txt
+		Documents\config.txt = Documents\config.txt
+		Documents\dst.cfg = Documents\dst.cfg
+		Documents\dstEnd.cfg = Documents\dstEnd.cfg
+		Documents\dstStart.cfg = Documents\dstStart.cfg
+		Documents\Schedules.xlsx = Documents\Schedules.xlsx
+		Documents\Sun01.txt = Documents\Sun01.txt
+		Documents\Sun02.txt = Documents\Sun02.txt
+		Documents\Sun03.txt = Documents\Sun03.txt
+		Documents\Sun04.txt = Documents\Sun04.txt
+		Documents\Sun05.txt = Documents\Sun05.txt
+		Documents\Sun06.txt = Documents\Sun06.txt
+		Documents\Sun07.txt = Documents\Sun07.txt
+		Documents\Sun08.txt = Documents\Sun08.txt
+		Documents\Sun09.txt = Documents\Sun09.txt
+		Documents\Sun10.txt = Documents\Sun10.txt
+		Documents\Sun11.txt = Documents\Sun11.txt
+		Documents\Sun12.txt = Documents\Sun12.txt
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAutomation", "Automation\HomeAutomation.csproj", "{837BA826-91F1-42CC-96E4-B20259B862CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

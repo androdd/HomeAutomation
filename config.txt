@@ -1,4 +1,0 @@
-SunriseOffset:      -10 ;Minutes
-SunsetOffset:        10 ;Minutes
-PressureLogInterval: 5  ;Minutes
-;;End of file is important!!
