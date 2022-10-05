@@ -138,15 +138,23 @@ namespace HomeAutomation.Hardware
                 return false;
             }
 
-            string path = GetPath(filename);
-
-            using (var stream = File.OpenWrite(path))
+            try
             {
-                var bytes = Encoding.UTF8.GetBytes(text);
+                string path = GetPath(filename);
 
-                stream.Seek(0, SeekOrigin.End);
+                using (var stream = File.OpenWrite(path))
+                {
+                    var bytes = Encoding.UTF8.GetBytes(text);
 
-                stream.Write(bytes, 0, bytes.Length);
+                    stream.Seek(0, SeekOrigin.End);
+
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+                return false;
             }
 
             //Thread.Sleep(200);
