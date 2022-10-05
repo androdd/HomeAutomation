@@ -113,7 +113,7 @@ namespace HomeAutomation
             };
 #endif
 
-            _log.Write("Started");
+            _log.Write("Started");  
 
             using (var led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, false))
             {
