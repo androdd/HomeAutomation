@@ -50,13 +50,11 @@ namespace HomeAutomation.Services
             if (!_pumpStateSensor.IsWorking || _pressureSensor.Pressure > _configuration.AutoTurnOffPumpConfiguration.MinPressure)
             {
                 _eventCount = 0;
-                Debug.Print(_eventCount.ToString());
                 return;
             }
 
             _eventCount++;
-            Debug.Print(_eventCount.ToString());
-
+            
             if (_eventCount >= _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount)
             {
                 SendTurnOffSignal();
