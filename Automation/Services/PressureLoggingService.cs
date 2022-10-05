@@ -6,6 +6,7 @@ namespace HomeAutomation.Services
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
+    using HomeAutomation.Hardware.Interfaces;
     using HomeAutomation.Tools;
 
     using Microsoft.SPOT;
@@ -14,10 +15,10 @@ namespace HomeAutomation.Services
     {
         private readonly Log _log;
         private readonly SdCard _sdCard;
-        private readonly PressureSensor _pressureSensor;
+        private readonly IPressureSensor _pressureSensor;
         private Timer _timer;
 
-        public PressureLoggingService(Log log, SdCard sdCard, PressureSensor pressureSensor)
+        public PressureLoggingService(Log log, SdCard sdCard, IPressureSensor pressureSensor)
         {
             _log = log;
             _sdCard = sdCard;

@@ -3,12 +3,14 @@ namespace HomeAutomation.Hardware
     using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
-    internal class PressureSensor
+    using HomeAutomation.Hardware.Interfaces;
+
+    internal class PressureSensor80 : IPressureSensor
     {
         private readonly FEZ_Pin.AnalogIn _portId;
         private AnalogIn _pressureSensor;
 
-        public PressureSensor(FEZ_Pin.AnalogIn portId)
+        public PressureSensor80(FEZ_Pin.AnalogIn portId)
         {
             _portId = portId;
         }
@@ -26,8 +28,6 @@ namespace HomeAutomation.Hardware
             // Sensor                       b       a
             // 80 psi Experimental (air)    0.48    0.756833333
             // 80 psi Factory               0.5     0.727272727
-            // 150 pis Experimental (air)   0.54    0.396766667
-            // 150 psi Factory              0.5     0.388349515
         }
 
         public void Init()

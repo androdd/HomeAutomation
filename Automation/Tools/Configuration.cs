@@ -6,6 +6,7 @@ namespace HomeAutomation.Tools
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
+    using HomeAutomation.Models;
 
     internal class Configuration
     {
@@ -23,6 +24,8 @@ namespace HomeAutomation.Tools
         public int SunsetOffsetMin { get; private set; }
         public int PressureLogIntervalMin { get; set; }
 
+        public AutoTurnOffPumpConfiguration AutoTurnOffPumpConfiguration { get; private set; }
+
         public bool IsDst { get; private set; }
         public bool ManualStartDst { get; private set; }
         public bool ManualEndDst { get; private set; }
@@ -31,6 +34,8 @@ namespace HomeAutomation.Tools
         {
             _sdCard = sdCard;
             _log = log;
+
+            AutoTurnOffPumpConfiguration = new AutoTurnOffPumpConfiguration();
         }
 
         public void Load()
@@ -135,7 +140,13 @@ namespace HomeAutomation.Tools
             {
                 try
                 {
-                    var configParts = configLine.ToString().Split(':', ';');
+                    var line = configLine.ToString().Trim();
+                    if (line == "")
+                    {
+                        continue;
+                    }
+
+                    var configParts = line.Split(':', ';');
                     var name = configParts[0].Trim();
                     var value = configParts[1].Trim();
                     switch (name)
@@ -148,6 +159,19 @@ namespace HomeAutomation.Tools
                             break;
                         case "PressureLogInterval":
                             PressureLogIntervalMin = int.Parse(value);
+                            break;
+
+                        case "AutoTurnOffPump-Interval":
+                            AutoTurnOffPumpConfiguration.Interval = byte.Parse(value);
+                            break;
+                        case "AutoTurnOffPump-MinPressure":
+                            AutoTurnOffPumpConfiguration.MinPressure = double.Parse(value);
+                            break;
+                        case "AutoTurnOffPump-MaxEventsCount":
+                            AutoTurnOffPumpConfiguration.MaxEventsCount = byte.Parse(value);
+                            break;
+                        case "AutoTurnOffPump-SignalLength":
+                            AutoTurnOffPumpConfiguration.SignalLength = ushort.Parse(value);
                             break;
                     }
                 }

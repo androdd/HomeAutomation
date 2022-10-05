@@ -30,9 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Hardware\PressureSensor.cs" />
+    <Compile Include="Hardware\Interfaces\IPressureSensor.cs" />
+    <Compile Include="Hardware\Mocks\TestPressureSensor.cs" />
+    <Compile Include="Hardware\PressureSensor80.cs" />
     <Compile Include="Base.cs" />
     <Compile Include="Hardware\PumpStateSensor.cs" />
+    <Compile Include="Models\AutoTurnOffPumpConfiguration.cs" />
     <Compile Include="Services\AutoTurnOffPumpService.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />

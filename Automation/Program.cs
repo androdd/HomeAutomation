@@ -7,6 +7,7 @@ namespace HomeAutomation
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
+    using HomeAutomation.Hardware.Interfaces;
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
@@ -23,7 +24,7 @@ namespace HomeAutomation
         private static RealTimer _realTimer;
         private static LightsService _lightsService;
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
-        private static PressureSensor _pressureSensor;
+        private static IPressureSensor _pressureSensor;
         private static PumpStateSensor _pumpStateSensor;
         private static LegoRemote _legoRemote;
         private static RemoteCommandsService _remoteCommandsService;
@@ -143,7 +144,7 @@ namespace HomeAutomation
                 FEZ_Pin.Digital.Di6,
                 FEZ_Pin.Digital.Di7
             });
-            _pressureSensor = new PressureSensor(FEZ_Pin.AnalogIn.An1);
+            _pressureSensor = new PressureSensor80(FEZ_Pin.AnalogIn.An1);
             _pumpStateSensor = new PumpStateSensor(FEZ_Pin.Digital.An0);
             _legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
 
@@ -158,7 +159,7 @@ namespace HomeAutomation
 
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _config, _realTimer, _relaysArray, _lightsRelayId);
-            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _pressureSensor, _pumpStateSensor, _relaysArray, _autoTurnOffPumpRelayId);
+            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _config, _pressureSensor, _pumpStateSensor, _relaysArray, _autoTurnOffPumpRelayId);
             _remoteCommandsService = new RemoteCommandsService(_legoRemote, _lightsService);
             _pressureLoggingService = new PressureLoggingService(_log, _sdCard, _pressureSensor);
         }
