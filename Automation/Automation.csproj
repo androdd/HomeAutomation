@@ -35,6 +35,7 @@
     <Compile Include="Hardware\PressureSensor80.cs" />
     <Compile Include="Base.cs" />
     <Compile Include="Hardware\PumpStateSensor.cs" />
+    <Compile Include="Hardware\WaterFlowSensor.cs" />
     <Compile Include="Models\AutoTurnOffPumpConfiguration.cs" />
     <Compile Include="Services\AutoTurnOffPumpService.cs" />
     <Compile Include="Services\LightsService.cs" />

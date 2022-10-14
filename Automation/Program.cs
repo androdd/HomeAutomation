@@ -29,6 +29,7 @@ namespace HomeAutomation
         private static LegoRemote _legoRemote;
         private static RemoteCommandsService _remoteCommandsService;
         private static PressureLoggingService _pressureLoggingService;
+        private static WaterFlowSensor _waterFlowSensor;
 
         private static int _lightsRelayId;
         private static int _autoTurnOffPumpRelayId;
@@ -59,6 +60,7 @@ namespace HomeAutomation
             _pressureSensor.Init();
             _pumpStateSensor.Init();
             _legoRemote.Init();
+            _waterFlowSensor.Init();
 
             ReloadConfig();
 
@@ -147,6 +149,7 @@ namespace HomeAutomation
             _pressureSensor = new PressureSensor80(FEZ_Pin.AnalogIn.An1);
             _pumpStateSensor = new PumpStateSensor(FEZ_Pin.Digital.An0);
             _legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
+            _waterFlowSensor = new WaterFlowSensor(FEZ_Pin.Interrupt.Di12);
 
             _lightsRelayId = 7;
             _autoTurnOffPumpRelayId = 5;
