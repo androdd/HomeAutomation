@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		Documents\dstEnd.cfg = Documents\dstEnd.cfg
 		Documents\dstStart.cfg = Documents\dstStart.cfg
 		Documents\Schedules.xlsx = Documents\Schedules.xlsx
+		Documents\SignalPorts.pcb = Documents\SignalPorts.pcb
 		Documents\Sun01.txt = Documents\Sun01.txt
 		Documents\Sun02.txt = Documents\Sun02.txt
 		Documents\Sun03.txt = Documents\Sun03.txt
