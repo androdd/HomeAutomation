@@ -88,11 +88,6 @@ namespace HomeAutomation
 
             ScheduleConfigReload();
 
-            //InterruptPort interrupt = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.An0,
-            //    false,
-            //    Port.ResistorMode.Disabled,
-            //    Port.InterruptMode.InterruptEdgeBoth);
-
 #if DEBUG_PRESSURE_SENSOR
             while (true)
             {

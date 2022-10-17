@@ -25,19 +25,24 @@ namespace HomeAutomation.Hardware
             _interruptPort.OnInterrupt += OnInterrupt;
         }
 
-        private int count = 0;
+        private int _count;
+        private double _flowRate;
 
         private void OnInterrupt(uint data1, uint data2, DateTime time)
         {
             long microseconds  = (time.Ticks - _lastPulseTime) / 10;
             double minutes = microseconds / 60000000.0;
             double frequency = 1 / minutes;
-            double flowRate = frequency / 6.6;
+            _flowRate += frequency / 440.0;
             
-            count++;
-            if (count % 10 == 0)
+            _count++;
+            var x = 100;
+            if (_count % x == 0)
             {
-                Debug.Print(flowRate.ToString("F"));
+                
+                Debug.Print((_flowRate/x).ToString("F"));
+
+                _flowRate = 0;
             }
 
             _lastPulseTime = time.Ticks;
