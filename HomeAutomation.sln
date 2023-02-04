@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportBuilder", "ReportBuil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExperimentalBoard", "ExperimentalBoard\ExperimentalBoard.csproj", "{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "I2CLcd2004", "I2CLcd2004\I2CLcd2004.csproj", "{CDB641DA-D870-47A4-9B43-D5A9E3E1A60A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{CDB641DA-D870-47A4-9B43-D5A9E3E1A60A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDB641DA-D870-47A4-9B43-D5A9E3E1A60A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDB641DA-D870-47A4-9B43-D5A9E3E1A60A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDB641DA-D870-47A4-9B43-D5A9E3E1A60A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
