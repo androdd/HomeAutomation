@@ -14,6 +14,10 @@ namespace ExperimentalBoard
         private static byte _backLight;
         private static byte _lcdFunction;
         private static byte _displayControl;
+        private static byte _currentRow;
+        private static byte _currentCol;
+
+        #region Control Constants
 
         // commands
         private const byte LCD_CLEARDISPLAY = 0x01;
@@ -61,6 +65,8 @@ namespace ExperimentalBoard
         private const byte Rw = 2; // 0000 0010 Read/Write bit 
         private const byte Rs = 1; // 0000 0001 Register select bit
 
+        #endregion
+
         public static void Main()
         {
             using (var led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, false))
@@ -101,10 +107,9 @@ namespace ExperimentalBoard
 
             SetCursor(0, 0);
 
-            for (byte i = 32; i < 0xFF; i++)
-            {
-                Send(i, Rs);    
-            }
+            CursorOn();
+
+            
         }
 
         private static void Test()
@@ -190,12 +195,46 @@ namespace ExperimentalBoard
 
             Home();
         }
-
+        
         private static void Write(string text)
         {
             for (int i = 0; i < text.Length; i++)
             {
-                Send((byte)text[i], Rs);
+                var b = (byte)text[i];
+                WriteChar(b);
+            }
+        }
+
+        private static void WriteChar(char @char)
+        {
+            WriteChar((byte)@char);
+        }
+
+        private static void WriteChar(byte code)
+        {
+            Send(code, Rs);
+            if (_currentCol == 19)
+            {
+                _currentCol = 0;
+                switch (_currentRow)
+                {
+                    case 0:
+                        _currentRow = 2;
+                        break;
+                    case 1:
+                        _currentRow = 3;
+                        break;
+                    case 2:
+                        _currentRow = 1;
+                        break;
+                    case 3:
+                        _currentRow = 0;
+                        break;
+                }
+            }
+            else
+            {
+                _currentCol++;
             }
         }
 
@@ -243,11 +282,21 @@ namespace ExperimentalBoard
         private static void SetCursor(byte col, byte row)
         {
             int[] rowOffsets = { 0x00, 0x40, 0x14, 0x54 };
+            
             if (row > 4)
             {
                 row = 3;
             }
+
+            if (col> 20)
+            {
+                col = 20;
+            }
+
             Command(LCD_SETDDRAMADDR | (col + rowOffsets[row]));
+
+            _currentRow = row;
+            _currentCol = col;
         }
 
         private static void CursorOff()
