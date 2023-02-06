@@ -1,5 +1,6 @@
 namespace ExperimentalBoard
 {
+    using System;
     using System.Threading;
 
     using GHIElectronics.NETMF.FEZ;
@@ -39,15 +40,34 @@ namespace ExperimentalBoard
             //    }
             //}
 
+            
             _lcd2004 = new Lcd2004(0x27);
-
+            
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
-            _lcd2004.SetCursor(0, 0);
+            var timeTimer = new Timer(state =>
+                {
+                    try
+                    {
+                        var time = DateTime.Now.ToString("T"); // 8 bytes
+                        _lcd2004.WriteAndReturnCursor(12, 0, time);
+                        Debug.Print(time);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Print(e.Message);
+                    }
+                },
+                null,
+                0,
+                1000);
 
-            _lcd2004.WriteLine(1, "Very long text with a lot a bla bla bla");
-            _lcd2004.WriteLine(2, "Another extremely long bla bla bla text");
+            _interruptPort = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt., false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
+
+            Thread.Sleep(Timeout.Infinite);
+
+            timeTimer.Dispose();
         }
 
         private static void Test()

@@ -1,5 +1,6 @@
 namespace I2CLcd2004
 {
+    using System.Runtime.CompilerServices;
     using System.Threading;
 
     using Microsoft.SPOT.Hardware;
@@ -59,8 +60,19 @@ namespace I2CLcd2004
             Home();
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void WriteAndReturnCursor(byte col, byte row, string text)
+        {
+            byte oldCol = _currentCol;
+            byte oldRow = _currentRow;
+
+            SetCursor(col, row);
+            Write(text);
+            SetCursor(oldCol, oldRow);
+        }
 
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void WriteLine(byte row, string text)
         {
             SetCursor(0, row);
@@ -72,6 +84,7 @@ namespace I2CLcd2004
             Write(text);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Write(string text)
         {
             for (int i = 0; i < text.Length; i++)
@@ -80,11 +93,13 @@ namespace I2CLcd2004
             }
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void WriteChar(char @char)
         {
             WriteChar((byte)@char);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void WriteChar(byte code)
         {
             Send(code, CB.Rs);
@@ -112,6 +127,27 @@ namespace I2CLcd2004
             {
                 _currentCol++;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void SetCursor(byte col, byte row)
+        {
+            int[] rowOffsets = { 0x00, 0x40, 0x14, 0x54 };
+
+            if (row > 4)
+            {
+                row = 3;
+            }
+
+            if (col > 20)
+            {
+                col = 20;
+            }
+
+            Command(CB.LCD_SETDDRAMADDR | (col + rowOffsets[row]));
+
+            _currentRow = row;
+            _currentCol = col;
         }
 
         public void DisplayOff()
@@ -151,26 +187,6 @@ namespace I2CLcd2004
         {
             Command(CB.LCD_RETURNHOME);    // set cursor position to zero
             Thread.Sleep(2);            // this command takes a long time!
-        }
-
-        public void SetCursor(byte col, byte row)
-        {
-            int[] rowOffsets = { 0x00, 0x40, 0x14, 0x54 };
-
-            if (row > 4)
-            {
-                row = 3;
-            }
-
-            if (col > 20)
-            {
-                col = 20;
-            }
-
-            Command(CB.LCD_SETDDRAMADDR | (col + rowOffsets[row]));
-
-            _currentRow = row;
-            _currentCol = col;
         }
 
         public void CursorOff()
