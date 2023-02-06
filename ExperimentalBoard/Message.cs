@@ -160,6 +160,8 @@ namespace HomeAutomation.Models
             }
         }
 
+        public DateTime Time { get; set; }
+
         public Message()
         {
             bits = new byte[16];

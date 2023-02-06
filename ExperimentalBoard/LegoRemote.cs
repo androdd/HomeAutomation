@@ -8,6 +8,7 @@ namespace HomeAutomation.Hardware
 
     using HomeAutomation.Models;
 
+    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class LegoRemote
@@ -15,6 +16,7 @@ namespace HomeAutomation.Hardware
         private readonly FEZ_Pin.Interrupt _portId;
 
         private long _lastPulseTime;
+        private long _lastValidMessage;
         private int _messageIndex = 16;
         private Message _message = new Message();
 
@@ -51,13 +53,21 @@ namespace HomeAutomation.Hardware
                 Thread.Sleep(100);
                 if (_mQ.Count == 0)
                     continue;
-
+                
                 Message msg = (Message)_mQ.Dequeue();
                 if (!msg.IsValid)
                     continue;
-
+                
                 if (OnLegoButtonPress == null)
                     continue;
+
+                var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
+                if (elapsedMs < 150)
+                {
+                    continue;
+                }
+
+                _lastValidMessage = msg.Time.Ticks;
 
                 if (msg.Mode == Mode.ComboDirect &&
                     (msg.CommandA == Command.ComboDirectForward ||
@@ -91,7 +101,10 @@ namespace HomeAutomation.Hardware
                 _message[_messageIndex] = bit;
 
                 if (_messageIndex == 15)
+                {
+                    _message.Time = time;
                     _mQ.Enqueue(_message);
+                }
 
                 _messageIndex++;
             }
