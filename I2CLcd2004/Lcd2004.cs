@@ -150,6 +150,7 @@ namespace I2CLcd2004
             _currentCol = col;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void DisplayOff()
         {
             unchecked
@@ -159,36 +160,42 @@ namespace I2CLcd2004
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void DisplayOn()
         {
             _displayControl |= CB.LCD_DISPLAYON;
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void BackLightOff()
         {
             _backLight = CB.LCD_NOBACKLIGHT;
             SendI2C(0);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void BackLightOn()
         {
             _backLight = CB.LCD_BACKLIGHT;
             SendI2C(0);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Clear()
         {
             Command(CB.LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
             Thread.Sleep(2);            // this command takes a long time!
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Home()
         {
             Command(CB.LCD_RETURNHOME);    // set cursor position to zero
             Thread.Sleep(2);            // this command takes a long time!
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void CursorOff()
         {
             unchecked
@@ -198,12 +205,14 @@ namespace I2CLcd2004
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void CursorOn()
         {
             _displayControl |= CB.LCD_CURSORON;
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void BlinkOff()
         {
             unchecked
@@ -213,17 +222,20 @@ namespace I2CLcd2004
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void BlinkOn()
         {
             _displayControl |= CB.LCD_BLINKON;
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void ScrollDisplayLeft()
         {
             Command(CB.LCD_CURSORSHIFT | CB.LCD_DISPLAYMOVE | CB.LCD_MOVELEFT);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void ScrollDisplayRight()
         {
             Command(CB.LCD_CURSORSHIFT | CB.LCD_DISPLAYMOVE | CB.LCD_MOVERIGHT);
