@@ -34,7 +34,10 @@
       <SubType>
       </SubType>
     </Compile>
-    <Compile Include="Message.cs" />
+    <Compile Include="Message.cs">
+      <SubType>
+      </SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>

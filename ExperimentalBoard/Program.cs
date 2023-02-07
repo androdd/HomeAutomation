@@ -5,6 +5,9 @@ namespace ExperimentalBoard
 
     using GHIElectronics.NETMF.FEZ;
 
+    using HomeAutomation.Hardware;
+    using HomeAutomation.Models;
+
     using I2CLcd2004;
 
     using Microsoft.SPOT;
@@ -13,6 +16,8 @@ namespace ExperimentalBoard
     public class Program
     {
         private static Lcd2004 _lcd2004;
+        private static TextDrum _textDrum;
+        private static TextDrum _textDrum2;
 
         public static void Main()
         {
@@ -46,13 +51,19 @@ namespace ExperimentalBoard
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
+            _textDrum = new TextDrum(_lcd2004, 3, 1);
+            _textDrum2 = new TextDrum(_lcd2004, 17, 2);
+
+            int c = 0;
+
             var timeTimer = new Timer(state =>
                 {
                     try
                     {
                         var time = DateTime.Now.ToString("T"); // 8 bytes
                         _lcd2004.WriteAndReturnCursor(12, 0, time);
-                        Debug.Print(time);
+                        _textDrum2.Write(c + "s elapsed");
+                        c++;
                     }
                     catch (Exception e)
                     {
@@ -63,11 +74,26 @@ namespace ExperimentalBoard
                 0,
                 1000);
 
-            _interruptPort = new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt., false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
+            LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di0);
+            legoRemote.Init();
+
+            legoRemote.OnLegoButtonPress += LegoRemoteOnOnLegoButtonPress;
+
 
             Thread.Sleep(Timeout.Infinite);
 
             timeTimer.Dispose();
+        }
+
+        private static void LegoRemoteOnOnLegoButtonPress(Message msg)
+        {
+            if (msg.Channel == 4 && msg.CommandA == Command.ComboDirectBackward)
+            {
+                _lcd2004.Clear();
+                return;
+            }
+
+            _textDrum.Write((DateTime.Now.Ticks / 10000) % 10000000 + "-A:" + msg.CommandA + "B:" + msg.CommandB);
         }
 
         private static void Test()

@@ -63,9 +63,7 @@ namespace HomeAutomation.Hardware
 
                 var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
                 if (elapsedMs < 150)
-                {
                     continue;
-                }
 
                 _lastValidMessage = msg.Time.Ticks;
 
