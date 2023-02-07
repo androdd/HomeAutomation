@@ -1,7 +1,5 @@
-namespace I2CLcd2004
+namespace AdSoft.Hardware.UI
 {
-    using System.Runtime.CompilerServices;
-
     public class TextDrum
     {
         private readonly Lcd2004 _lcd2004;

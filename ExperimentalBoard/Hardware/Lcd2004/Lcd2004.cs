@@ -1,11 +1,11 @@
-namespace I2CLcd2004
+namespace AdSoft.Hardware
 {
     using System.Runtime.CompilerServices;
     using System.Threading;
 
     using Microsoft.SPOT.Hardware;
 
-    using CB = ControlBytes;
+    using CB = AdSoft.Hardware.ControlBytes;
 
     public class Lcd2004
     {

@@ -1,4 +1,4 @@
-namespace I2CLcd2004
+namespace AdSoft.Hardware
 {
     public static class ControlBytes
     {

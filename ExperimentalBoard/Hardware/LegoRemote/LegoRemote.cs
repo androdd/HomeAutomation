@@ -1,4 +1,4 @@
-namespace HomeAutomation.Hardware
+namespace AdSoft.Hardware
 {
     using System;
     using System.Collections;
@@ -6,9 +6,6 @@ namespace HomeAutomation.Hardware
 
     using GHIElectronics.NETMF.FEZ;
 
-    using HomeAutomation.Models;
-
-    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class LegoRemote

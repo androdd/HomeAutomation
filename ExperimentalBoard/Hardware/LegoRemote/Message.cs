@@ -1,4 +1,4 @@
-namespace HomeAutomation.Models
+namespace AdSoft.Hardware
 {
     using System;
 

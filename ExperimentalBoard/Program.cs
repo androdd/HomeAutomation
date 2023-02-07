@@ -3,12 +3,10 @@ namespace ExperimentalBoard
     using System;
     using System.Threading;
 
+    using AdSoft.Hardware;
+    using AdSoft.Hardware.UI;
+
     using GHIElectronics.NETMF.FEZ;
-
-    using HomeAutomation.Hardware;
-    using HomeAutomation.Models;
-
-    using I2CLcd2004;
 
     using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
@@ -16,8 +14,6 @@ namespace ExperimentalBoard
     public class Program
     {
         private static Lcd2004 _lcd2004;
-        private static TextDrum _textDrum;
-        private static TextDrum _textDrum2;
 
         public static void Main()
         {
@@ -45,16 +41,11 @@ namespace ExperimentalBoard
             //    }
             //}
 
-            
+
             _lcd2004 = new Lcd2004(0x27);
-            
+
             _lcd2004.Init();
             _lcd2004.BackLightOn();
-
-            _textDrum = new TextDrum(_lcd2004, 3, 1);
-            _textDrum2 = new TextDrum(_lcd2004, 17, 2);
-
-            int c = 0;
 
             var timeTimer = new Timer(state =>
                 {
@@ -62,8 +53,6 @@ namespace ExperimentalBoard
                     {
                         var time = DateTime.Now.ToString("T"); // 8 bytes
                         _lcd2004.WriteAndReturnCursor(12, 0, time);
-                        _textDrum2.Write(c + "s elapsed");
-                        c++;
                     }
                     catch (Exception e)
                     {
@@ -76,80 +65,74 @@ namespace ExperimentalBoard
 
             LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di0);
             legoRemote.Init();
+            LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
+            keyboard.Init();
 
-            legoRemote.OnLegoButtonPress += LegoRemoteOnOnLegoButtonPress;
+            Menu menu = new Menu(_lcd2004, keyboard);
+            menu.Create(new[] { "New", "Open", "Save" });
 
+            menu.Show();
+            menu.Select(1);
 
             Thread.Sleep(Timeout.Infinite);
 
             timeTimer.Dispose();
         }
 
-        private static void LegoRemoteOnOnLegoButtonPress(Message msg)
-        {
-            if (msg.Channel == 4 && msg.CommandA == Command.ComboDirectBackward)
-            {
-                _lcd2004.Clear();
-                return;
-            }
+        //private static void Test()
+        //{
+        //    var interval = 2 * 1000;
 
-            _textDrum.Write((DateTime.Now.Ticks / 10000) % 10000000 + "-A:" + msg.CommandA + "B:" + msg.CommandB);
-        }
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("DisplayOff");
+        //    _lcd2004.DisplayOff();
+        //    Thread.Sleep(interval);
 
-        private static void Test()
-        {
-            var interval = 2 * 1000;
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("DisplayOn");
+        //    _lcd2004.DisplayOn();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("DisplayOff");
-            _lcd2004.DisplayOff();
-            Thread.Sleep(interval);
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("BackLightOff");
+        //    _lcd2004.BackLightOff();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("DisplayOn");
-            _lcd2004.DisplayOn();
-            Thread.Sleep(interval);
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("BackLightOn");
+        //    _lcd2004.BackLightOn();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("BackLightOff");
-            _lcd2004.BackLightOff();
-            Thread.Sleep(interval);
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("Clear");
+        //    _lcd2004.Clear();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("BackLightOn");
-            _lcd2004.BackLightOn();
-            Thread.Sleep(interval);
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("Home");
+        //    _lcd2004.Home();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("Clear");
-            _lcd2004.Clear();
-            Thread.Sleep(interval);
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("CursorOn");
+        //    _lcd2004.CursorOn();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("Home");
-            _lcd2004.Home();
-            Thread.Sleep(interval);
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("CursorOff");
+        //    _lcd2004.CursorOff();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("CursorOn");
-            _lcd2004.CursorOn();
-            Thread.Sleep(interval);
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("BlinkOn");
+        //    _lcd2004.BlinkOn();
+        //    Thread.Sleep(interval);
 
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("CursorOff");
-            _lcd2004.CursorOff();
-            Thread.Sleep(interval);
-
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("BlinkOn");
-            _lcd2004.BlinkOn();
-            Thread.Sleep(interval);
-
-            _lcd2004.SetCursor(0, 0);
-            _lcd2004.Write("BlinkOff");
-            _lcd2004.BlinkOff();
-            Thread.Sleep(interval);
-        }
+        //    _lcd2004.SetCursor(0, 0);
+        //    _lcd2004.Write("BlinkOff");
+        //    _lcd2004.BlinkOff();
+        //    Thread.Sleep(interval);
+        //}
 
         private static void DebugWrite(byte data)
         {
