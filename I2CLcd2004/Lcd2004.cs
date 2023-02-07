@@ -71,7 +71,6 @@ namespace I2CLcd2004
             SetCursor(oldCol, oldRow);
         }
 
-
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void WriteLine(byte row, string text)
         {
@@ -87,6 +86,16 @@ namespace I2CLcd2004
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Write(string text)
         {
+            for (int i = 0; i < text.Length; i++)
+            {
+                WriteChar(text[i]);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void Write(byte col, byte row, string text)
+        {
+            SetCursor(col, row);
             for (int i = 0; i < text.Length; i++)
             {
                 WriteChar(text[i]);
