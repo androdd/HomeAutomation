@@ -69,10 +69,21 @@ namespace ExperimentalBoard
             keyboard.Init();
 
             Menu menu = new Menu(_lcd2004, keyboard);
-            menu.Create(new[] { "New", "Open", "Save" });
+            menu.Create(new[]
+            {
+                new MenuItem(1, "New"),
+                new MenuItem(2, "Open"),
+                new MenuItem(3, "Save"),
+                new MenuItem(4, "Save As"),
+                new MenuItem(5, "Print"),
+                new MenuItem(6, "Exit"),
+                new MenuItem(7, "Options"),
+                new MenuItem(8, "Add"),
+                new MenuItem(9, "Cut"),
+                new MenuItem(10, "Chop")
+            });
 
             menu.Show();
-            menu.Select(1);
 
             Thread.Sleep(Timeout.Infinite);
 

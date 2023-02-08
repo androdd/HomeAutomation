@@ -18,6 +18,16 @@ namespace AdSoft.Hardware
         private byte _currentCol;
         private readonly ushort _address;
 
+        public byte Rows
+        {
+            get { return 4; }
+        }
+
+        public byte Cols
+        {
+            get { return 20; }
+        }
+
         public Lcd2004(ushort address)
         {
             _backLight = CB.LCD_NOBACKLIGHT;
@@ -195,6 +205,24 @@ namespace AdSoft.Hardware
         {
             Command(CB.LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
             Thread.Sleep(2);            // this command takes a long time!
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void Clear(byte fromCol, byte fromRow, byte toCol, byte toRow)
+        {
+            if (fromCol > toCol || fromRow > toRow || toCol > 19 || toRow > 3)
+            {
+                return;
+            }
+
+            for (byte r = fromRow; r <= toRow - fromRow; r++)
+            {
+                SetCursor(fromCol, r);
+                for (byte c = fromCol; c <= toCol - fromCol; c++)
+                {
+                    WriteChar(' ');
+                }   
+            }
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
