@@ -16,6 +16,7 @@ namespace AdSoft.Hardware
         private byte _displayControl;
         private byte _currentRow;
         private byte _currentCol;
+        private bool _isCursorVisible;
         private readonly ushort _address;
 
         public byte Rows
@@ -33,6 +34,8 @@ namespace AdSoft.Hardware
             _backLight = CB.LCD_NOBACKLIGHT;
             _lcdFunction = CB.LCD_4BITMODE | CB.LCD_2LINE | CB.LCD_5x8DOTS;
             _displayControl = CB.LCD_DISPLAYOFF | CB.LCD_CURSOROFF | CB.LCD_BLINKOFF;
+
+            _isCursorVisible = false;
 
             _address = address;
         }
@@ -75,10 +78,21 @@ namespace AdSoft.Hardware
         {
             byte oldCol = _currentCol;
             byte oldRow = _currentRow;
+            bool isCursorVisible = _isCursorVisible;
+
+            if (isCursorVisible)
+            {
+                CursorOff();
+            }
 
             SetCursor(col, row);
             Write(text);
             SetCursor(oldCol, oldRow);
+
+            if (isCursorVisible)
+            {
+                CursorOn();
+            }
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -119,6 +133,16 @@ namespace AdSoft.Hardware
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
+        public void WriteCharAtCursor(byte code)
+        {
+            byte col = _currentCol;
+            byte row = _currentRow;
+
+            WriteChar(code);
+            SetCursor(col, row);
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void WriteChar(byte code)
         {
             Send(code, CB.Rs);
@@ -148,6 +172,21 @@ namespace AdSoft.Hardware
             }
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void SetCursor(byte col, byte row, bool showCursor)
+        {
+            SetCursor(col, row);
+
+            if (_isCursorVisible && !showCursor)
+            {
+                CursorOff();
+            }
+            else if (!_isCursorVisible && showCursor)
+            {
+                CursorOn();
+            }
+        }
+        
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void SetCursor(byte col, byte row)
         {
@@ -240,6 +279,7 @@ namespace AdSoft.Hardware
                 _displayControl &= (byte)~CB.LCD_CURSORON;
             }
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
+            _isCursorVisible = false;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -247,6 +287,7 @@ namespace AdSoft.Hardware
         {
             _displayControl |= CB.LCD_CURSORON;
             Command(CB.LCD_DISPLAYCONTROL | _displayControl);
+            _isCursorVisible = true;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]

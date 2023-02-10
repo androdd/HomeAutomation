@@ -51,8 +51,8 @@ namespace ExperimentalBoard
                 {
                     try
                     {
-                        var time = DateTime.Now.ToString("T"); // 8 bytes
-                        _lcd2004.WriteAndReturnCursor(12, 0, time);
+                        var time = DateTime.Now.ToString("HH:mm"); // 5 bytes
+                        _lcd2004.WriteAndReturnCursor(15, 0, time);
                     }
                     catch (Exception e)
                     {
@@ -61,29 +61,18 @@ namespace ExperimentalBoard
                 },
                 null,
                 0,
-                1000);
+                30 * 1000);
 
             LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di0);
             legoRemote.Init();
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();
 
-            Menu menu = new Menu(_lcd2004, keyboard);
-            menu.Create(new[]
-            {
-                new MenuItem(1, "New"),
-                new MenuItem(2, "Open"),
-                new MenuItem(3, "Save"),
-                new MenuItem(4, "Save As"),
-                new MenuItem(5, "Print"),
-                new MenuItem(6, "Exit"),
-                new MenuItem(7, "Options"),
-                new MenuItem(8, "Add"),
-                new MenuItem(9, "Cut"),
-                new MenuItem(10, "Chop")
-            });
-
-            menu.Show();
+            NumericBox numericBox = new NumericBox(_lcd2004, keyboard);
+            numericBox.Setup("Test:", -10, 1000);
+            numericBox.Value = 10;
+            numericBox.Show(1, 1);
+            numericBox.Focus();
 
             Thread.Sleep(Timeout.Infinite);
 
