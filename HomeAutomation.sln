@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		Documents\dst.cfg = Documents\dst.cfg
 		Documents\dstEnd.cfg = Documents\dstEnd.cfg
 		Documents\dstStart.cfg = Documents\dstStart.cfg
+		Documents\Lego Small Remote Label.lbx = Documents\Lego Small Remote Label.lbx
 		Documents\Schedules.xlsx = Documents\Schedules.xlsx
 		Documents\SignalPorts.pcb = Documents\SignalPorts.pcb
 		Documents\Sun01.txt = Documents\Sun01.txt
