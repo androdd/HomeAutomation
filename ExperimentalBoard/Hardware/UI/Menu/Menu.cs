@@ -5,18 +5,18 @@ namespace AdSoft.Hardware.UI
         private readonly Lcd2004 _screen;
         private readonly IKeyboard _keyboard;
         private MenuItem[] _menuItems;
-        private byte _lastSelectedRow;
-        private byte _itemsOnScreen;
-        private byte _firstItemIndex;
-        private byte _width;
+        private int _lastSelectedRow;
+        private int _itemsOnScreen;
+        private int _firstItemIndex;
+        private int _width;
         private bool _isVisible;
 
-        private byte MenuItemsCount
+        private int MenuItemsCount
         {
-            get { return (byte)_menuItems.Length; }
+            get { return _menuItems.Length; }
         }
 
-        private byte CurrentItemKey
+        private int CurrentItemKey
         {
             get { return _menuItems[_firstItemIndex + _lastSelectedRow].Key; }
         }
@@ -31,7 +31,7 @@ namespace AdSoft.Hardware.UI
             _screen = screen;
             _keyboard = keyboard;
 
-            _lastSelectedRow = byte.MaxValue;
+            _lastSelectedRow = int.MaxValue;
         }
 
         public void Create(MenuItem[] menuItems)
@@ -47,7 +47,7 @@ namespace AdSoft.Hardware.UI
             {
                 if (item.Title.Length > _width)
                 {
-                    _width = (byte)item.Title.Length;
+                    _width = item.Title.Length;
                 }
 
                 if (_width >= _screen.Cols - 1)
@@ -83,16 +83,16 @@ namespace AdSoft.Hardware.UI
                 return;
             }
 
-            _screen.Clear(0, 0, (byte)(_width + 1), (byte)(_screen.Rows - 1));
+            _screen.Clear(0, 0, _width + 1, _screen.Rows - 1);
 
             _keyboard.OnButtonPress -= KeyboardOnOnButtonPress;
 
             _isVisible = false;
         }
 
-        public void Select(byte row)
+        public void Select(int row)
         {
-            if (_lastSelectedRow != byte.MaxValue)
+            if (_lastSelectedRow != int.MaxValue)
             {
                 _screen.Write(0, _lastSelectedRow, " ");
             }
@@ -114,11 +114,11 @@ namespace AdSoft.Hardware.UI
                 _itemsOnScreen = _screen.Rows;
             }
 
-            _screen.Clear(0, 0, (byte)(_width + 1), (byte)(_screen.Rows - 1));
+            _screen.Clear(0, 0, _width + 1, _screen.Rows - 1);
 
-            for (byte i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
+            for (int i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
             {
-                _screen.Write(0, (byte)(i - _firstItemIndex), " " + _menuItems[i].Title);
+                _screen.Write(0, i - _firstItemIndex, " " + _menuItems[i].Title);
             }
         }
 
@@ -129,7 +129,7 @@ namespace AdSoft.Hardware.UI
                 case Key.UpArrow:
                     if (_lastSelectedRow != 0)
                     {
-                        Select((byte)(_lastSelectedRow - 1));
+                        Select(_lastSelectedRow - 1);
                         break;
                     }
 
@@ -141,13 +141,13 @@ namespace AdSoft.Hardware.UI
                         _itemsOnScreen = _screen.Rows;
 
                         ShowNext();
-                        Select((byte)(_screen.Rows - 1));
+                        Select((_screen.Rows - 1));
                     }
                     break;
                 case Key.DownArrow:
                     if (_lastSelectedRow != _itemsOnScreen - 1)
                     {
-                        Select((byte)(_lastSelectedRow + 1));
+                        Select(_lastSelectedRow + 1);
                         break;
                     }
 
@@ -155,8 +155,8 @@ namespace AdSoft.Hardware.UI
                     {
                         // There are more items down
 
-                        _firstItemIndex = (byte)(_firstItemIndex + _itemsOnScreen);
-                        _itemsOnScreen = (byte)(MenuItemsCount - _firstItemIndex);
+                        _firstItemIndex += _itemsOnScreen;
+                        _itemsOnScreen = MenuItemsCount - _firstItemIndex;
 
                         ShowNext();
                         Select(0);

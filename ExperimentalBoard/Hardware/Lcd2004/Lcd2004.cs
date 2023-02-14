@@ -11,20 +11,22 @@ namespace AdSoft.Hardware
     {
         private I2CDevice.Configuration _config;
         private I2CDevice _busI2C;
+
         private byte _backLight;
         private readonly byte _lcdFunction;
         private byte _displayControl;
-        private byte _currentRow;
-        private byte _currentCol;
+
+        private int _currentRow;
+        private int _currentCol;
         private bool _isCursorVisible;
         private readonly ushort _address;
 
-        public byte Rows
+        public int Rows
         {
             get { return 4; }
         }
 
-        public byte Cols
+        public int Cols
         {
             get { return 20; }
         }
@@ -74,10 +76,10 @@ namespace AdSoft.Hardware
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void WriteAndReturnCursor(byte col, byte row, string text)
+        public void WriteAndReturnCursor(int col, int row, string text)
         {
-            byte oldCol = _currentCol;
-            byte oldRow = _currentRow;
+            int oldCol = _currentCol;
+            int oldRow = _currentRow;
             bool isCursorVisible = _isCursorVisible;
 
             if (isCursorVisible)
@@ -96,7 +98,7 @@ namespace AdSoft.Hardware
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void WriteLine(byte row, string text)
+        public void WriteLine(int row, string text)
         {
             SetCursor(0, row);
             if (text.Length > 20)
@@ -117,7 +119,7 @@ namespace AdSoft.Hardware
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Write(byte col, byte row, string text)
+        public void Write(int col, int row, string text)
         {
             SetCursor(col, row);
             for (int i = 0; i < text.Length; i++)
@@ -135,8 +137,8 @@ namespace AdSoft.Hardware
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void WriteCharAtCursor(byte code)
         {
-            byte col = _currentCol;
-            byte row = _currentRow;
+            int col = _currentCol;
+            int row = _currentRow;
 
             WriteChar(code);
             SetCursor(col, row);
@@ -173,7 +175,7 @@ namespace AdSoft.Hardware
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void SetCursor(byte col, byte row, bool showCursor)
+        public void SetCursor(int col, int row, bool showCursor)
         {
             SetCursor(col, row);
 
@@ -188,18 +190,28 @@ namespace AdSoft.Hardware
         }
         
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void SetCursor(byte col, byte row)
+        public void SetCursor(int col, int row)
         {
             int[] rowOffsets = { 0x00, 0x40, 0x14, 0x54 };
 
-            if (row > 4)
+            if (row < 0)
             {
-                row = 3;
+                row = 0;
             }
 
-            if (col > 20)
+            if (row >= Rows)
             {
-                col = 20;
+                row = Rows - 1;
+            }
+
+            if (col < 0)
+            {
+                col = 0;
+            }
+
+            if (col >= Cols)
+            {
+                col = Cols - 1;
             }
 
             Command(CB.LCD_SETDDRAMADDR | (col + rowOffsets[row]));
@@ -247,17 +259,17 @@ namespace AdSoft.Hardware
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Clear(byte fromCol, byte fromRow, byte toCol, byte toRow)
+        public void Clear(int fromCol, int fromRow, int toCol, int toRow)
         {
-            if (fromCol > toCol || fromRow > toRow || toCol > 19 || toRow > 3)
+            if (fromCol > toCol || fromRow > toRow || toCol > Cols - 1 || toRow > Rows - 1 || fromRow < 0 || fromCol < 0)
             {
                 return;
             }
 
-            for (byte r = fromRow; r <= toRow - fromRow; r++)
+            for (int r = fromRow; r <= toRow - fromRow; r++)
             {
                 SetCursor(fromCol, r);
-                for (byte c = fromCol; c <= toCol - fromCol; c++)
+                for (int c = fromCol; c <= toCol - fromCol; c++)
                 {
                     WriteChar(' ');
                 }   
