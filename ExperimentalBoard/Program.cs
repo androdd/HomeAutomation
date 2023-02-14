@@ -70,7 +70,7 @@ namespace ExperimentalBoard
 
             NumericBox numericBox = new NumericBox(_lcd2004, keyboard);
             numericBox.Setup("Test:", -10, 1000);
-            numericBox.Value = 10;
+            numericBox.Value = 100;
             numericBox.Show(1, 1);
             numericBox.Focus();
 

@@ -7,10 +7,12 @@ namespace AdSoft.Hardware.UI
         private readonly Lcd2004 _screen;
         private readonly IKeyboard _keyboard;
 
-        private byte _valueMaxLength;
-        private byte _length;
+        private int _valueMaxLength;
+        private int _length;
+        private int _titleLength;
         private int _minValue;
         private int _maxValue;
+        private bool _allowNegative;
 
         public string Title { get; set; }
 
@@ -21,7 +23,7 @@ namespace AdSoft.Hardware.UI
             {
                 _minValue = value;
                 _valueMaxLength = GetValueMaxLength();
-                _length = (byte)(Title.Length + _valueMaxLength);
+                _length = Title.Length + _valueMaxLength;
             }
         }
 
@@ -32,12 +34,12 @@ namespace AdSoft.Hardware.UI
             {
                 _maxValue = value;
                 _valueMaxLength = GetValueMaxLength();
-                _length = (byte)(Title.Length + _valueMaxLength);
+                _length = Title.Length + _valueMaxLength;
             }
         }
 
-        public byte Col { get; set; }
-        public byte Row { get; set; }
+        public int Col { get; set; }
+        public int Row { get; set; }
         public int Value { get; set; }
 
         public NumericBox(Lcd2004 screen, IKeyboard keyboard)
@@ -52,10 +54,12 @@ namespace AdSoft.Hardware.UI
             MinValue = minValue;
             MaxValue = maxValue;
             _valueMaxLength = GetValueMaxLength();
-            _length = (byte)(Title.Length + _valueMaxLength);
+            _titleLength = Title.Length;
+            _length = _titleLength + _valueMaxLength;
+            _allowNegative = minValue < 0;
         }
 
-        public void Show(byte col, byte row)
+        public void Show(int col, int row)
         {
             string placeHolder = Value.ToString();
             int valueLength = placeHolder.Length;
@@ -84,49 +88,85 @@ namespace AdSoft.Hardware.UI
 
         public void Focus()
         {
-            _screen.SetCursor((byte)(Col + _length - 1), Row, true);
+            _screen.SetCursor(Col + _length - 1, Row, true);
 
             _keyboard.OnButtonPress += KeyboardOnOnButtonPress;
         }
 
-        private byte _digitIndex = 0;
+        private int _digitIndex = 0;
         
         private void KeyboardOnOnButtonPress(Key key)
         {
             var pow = Math.Pow(10.0, _digitIndex);
-            byte digit = (byte)(Value / pow % 10);
-            byte cursorPos = (byte)(Col + _length - _digitIndex - 1);
-            byte digitCount = GetDigitCount(Value);
+            int sign = Value < 0 ? -1 : 1;
+            int digit = (int)(sign * Value / pow % 10);
+            int cursorPos = Col + _length - _digitIndex - 1;
+            int digitCount = GetDigitCount(Value);
+
+            int newDigit;
+            int newValue = Value;
 
             switch (key)
             {
                 case Key.UpArrow:
-                    if (digit == 9)
+                    if (cursorPos == Col + _titleLength && _allowNegative)
                     {
-                        digit = 0;
-                        Value -= (int)(9 * pow);
+                        if (Value < 0)
+                        {
+                            newDigit = -16; // " "
+                        }
+                        else
+                        {
+                            newDigit = -3; // "-"
+                        }
+
+                        newValue *= -1;
                     }
                     else
                     {
-                        digit = (byte)((digit + 1) % 10);
-                        Value += (int)pow;
+                        if (digit == 9)
+                        {
+                            newDigit = 0;
+                            newValue -= sign * (int)(9 * pow);
+                        }
+                        else
+                        {
+                            newDigit = (digit + 1) % 10;
+                            newValue += sign * (int)pow;
+                        }
                     }
 
-                    _screen.WriteCharAtCursor((byte)(48 + digit));
+                    SetAndWriteNewValue(newValue, newDigit);
                     break;
                 case Key.DownArrow:
-                    if (digit == 0)
+                    if (cursorPos == Col + _titleLength && _allowNegative)
                     {
-                        digit = 9;
-                        Value += (int)(9 * pow);
+                        if (Value < 0)
+                        {
+                            newDigit = -16; // " "
+                        }
+                        else
+                        {
+                            newDigit = -3; // "-"
+                        }
+
+                        newValue *= -1;
                     }
                     else
                     {
-                        digit = (byte)((digit - 1) % 10);
-                        Value -= (int)pow;
+                        if (digit == 0)
+                        {
+                            newDigit = 9;
+                            newValue += sign * (int)(9 * pow);
+                        }
+                        else
+                        {
+                            newDigit = (digit - 1) % 10;
+                            newValue -= sign * (int)pow;
+                        }    
                     }
 
-                    _screen.WriteCharAtCursor((byte)(48 + digit));
+                    SetAndWriteNewValue(newValue, newDigit);
                     break;
                 case Key.LeftArrow:
                     if (_digitIndex + 1 > digitCount)
@@ -161,9 +201,60 @@ namespace AdSoft.Hardware.UI
             _keyboard.OnButtonPress -= KeyboardOnOnButtonPress;
         }
 
-        private byte GetValueMaxLength()
+        private void SetAndWriteNewValue(int newValue, int newDigit)
         {
-            byte result = (byte)Math.Max(MinValue.ToString().Length, MaxValue.ToString().Length);
+            if (MinValue <= newValue && newValue <= MaxValue)
+            {
+                Value = newValue;
+                _screen.WriteCharAtCursor((byte)(48 + newDigit));
+            }
+            else
+            {
+                if (newValue > MaxValue)
+                {
+                    Value = MaxValue;
+                    WriteValueAndReturnCursor();
+                }
+                else if (newValue < MinValue)
+                {
+                    Value = MinValue;
+                    WriteValueAndReturnCursor();
+                }
+            }
+        }
+
+        private void WriteValueAndReturnCursor()
+        {
+            int newValue;
+            string maxValue = "";
+
+            if (Value < 0)
+            {
+                maxValue += "-";
+                newValue = -1 * Value;
+            }
+            else
+            {
+                maxValue += " ";
+                newValue = Value;
+            }
+
+            string positiveString = newValue.ToString();
+            int spaces = _valueMaxLength - positiveString.Length - 1;
+
+            for (int i = 0; i < spaces; i++)
+            {
+                maxValue += " ";
+            }
+
+            maxValue += positiveString;
+
+            _screen.WriteAndReturnCursor(Col + _titleLength, Row, maxValue);
+        }
+
+        private int GetValueMaxLength()
+        {
+            int result = Math.Max(MinValue.ToString().Length, MaxValue.ToString().Length);
 
             if (MinValue < 0)
             {
@@ -173,9 +264,9 @@ namespace AdSoft.Hardware.UI
             return result;
         }
 
-        static byte GetDigitCount(int n)
+        static int GetDigitCount(int n)
         {
-            byte count = 0;
+            int count = 0;
             while (n != 0)
             {
                 n = n / 10;
