@@ -59,7 +59,7 @@ namespace AdSoft.Hardware
                     continue;
 
                 var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
-                if (elapsedMs < 150)
+                if (elapsedMs < 300)
                     continue;
 
                 _lastValidMessage = msg.Time.Ticks;

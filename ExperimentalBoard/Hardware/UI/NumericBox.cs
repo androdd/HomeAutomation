@@ -7,15 +7,12 @@ namespace AdSoft.Hardware.UI
         private readonly Lcd2004 _screen;
         private readonly IKeyboard _keyboard;
 
+        private int _digitIndex;
+
         private int _valueMaxLength;
-        private int _length;
-        private int _titleLength;
         private int _minValue;
         private int _maxValue;
-        private bool _allowNegative;
-
-        public string Title { get; set; }
-
+        
         public int MinValue
         {
             get { return _minValue; }
@@ -23,7 +20,6 @@ namespace AdSoft.Hardware.UI
             {
                 _minValue = value;
                 _valueMaxLength = GetValueMaxLength();
-                _length = Title.Length + _valueMaxLength;
             }
         }
 
@@ -34,7 +30,6 @@ namespace AdSoft.Hardware.UI
             {
                 _maxValue = value;
                 _valueMaxLength = GetValueMaxLength();
-                _length = Title.Length + _valueMaxLength;
             }
         }
 
@@ -48,15 +43,16 @@ namespace AdSoft.Hardware.UI
             _keyboard = keyboard;
         }
 
-        public void Setup(string title, int minValue, int maxValue)
+        public void Setup(int minValue, int maxValue)
         {
-            Title = title;
+            if (minValue >= maxValue || minValue < 0)
+            {
+                throw new ArgumentOutOfRangeException("minValue", "should be greater than zero and less than maxValue");
+            }
+
             MinValue = minValue;
             MaxValue = maxValue;
             _valueMaxLength = GetValueMaxLength();
-            _titleLength = Title.Length;
-            _length = _titleLength + _valueMaxLength;
-            _allowNegative = minValue < 0;
         }
 
         public void Show(int col, int row)
@@ -69,7 +65,7 @@ namespace AdSoft.Hardware.UI
                 placeHolder = " " + placeHolder;
             }
 
-            _screen.Write(col, row, Title + placeHolder);
+            _screen.Write(col, row, placeHolder);
 
             Col = col;
             Row = row;
@@ -78,7 +74,7 @@ namespace AdSoft.Hardware.UI
         public void Hide()
         {
             string placeHolder = "";
-            for (int i = 0; i < _length; i++)
+            for (int i = 0; i < _valueMaxLength; i++)
             {
                 placeHolder += " ";
             }
@@ -88,19 +84,16 @@ namespace AdSoft.Hardware.UI
 
         public void Focus()
         {
-            _screen.SetCursor(Col + _length - 1, Row, true);
+            ResetCursor();
 
             _keyboard.OnButtonPress += KeyboardOnOnButtonPress;
         }
-
-        private int _digitIndex = 0;
         
         private void KeyboardOnOnButtonPress(Key key)
         {
             var pow = Math.Pow(10.0, _digitIndex);
-            int sign = Value < 0 ? -1 : 1;
-            int digit = (int)(sign * Value / pow % 10);
-            int cursorPos = Col + _length - _digitIndex - 1;
+            int digit = (int)(Value / pow % 10);
+            int cursorPos = Col + _valueMaxLength - _digitIndex - 1;
             int digitCount = GetDigitCount(Value);
 
             int newDigit;
@@ -109,67 +102,35 @@ namespace AdSoft.Hardware.UI
             switch (key)
             {
                 case Key.UpArrow:
-                    if (cursorPos == Col + _titleLength && _allowNegative)
+                    if (digit == 9)
                     {
-                        if (Value < 0)
-                        {
-                            newDigit = -16; // " "
-                        }
-                        else
-                        {
-                            newDigit = -3; // "-"
-                        }
-
-                        newValue *= -1;
+                        newDigit = 0;
+                        newValue -= (int)(9 * pow);
                     }
                     else
                     {
-                        if (digit == 9)
-                        {
-                            newDigit = 0;
-                            newValue -= sign * (int)(9 * pow);
-                        }
-                        else
-                        {
-                            newDigit = (digit + 1) % 10;
-                            newValue += sign * (int)pow;
-                        }
+                        newDigit = (digit + 1) % 10;
+                        newValue += (int)pow;
                     }
 
                     SetAndWriteNewValue(newValue, newDigit);
                     break;
                 case Key.DownArrow:
-                    if (cursorPos == Col + _titleLength && _allowNegative)
+                    if (digit == 0)
                     {
-                        if (Value < 0)
-                        {
-                            newDigit = -16; // " "
-                        }
-                        else
-                        {
-                            newDigit = -3; // "-"
-                        }
-
-                        newValue *= -1;
+                        newDigit = 9;
+                        newValue += (int)(9 * pow);
                     }
                     else
                     {
-                        if (digit == 0)
-                        {
-                            newDigit = 9;
-                            newValue += sign * (int)(9 * pow);
-                        }
-                        else
-                        {
-                            newDigit = (digit - 1) % 10;
-                            newValue -= sign * (int)pow;
-                        }    
+                        newDigit = (digit - 1) % 10;
+                        newValue -= (int)pow;
                     }
 
                     SetAndWriteNewValue(newValue, newDigit);
                     break;
                 case Key.LeftArrow:
-                    if (_digitIndex + 1 > digitCount)
+                    if (_digitIndex + 1 > digitCount || _digitIndex + 1 == _valueMaxLength)
                     {
                         return;
                     }
@@ -213,43 +174,34 @@ namespace AdSoft.Hardware.UI
                 if (newValue > MaxValue)
                 {
                     Value = MaxValue;
-                    WriteValueAndReturnCursor();
+                    WriteValueAndResetCursor();
                 }
                 else if (newValue < MinValue)
                 {
                     Value = MinValue;
-                    WriteValueAndReturnCursor();
+                    WriteValueAndResetCursor();
                 }
             }
         }
 
-        private void WriteValueAndReturnCursor()
+        private void WriteValueAndResetCursor()
         {
-            int newValue;
-            string maxValue = "";
-
-            if (Value < 0)
-            {
-                maxValue += "-";
-                newValue = -1 * Value;
-            }
-            else
-            {
-                maxValue += " ";
-                newValue = Value;
-            }
-
-            string positiveString = newValue.ToString();
-            int spaces = _valueMaxLength - positiveString.Length - 1;
+            string value = Value.ToString();
+            int spaces = _valueMaxLength - value.Length;
 
             for (int i = 0; i < spaces; i++)
             {
-                maxValue += " ";
+                value = " " + value;
             }
 
-            maxValue += positiveString;
+            _screen.Write(Col, Row, value);
+            ResetCursor();
+        }
 
-            _screen.WriteAndReturnCursor(Col + _titleLength, Row, maxValue);
+        private void ResetCursor()
+        {
+            _screen.SetCursor(Col + _valueMaxLength - 1, Row, true);
+            _digitIndex = 0;
         }
 
         private int GetValueMaxLength()
