@@ -71,7 +71,7 @@ namespace AdSoft.Hardware.UI
             ShowNext();
             Select(0);
 
-            _keyboard.OnButtonPress += KeyboardOnOnButtonPress;
+            _keyboard.KeyPressed += KeyboardButtonPressed;
 
             _isVisible = true;
         }
@@ -85,7 +85,7 @@ namespace AdSoft.Hardware.UI
 
             _screen.Clear(0, 0, _width + 1, _screen.Rows - 1);
 
-            _keyboard.OnButtonPress -= KeyboardOnOnButtonPress;
+            _keyboard.KeyPressed -= KeyboardButtonPressed;
 
             _isVisible = false;
         }
@@ -122,7 +122,7 @@ namespace AdSoft.Hardware.UI
             }
         }
 
-        private void KeyboardOnOnButtonPress(Key key)
+        private void KeyboardButtonPressed(Key key)
         {
             switch (key)
             {

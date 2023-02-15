@@ -4,9 +4,7 @@ namespace AdSoft.Hardware.UI
     {
         private readonly LegoRemote _legoRemote;
 
-        public delegate void ButtonPressEventHandler(Key key);
-
-        public event ButtonPressEventHandler OnButtonPress;
+        public event KeyPressedEventHandler KeyPressed;
 
         public LegoSmallRemoteKeyboard(LegoRemote legoRemote)
         {
@@ -20,7 +18,7 @@ namespace AdSoft.Hardware.UI
 
         private void LegoRemoteOnOnLegoButtonPress(Message msg)
         {
-            if (OnButtonPress == null)
+            if (KeyPressed == null)
             {
                 return;
             }
@@ -103,7 +101,7 @@ namespace AdSoft.Hardware.UI
                     break;
             }
 
-            OnButtonPress(key);
+            KeyPressed(key);
         }
     }
 }

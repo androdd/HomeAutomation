@@ -68,11 +68,12 @@ namespace ExperimentalBoard
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();
 
-            NumericBox numericBox = new NumericBox(_lcd2004, keyboard);
-            numericBox.Setup(10, 1000);
-            numericBox.Value = 100;
-            numericBox.Show(1, 1);
-            numericBox.Focus();
+            TimePicker timePicker = new TimePicker(_lcd2004, keyboard);
+            timePicker.Setup();
+            timePicker.Value = DateTime.Now;
+            
+            timePicker.Show(0, 1);
+            timePicker.Focus();
 
             Thread.Sleep(Timeout.Infinite);
 
