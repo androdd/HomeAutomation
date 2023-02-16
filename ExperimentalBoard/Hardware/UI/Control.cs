@@ -6,13 +6,14 @@ namespace AdSoft.Hardware.UI
         protected readonly IKeyboard Keyboard;
 
         protected int MaxLength;
+        protected bool IsVisible;
 
         public int Col { get; set; }
         public int Row { get; set; }
 
         public event ActionEventHandler ExitLeft;
         public event ActionEventHandler ExitRight;
-        public event KeyPressedEventHandler ButtonPressed;
+        public event KeyPressedEventHandler KeyPressed;
 
         protected Control(Lcd2004 screen, IKeyboard keyboard)
         {
@@ -22,6 +23,7 @@ namespace AdSoft.Hardware.UI
 
         public virtual void Setup()
         {
+            IsVisible = false;
             MaxLength = GetLength();
         }
         
@@ -29,10 +31,14 @@ namespace AdSoft.Hardware.UI
         {
             Col = col;
             Row = row;
+            IsVisible = true;
         }
 
-        public void Hide()
+        public virtual void Hide()
         {
+            Unfocus();
+
+            IsVisible = false;
             string placeHolder = "";
             for (int i = 0; i < MaxLength; i++)
             {
@@ -72,9 +78,9 @@ namespace AdSoft.Hardware.UI
 
         protected virtual void OnKeyPressed(Key key)
         {
-            if (ButtonPressed != null)
+            if (KeyPressed != null)
             {
-                ButtonPressed(key);
+                KeyPressed(key);
             }
         }
         

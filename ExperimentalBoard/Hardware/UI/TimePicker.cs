@@ -40,11 +40,11 @@ namespace AdSoft.Hardware.UI
 
         public override void Show(int col, int row)
         {
-            _hourBox.Show(1, 1);
+            _hourBox.Show(col, row);
 
-            Screen.Write(3, 1, ":");
+            Screen.Write(col + 2, row, ":");
 
-            _minuteBox.Show(4, 1);
+            _minuteBox.Show(col + 3, row);
 
             base.Show(col, row);
         }

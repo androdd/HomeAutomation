@@ -261,6 +261,15 @@ namespace AdSoft.Hardware
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Clear(int fromCol, int fromRow, int toCol, int toRow)
         {
+            int oldCol = _currentCol;
+            int oldRow = _currentRow;
+            bool isCursorVisible = _isCursorVisible;
+
+            if (isCursorVisible)
+            {
+                CursorOff();
+            }
+
             if (fromCol > toCol || fromRow > toRow || toCol > Cols - 1 || toRow > Rows - 1 || fromRow < 0 || fromCol < 0)
             {
                 return;
@@ -273,6 +282,13 @@ namespace AdSoft.Hardware
                 {
                     WriteChar(' ');
                 }   
+            }
+
+            SetCursor(oldCol, oldRow);
+
+            if (isCursorVisible)
+            {
+                CursorOn();
             }
         }
 

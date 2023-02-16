@@ -47,93 +47,43 @@ namespace ExperimentalBoard
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
-            var timeTimer = new Timer(state =>
-                {
-                    try
-                    {
-                        var time = DateTime.Now.ToString("HH:mm"); // 5 bytes
-                        _lcd2004.WriteAndReturnCursor(15, 0, time);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.Print(e.Message);
-                    }
-                },
-                null,
-                0,
-                30 * 1000);
-
             LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di0);
             legoRemote.Init();
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();
-
-            TimePicker timePicker = new TimePicker(_lcd2004, keyboard);
-            timePicker.Setup();
-            timePicker.Value = DateTime.Now;
             
-            timePicker.Show(0, 1);
-            timePicker.Focus();
+            Clock clock = new Clock(_lcd2004, keyboard);
+            clock.Setup();
+            clock.Show(15, 0);
+
+            Menu menu = new Menu(_lcd2004, keyboard);
+            menu.Create(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });
+
+            keyboard.KeyPressed += key =>
+            {
+                if (key == Key.F8)
+                {
+                    menu.Show();
+                }
+            };
+
+            menu.OnMenuItemEnter += key =>
+            {
+                switch (key)
+                {
+                    case 0:
+                        clock.Edit();
+                        break;
+                    case 1:
+                        break;
+                }
+
+                menu.Hide();
+            };
+
 
             Thread.Sleep(Timeout.Infinite);
-
-            timeTimer.Dispose();
         }
-
-        //private static void Test()
-        //{
-        //    var interval = 2 * 1000;
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("DisplayOff");
-        //    _lcd2004.DisplayOff();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("DisplayOn");
-        //    _lcd2004.DisplayOn();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("BackLightOff");
-        //    _lcd2004.BackLightOff();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("BackLightOn");
-        //    _lcd2004.BackLightOn();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("Clear");
-        //    _lcd2004.Clear();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("Home");
-        //    _lcd2004.Home();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("CursorOn");
-        //    _lcd2004.CursorOn();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("CursorOff");
-        //    _lcd2004.CursorOff();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("BlinkOn");
-        //    _lcd2004.BlinkOn();
-        //    Thread.Sleep(interval);
-
-        //    _lcd2004.SetCursor(0, 0);
-        //    _lcd2004.Write("BlinkOff");
-        //    _lcd2004.BlinkOff();
-        //    Thread.Sleep(interval);
-        //}
 
         private static void DebugWrite(byte data)
         {
