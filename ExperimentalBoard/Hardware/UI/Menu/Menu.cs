@@ -1,15 +1,15 @@
 namespace AdSoft.Hardware.UI
 {
-    public class Menu
+    using System;
+
+    using Microsoft.SPOT;
+
+    public class Menu : Control
     {
-        private readonly Lcd2004 _screen;
-        private readonly IKeyboard _keyboard;
         private MenuItem[] _menuItems;
         private int _lastSelectedRow;
         private int _itemsOnScreen;
         private int _firstItemIndex;
-        private int _width;
-        private bool _isVisible;
 
         private int MenuItemsCount
         {
@@ -23,18 +23,15 @@ namespace AdSoft.Hardware.UI
 
         public delegate void MenuItemEventHandler(int key);
 
-        public event MenuItemEventHandler OnMenuItemEnter;
-        public event MenuItemEventHandler OnMenuItemSelected;
+        public event MenuItemEventHandler MenuItemEnter;
+        public event MenuItemEventHandler MenuItemSelected;
 
-        public Menu(Lcd2004 screen, IKeyboard keyboard)
+        public Menu(string name, Lcd2004 screen, IKeyboard keyboard) : base(name, screen, keyboard)
         {
-            _screen = screen;
-            _keyboard = keyboard;
-
             _lastSelectedRow = int.MaxValue;
         }
 
-        public void Create(MenuItem[] menuItems)
+        public void Setup(MenuItem[] menuItems) 
         {
             if (menuItems == null)
             {
@@ -42,24 +39,18 @@ namespace AdSoft.Hardware.UI
             }
 
             _menuItems = menuItems;
+            
+            base.Setup();
+        }
 
-            foreach (var item in _menuItems)
-            {
-                if (item.Title.Length > _width)
-                {
-                    _width = item.Title.Length;
-                }
-
-                if (_width >= _screen.Cols - 1)
-                {
-                    break;
-                }
-            }
+        public override void Setup()
+        {
+            throw new NotImplementedException("Use Setup(MenuItem[] menuItems)");
         }
 
         public void Show()
         {
-            if (_isVisible)
+            if (IsVisible)
             {
                 return;
             }
@@ -69,60 +60,71 @@ namespace AdSoft.Hardware.UI
             _itemsOnScreen = MenuItemsCount;
 
             ShowNext();
-            Select(0);
 
-            _keyboard.KeyPressed += KeyboardButtonPressed;
-
-            _isVisible = true;
+            base.Show(0, 0);
         }
 
-        public void Hide()
+        public override void Show(int col, int row)
         {
-            if (!_isVisible)
+            Show();
+        }
+
+        public override void Hide()
+        {
+            if (!IsVisible)
             {
                 return;
             }
 
-            _screen.Clear(0, 0, _width + 1, _screen.Rows - 1);
+            Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
+            
+            Unfocus();
 
-            _keyboard.KeyPressed -= KeyboardButtonPressed;
+            IsVisible = false;
 
-            _isVisible = false;
+            Debug.Print(Name + " Hide");
+        }
+
+        public override void Focus()
+        {
+            Select(0);
+
+            base.Focus();
         }
 
         public void Select(int row)
         {
             if (_lastSelectedRow != int.MaxValue)
             {
-                _screen.Write(0, _lastSelectedRow, " ");
+                Screen.Write(0, _lastSelectedRow, " ");
             }
 
-            _screen.Write(0, row, new string((char)0x7E, 1));
+            Screen.Write(0, row, new string((char)0x7E, 1));
 
             _lastSelectedRow = row;
 
-            if (OnMenuItemSelected != null)
+            if (MenuItemSelected != null)
             {
-                OnMenuItemSelected(CurrentItemKey);
+                MenuItemSelected(CurrentItemKey);
             }
         }
 
         private void ShowNext()
         {
-            if (_itemsOnScreen > _screen.Rows)
+            if (_itemsOnScreen > Screen.Rows)
             {
-                _itemsOnScreen = _screen.Rows;
+                _itemsOnScreen = Screen.Rows;
             }
 
-            _screen.Clear(0, 0, _width + 1, _screen.Rows - 1);
+            Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
 
             for (int i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
             {
-                _screen.Write(0, i - _firstItemIndex, " " + _menuItems[i].Title);
+                Screen.Write(0, i - _firstItemIndex, " " + _menuItems[i].Title);
             }
         }
 
-        private void KeyboardButtonPressed(Key key)
+        protected override void OnKeyPressed(Key key)
         {
             switch (key)
             {
@@ -137,11 +139,11 @@ namespace AdSoft.Hardware.UI
                     {
                         // There are more items up
 
-                        _firstItemIndex -= _screen.Rows;
-                        _itemsOnScreen = _screen.Rows;
+                        _firstItemIndex -= Screen.Rows;
+                        _itemsOnScreen = Screen.Rows;
 
                         ShowNext();
-                        Select((_screen.Rows - 1));
+                        Select((Screen.Rows - 1));
                     }
                     break;
                 case Key.DownArrow:
@@ -164,15 +166,37 @@ namespace AdSoft.Hardware.UI
 
                     break;
                 case Key.Enter:
-                    if (OnMenuItemEnter != null)
+                    if (MenuItemEnter != null)
                     {
-                        OnMenuItemEnter(CurrentItemKey);
+                        MenuItemEnter(CurrentItemKey);
                     }
                     break;
                 case Key.Escape:
                     Hide();
                     break;
             }
+
+            base.OnKeyPressed(key);
+        }
+        
+        protected override int GetLength()
+        {
+            var result = 0;
+
+            foreach (var item in _menuItems)
+            {
+                if (item.Title.Length > result)
+                {
+                    result = item.Title.Length;
+                }
+
+                if (result >= Screen.Cols - 1)
+                {
+                    break;
+                }
+            }
+
+            return result + 1;
         }
     }
 }

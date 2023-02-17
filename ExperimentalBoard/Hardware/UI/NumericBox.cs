@@ -8,7 +8,9 @@ namespace AdSoft.Hardware.UI
         
         private int _minValue;
         private int _maxValue;
-        
+        private bool _exitLeft;
+        private bool _exitRight;
+
         public int MinValue
         {
             get { return _minValue; }
@@ -31,11 +33,11 @@ namespace AdSoft.Hardware.UI
 
         public int Value { get; set; }
         
-        public NumericBox(Lcd2004 screen, IKeyboard keyboard) : base(screen, keyboard)
+        public NumericBox(string name, Lcd2004 screen, IKeyboard keyboard) : base(name, screen, keyboard)
         {
         }
 
-        public void Setup(int minValue, int maxValue)
+        public void Setup(int minValue, int maxValue, bool exitLeft = false, bool exitRight = false)
         {
             if (minValue >= maxValue || minValue < 0)
             {
@@ -44,6 +46,9 @@ namespace AdSoft.Hardware.UI
 
             MinValue = minValue;
             MaxValue = maxValue;
+
+            _exitLeft = exitLeft;
+            _exitRight = exitRight;
         }
 
         public override void Show(int col, int row)
@@ -73,7 +78,7 @@ namespace AdSoft.Hardware.UI
             var pow = Math.Pow(10.0, _digitIndex);
             int digit = (int)(Value / pow % 10);
             int cursorPos = Col + MaxLength - _digitIndex - 1;
-            int digitCount = GetDigitCount(Value);
+            int digitCount = GetDigitCount();
 
             int newDigit;
             int newValue = Value;
@@ -111,7 +116,10 @@ namespace AdSoft.Hardware.UI
                 case Key.LeftArrow:
                     if (_digitIndex + 1 > digitCount || _digitIndex + 1 == MaxLength)
                     {
-                        OnExitLeft();
+                        if (_exitLeft)
+                        {
+                            OnExitLeft();
+                        }
 
                         break;
                     }
@@ -123,7 +131,10 @@ namespace AdSoft.Hardware.UI
                 case Key.RightArrow:
                     if (_digitIndex == 0)
                     {
-                        OnExitRight();
+                        if (_exitRight)
+                        {
+                            OnExitRight();
+                        }
 
                         break;
                     }
@@ -203,12 +214,19 @@ namespace AdSoft.Hardware.UI
             _digitIndex = 0;
         }
 
-        static int GetDigitCount(int n)
+        private int GetDigitCount()
         {
-            int count = 0;
-            while (n != 0)
+            int value = Value;
+
+            if (value == 0)
             {
-                n = n / 10;
+                return 1;
+            }
+
+            int count = 0;
+            while (value != 0)
+            {
+                value = value / 10;
                 ++count;
             }
             return count;

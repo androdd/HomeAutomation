@@ -9,17 +9,30 @@ namespace AdSoft.Hardware.UI
     {
         private Timer _timer;
         private readonly TimePicker _timePicker;
+        private bool _isStarted;
 
-        public Clock(Lcd2004 screen, IKeyboard keyboard) : base(screen, keyboard)
+        public delegate DateTime GetTimeEventHandler();
+        public delegate void SetTimeEventHandler(DateTime time);
+
+        public event GetTimeEventHandler GetTime;
+        public event SetTimeEventHandler SetTime;
+
+        public Clock(string name, Lcd2004 screen, IKeyboard keyboard) : base(name, screen, keyboard)
         {
-            _timePicker = new TimePicker(screen, keyboard);
+            _timePicker = new TimePicker(name + "_TP", screen, keyboard);
         }
 
         public void Start()
         {
+            if (_isStarted || GetTime == null)
+            {
+                return;
+            }
+
+            _isStarted = true;
             _timer = new Timer(state =>
                 {
-                    var time = DateTime.Now.ToString("HH:mm"); // 5 bytes
+                    var time = GetTime().ToString("HH:mm"); // 5 bytes
                     Screen.WriteAndReturnCursor(Col, Row, time);
                 },
                 null,
@@ -29,6 +42,7 @@ namespace AdSoft.Hardware.UI
 
         public void Stop()
         {
+            _isStarted = false;
             _timer.Dispose();
         }
 
@@ -42,7 +56,7 @@ namespace AdSoft.Hardware.UI
 
         public void Edit()
         {
-            if (!IsVisible)
+            if (!IsVisible || SetTime == null)
             {
                 return;
             }
@@ -58,7 +72,10 @@ namespace AdSoft.Hardware.UI
             switch (key)
             {
                 case Key.Enter:
-                    Utility.SetLocalTime(_timePicker.Value);
+                    if (SetTime != null)
+                    {
+                        SetTime(_timePicker.Value);
+                    }
                     break;
                 case Key.Escape:
                     break;

@@ -11,7 +11,7 @@ namespace AdSoft.Hardware.UI
         {
             get
             {
-                return new DateTime(0, 0, 0, _hourBox.Value, _minuteBox.Value, 0);
+                return new DateTime(2020, 1, 1, _hourBox.Value, _minuteBox.Value, 0);
             }
             set
             {
@@ -20,17 +20,17 @@ namespace AdSoft.Hardware.UI
             }
         }
 
-        public TimePicker(Lcd2004 screen, IKeyboard keyboard) : base(screen, keyboard)
+        public TimePicker(string name, Lcd2004 screen, IKeyboard keyboard) : base(name, screen, keyboard)
         {
-            _hourBox = new NumericBox(Screen, Keyboard);
-            _minuteBox = new NumericBox(Screen, Keyboard);
+            _hourBox = new NumericBox(name + "_HB", Screen, Keyboard);
+            _minuteBox = new NumericBox(name + "_MB", Screen, Keyboard);
         }
 
         public override void Setup()
         {
-            _hourBox.Setup(0, 23);
+            _hourBox.Setup(0, 23, exitRight: true);
 
-            _minuteBox.Setup(0, 59);
+            _minuteBox.Setup(0, 59, exitLeft: true);
 
             _hourBox.ExitRight += () => _minuteBox.Focus();
             _minuteBox.ExitLeft += () => _hourBox.Focus();
@@ -54,6 +54,14 @@ namespace AdSoft.Hardware.UI
             _hourBox.Focus();
 
             base.Focus();
+        }
+
+        public override void Unfocus()
+        {
+            _hourBox.Unfocus();
+            _minuteBox.Unfocus();
+
+            base.Unfocus();
         }
 
         protected override int GetLength()

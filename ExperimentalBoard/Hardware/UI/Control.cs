@@ -1,5 +1,7 @@
 namespace AdSoft.Hardware.UI
 {
+    using Microsoft.SPOT;
+
     public abstract class Control
     {
         protected readonly Lcd2004 Screen;
@@ -7,28 +9,36 @@ namespace AdSoft.Hardware.UI
 
         protected int MaxLength;
         protected bool IsVisible;
+        protected bool IsFocused;
 
         public int Col { get; set; }
         public int Row { get; set; }
+        public string Name { get; private set; }
 
         public event ActionEventHandler ExitLeft;
         public event ActionEventHandler ExitRight;
         public event KeyPressedEventHandler KeyPressed;
 
-        protected Control(Lcd2004 screen, IKeyboard keyboard)
+        protected Control(string name, Lcd2004 screen, IKeyboard keyboard)
         {
+            Name = name;
             Screen = screen;
             Keyboard = keyboard;
         }
 
         public virtual void Setup()
         {
+            Debug.Print(Name + " Setup");
+
             IsVisible = false;
+            IsFocused = false;
             MaxLength = GetLength();
         }
         
         public virtual void Show(int col, int row)
         {
+            Debug.Print(Name + " Show");
+
             Col = col;
             Row = row;
             IsVisible = true;
@@ -36,6 +46,8 @@ namespace AdSoft.Hardware.UI
 
         public virtual void Hide()
         {
+            Debug.Print(Name + " Hide");
+
             Unfocus();
 
             IsVisible = false;
@@ -45,23 +57,39 @@ namespace AdSoft.Hardware.UI
                 placeHolder += " ";
             }
 
-            Screen.Write(Col, Row, placeHolder);
+            Screen.WriteAndReturnCursor(Col, Row, placeHolder);
         }
 
         public virtual void Focus()
         {
-            Keyboard.KeyPressed += OnKeyPressed;
+            Debug.Print(Name + " Focus");
+
+            if (!IsFocused)
+            {
+                Keyboard.KeyPressed += OnKeyPressed;
+            }
+
+            IsFocused = true;
         }
 
-        public void Unfocus()
+        public virtual void Unfocus()
         {
-            Screen.CursorOff();
+            Debug.Print(Name + " Unfocus");
 
-            Keyboard.KeyPressed -= OnKeyPressed;
+            if (IsFocused)
+            {
+                Screen.CursorOff();
+
+                Keyboard.KeyPressed -= OnKeyPressed;
+            }
+
+            IsFocused = false;
         }
 
         protected virtual void OnExitLeft()
         {
+            Debug.Print(Name + " OnExitLeft");
+
             if (ExitLeft != null)
             {
                 ExitLeft();
@@ -70,6 +98,8 @@ namespace AdSoft.Hardware.UI
 
         protected virtual void OnExitRight()
         {
+            Debug.Print(Name + " OnExitRight");
+
             if (ExitRight != null)
             {
                 ExitRight();
@@ -78,6 +108,8 @@ namespace AdSoft.Hardware.UI
 
         protected virtual void OnKeyPressed(Key key)
         {
+            Debug.Print(Name + " OnKeyPressed");
+
             if (KeyPressed != null)
             {
                 KeyPressed(key);

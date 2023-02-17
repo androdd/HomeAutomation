@@ -51,34 +51,37 @@ namespace ExperimentalBoard
             legoRemote.Init();
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();
-            
-            Clock clock = new Clock(_lcd2004, keyboard);
+
+            Clock clock = new Clock("Clock", _lcd2004, keyboard);
+            clock.GetTime += () => DateTime.Now;
+            clock.SetTime += Utility.SetLocalTime;
             clock.Setup();
             clock.Show(15, 0);
 
-            Menu menu = new Menu(_lcd2004, keyboard);
-            menu.Create(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });
+            Menu menu = new Menu("Menu", _lcd2004, keyboard);
+            menu.Setup(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });
 
             keyboard.KeyPressed += key =>
             {
                 if (key == Key.F8)
                 {
                     menu.Show();
+                    menu.Focus();
                 }
             };
 
-            menu.OnMenuItemEnter += key =>
+            menu.MenuItemEnter += key =>
             {
                 switch (key)
                 {
                     case 0:
+                        menu.Hide();
                         clock.Edit();
                         break;
                     case 1:
+                        menu.Hide();
                         break;
                 }
-
-                menu.Hide();
             };
 
 
