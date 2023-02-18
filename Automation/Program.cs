@@ -8,6 +8,7 @@ namespace HomeAutomation
 
     using HomeAutomation.Hardware;
     using HomeAutomation.Hardware.Interfaces;
+    using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
@@ -25,9 +26,9 @@ namespace HomeAutomation
         private static LightsService _lightsService;
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
         private static IPressureSensor _pressureSensor;
-        private static PumpStateSensor _pumpStateSensor;
+        private static IPumpStateSensor _pumpStateSensor;
         private static LegoRemote _legoRemote;
-        private static RemoteCommandsService _remoteCommandsService;
+        private static IRemoteCommandsService _remoteCommandsService;
         private static PressureLoggingService _pressureLoggingService;
         private static WaterFlowSensor _waterFlowSensor;
 
@@ -49,7 +50,8 @@ namespace HomeAutomation
         public static void Main()
         {
             //Now = new DateTime(2022, 9, 09, 21, 28, 3);
-            
+
+            // Should be before SetupToolsAndServices because some of the hardware may be switched to mocks for testing in SetupToolsAndServices
             SetupHardware();
 
             SetupToolsAndServices();
@@ -153,12 +155,24 @@ namespace HomeAutomation
         private static void SetupToolsAndServices()
         {
             _log = new Log(_sdCard);
+
+#if TEST_AUTO_TURN_OFF_SERVICE
+            _log.Write("TEST_AUTO_TURN_OFF_SERVICE enabled. PumpStateSensor and PressureSensor are controlled manually through mocks and remote.");
+
+            _pumpStateSensor = new PumpStateSensorMock();
+            _pressureSensor = new PressureSensorMock();
+            _remoteCommandsService = new AutoTurnOffPumpServiceTestRemoteCommandService(_log, _legoRemote, _pumpStateSensor, _pressureSensor);
+#endif
+
             _config = new Configuration(_sdCard, _log);
 
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _config, _realTimer, _relaysArray, _lightsRelayId);
             _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _config, _pressureSensor, _pumpStateSensor, _relaysArray, _autoTurnOffPumpRelayId);
+
+#if !TEST_AUTO_TURN_OFF_SERVICE
             _remoteCommandsService = new RemoteCommandsService(_legoRemote, _lightsService);
+#endif
             _pressureLoggingService = new PressureLoggingService(_log, _sdCard, _pressureSensor);
         }
 

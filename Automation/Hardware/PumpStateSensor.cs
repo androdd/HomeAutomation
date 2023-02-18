@@ -2,9 +2,11 @@ namespace HomeAutomation.Hardware
 {
     using GHIElectronics.NETMF.FEZ;
 
+    using HomeAutomation.Hardware.Interfaces;
+
     using Microsoft.SPOT.Hardware;
 
-    internal class PumpStateSensor
+    internal class PumpStateSensor : IPumpStateSensor
     {
         private readonly FEZ_Pin.Digital _portId;
         private InputPort _inputPort;

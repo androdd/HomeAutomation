@@ -7,8 +7,6 @@ namespace HomeAutomation.Services
     using HomeAutomation.Hardware.Interfaces;
     using HomeAutomation.Tools;
 
-    using Microsoft.SPOT;
-
     internal class AutoTurnOffPumpService : IDisposable
     {
         private readonly int _relayId;
@@ -16,7 +14,7 @@ namespace HomeAutomation.Services
         private readonly Log _log;
         private readonly Configuration _configuration;
         private readonly IPressureSensor _pressureSensor;
-        private readonly PumpStateSensor _pumpStateSensor;
+        private readonly IPumpStateSensor _pumpStateSensor;
         private readonly RelaysArray _relaysArray;
 
         private Timer _checkPressureTimer;
@@ -27,7 +25,7 @@ namespace HomeAutomation.Services
             Log log,
             Configuration configuration,
             IPressureSensor pressureSensor,
-            PumpStateSensor pumpStateSensor,
+            IPumpStateSensor pumpStateSensor,
             RelaysArray relaysArray,
             int relayId)
         {
@@ -54,9 +52,10 @@ namespace HomeAutomation.Services
 
             if (pumpTurnedOff || normalPressure || _lowPressureReacted)
             {
-                if (normalPressure)
+                if (normalPressure && _lowPressureReacted)
                 {
                     _lowPressureReacted = false;
+                    _log.Write("Pressure restored.");
                 }
 
                 _eventCount = 0;

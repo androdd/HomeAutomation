@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE,MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -31,13 +31,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Hardware\Interfaces\IPressureSensor.cs" />
-    <Compile Include="Hardware\Mocks\TestPressureSensor.cs" />
+    <Compile Include="Hardware\Interfaces\IPumpStateSensor.cs" />
+    <Compile Include="Hardware\Mocks\PressureSensorMock.cs" />
+    <Compile Include="Hardware\Mocks\PumpStateSensorMock.cs" />
+    <Compile Include="Hardware\Mocks\AutoTurnOffPumpServiceTestRemoteCommandService.cs" />
     <Compile Include="Hardware\PressureSensor80.cs" />
     <Compile Include="Base.cs" />
     <Compile Include="Hardware\PumpStateSensor.cs" />
     <Compile Include="Hardware\WaterFlowSensor.cs" />
     <Compile Include="Models\AutoTurnOffPumpConfiguration.cs" />
     <Compile Include="Services\AutoTurnOffPumpService.cs" />
+    <Compile Include="Hardware\Interfaces\IRemoteCommandsService.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />
     <Compile Include="Services\RemoteCommandsService.cs" />

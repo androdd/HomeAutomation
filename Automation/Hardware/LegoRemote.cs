@@ -1,10 +1,12 @@
-namespace AdSoft.Hardware
+namespace HomeAutomation.Hardware
 {
     using System;
     using System.Collections;
     using System.Threading;
 
     using GHIElectronics.NETMF.FEZ;
+
+    using HomeAutomation.Models;
 
     using Microsoft.SPOT.Hardware;
 

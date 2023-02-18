@@ -1,9 +1,10 @@
 namespace HomeAutomation.Services
 {
     using HomeAutomation.Hardware;
+    using HomeAutomation.Hardware.Interfaces;
     using HomeAutomation.Models;
 
-    internal class RemoteCommandsService
+    internal class RemoteCommandsService : IRemoteCommandsService
     {
         private readonly LegoRemote _legoRemote;
         private readonly LightsService _lightsService;
