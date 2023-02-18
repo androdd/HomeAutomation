@@ -21,6 +21,7 @@ namespace HomeAutomation.Services
 
         private Timer _checkPressureTimer;
         private int _eventCount;
+        private bool _lowPressureReacted;
 
         public AutoTurnOffPumpService(
             Log log,
@@ -38,6 +39,7 @@ namespace HomeAutomation.Services
             _relayId = relayId;
 
             _eventCount = 0;
+            _lowPressureReacted = false;
         }
 
         public void Init()
@@ -47,8 +49,16 @@ namespace HomeAutomation.Services
 
         private void CheckPressure(object state)
         {
-            if (!_pumpStateSensor.IsWorking || _pressureSensor.Pressure > _configuration.AutoTurnOffPumpConfiguration.MinPressure)
+            var pumpTurnedOff = !_pumpStateSensor.IsWorking;
+            var normalPressure = _pressureSensor.Pressure > _configuration.AutoTurnOffPumpConfiguration.MinPressure;
+
+            if (pumpTurnedOff || normalPressure || _lowPressureReacted)
             {
+                if (normalPressure)
+                {
+                    _lowPressureReacted = false;
+                }
+
                 _eventCount = 0;
                 return;
             }
@@ -57,6 +67,8 @@ namespace HomeAutomation.Services
             
             if (_eventCount >= _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount)
             {
+                _lowPressureReacted = true;
+
                 SendTurnOffSignal();
             }
         }

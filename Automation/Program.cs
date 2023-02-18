@@ -134,12 +134,12 @@ namespace HomeAutomation
             {
                 FEZ_Pin.Digital.Di0,
                 FEZ_Pin.Digital.Di1,
-                FEZ_Pin.Digital.Di2,
-                FEZ_Pin.Digital.Di3,
                 FEZ_Pin.Digital.Di4,
                 FEZ_Pin.Digital.Di5,
                 FEZ_Pin.Digital.Di6,
-                FEZ_Pin.Digital.Di7
+                FEZ_Pin.Digital.Di7,
+                FEZ_Pin.Digital.Di8,
+                FEZ_Pin.Digital.Di9
             });
             _pressureSensor = new PressureSensor80(FEZ_Pin.AnalogIn.An1);
             _pumpStateSensor = new PumpStateSensor(FEZ_Pin.Digital.An0);
