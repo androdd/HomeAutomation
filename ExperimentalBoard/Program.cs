@@ -8,6 +8,8 @@ namespace ExperimentalBoard
 
     using GHIElectronics.NETMF.FEZ;
 
+    using HomeAutomation.Hardware.LegoRemote;
+
     using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 

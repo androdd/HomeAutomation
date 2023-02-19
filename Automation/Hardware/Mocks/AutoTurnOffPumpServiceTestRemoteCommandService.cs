@@ -1,6 +1,7 @@
 namespace HomeAutomation.Hardware.Mocks
 {
     using HomeAutomation.Hardware.Interfaces;
+    using HomeAutomation.Hardware.LegoRemote;
     using HomeAutomation.Models;
     using HomeAutomation.Tools;
 

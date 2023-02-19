@@ -1,12 +1,10 @@
-namespace HomeAutomation.Hardware
+namespace HomeAutomation.Hardware.LegoRemote
 {
     using System;
     using System.Collections;
     using System.Threading;
 
     using GHIElectronics.NETMF.FEZ;
-
-    using HomeAutomation.Models;
 
     using Microsoft.SPOT.Hardware;
 

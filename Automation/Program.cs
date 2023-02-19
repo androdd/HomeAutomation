@@ -8,6 +8,7 @@ namespace HomeAutomation
 
     using HomeAutomation.Hardware;
     using HomeAutomation.Hardware.Interfaces;
+    using HomeAutomation.Hardware.LegoRemote;
     using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Tools;

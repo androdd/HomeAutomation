@@ -1,4 +1,4 @@
-namespace HomeAutomation.Hardware
+namespace HomeAutomation.Hardware.LegoRemote
 {
     using System;
     using System.Collections;
