@@ -1,4 +1,4 @@
-namespace AdSoft.Hardware.UI
+namespace HomeAutomation.Hardware.UI
 {
     public delegate void ActionEventHandler();
 

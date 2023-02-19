@@ -1,4 +1,4 @@
-namespace AdSoft.Hardware.UI
+namespace HomeAutomation.Hardware.UI
 {
     using System;
     using System.Threading;

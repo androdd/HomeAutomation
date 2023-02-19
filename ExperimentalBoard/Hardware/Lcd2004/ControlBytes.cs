@@ -1,4 +1,4 @@
-namespace AdSoft.Hardware
+namespace HomeAutomation.Hardware
 {
     public static class ControlBytes
     {

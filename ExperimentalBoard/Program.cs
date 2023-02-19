@@ -3,8 +3,8 @@ namespace ExperimentalBoard
     using System;
     using System.Threading;
 
-    using AdSoft.Hardware;
-    using AdSoft.Hardware.UI;
+    using HomeAutomation.Hardware;
+    using HomeAutomation.Hardware.UI;
 
     using GHIElectronics.NETMF.FEZ;
 

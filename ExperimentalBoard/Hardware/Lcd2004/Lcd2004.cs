@@ -1,11 +1,11 @@
-namespace AdSoft.Hardware
+namespace HomeAutomation.Hardware
 {
     using System.Runtime.CompilerServices;
     using System.Threading;
 
     using Microsoft.SPOT.Hardware;
 
-    using CB = AdSoft.Hardware.ControlBytes;
+    using CB = HomeAutomation.Hardware.ControlBytes;
 
     public class Lcd2004
     {
