@@ -16,12 +16,12 @@ namespace HomeAutomation.Hardware.UI
             get { return _menuItems.Length; }
         }
 
-        private int CurrentItemKey
+        private byte CurrentItemKey
         {
             get { return _menuItems[_firstItemIndex + _lastSelectedRow].Key; }
         }
 
-        public delegate void MenuItemEventHandler(int key);
+        public delegate void MenuItemEventHandler(byte key);
 
         public event MenuItemEventHandler MenuItemEnter;
         public event MenuItemEventHandler MenuItemSelected;

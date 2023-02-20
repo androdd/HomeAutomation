@@ -85,7 +85,7 @@ namespace HomeAutomation
             _keyboard.Init();
 
             _menu = new Menu("Menu", _screen, _keyboard);
-            _menu.Setup(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });
+            _menu.Setup(new[] { new MenuItem(MenuKeys.SetClock, "Set Clock"), new MenuItem(MenuKeys.Exit, "Exit") });
 
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
@@ -155,15 +155,15 @@ namespace HomeAutomation
             Thread.Sleep(Timeout.Infinite);
         }
 
-        private static void MenuOnMenuItemEnter(int key)
+        private static void MenuOnMenuItemEnter(byte key)
         {
             switch (key)
             {
-                case 0:
+                case MenuKeys.SetClock:
                     _menu.Hide();
                     _clock.Edit();
                     break;
-                case 1:
+                case MenuKeys.Exit:
                     _menu.Hide();
                     break;
             }
@@ -315,5 +315,11 @@ namespace HomeAutomation
                    Now.Hour == 0 && // returns false when called again at 3 or 4 o'clock on restarting
                    Now.AddDays(7).Month != month;
         }
+    }
+
+    internal static class MenuKeys
+    {
+        public const byte SetClock = 0;
+        public const byte Exit = 1;
     }
 }
