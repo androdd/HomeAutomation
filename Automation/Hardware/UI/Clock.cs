@@ -3,8 +3,6 @@ namespace HomeAutomation.Hardware.UI
     using System;
     using System.Threading;
 
-    using Microsoft.SPOT.Hardware;
-
     public class Clock : Control, IDisposable
     {
         private Timer _timer;
@@ -49,19 +47,19 @@ namespace HomeAutomation.Hardware.UI
         public override void Setup()
         {
             _timePicker.Setup();
-            _timePicker.Value = DateTime.Now;
-            
+
             base.Setup();
         }
 
         public void Edit()
         {
-            if (!IsVisible || SetTime == null)
+            if (!IsVisible || SetTime == null || GetTime == null)
             {
                 return;
             }
 
             Stop();
+            _timePicker.Value = GetTime();
             _timePicker.Show(Col, Row);
             _timePicker.Focus();
             _timePicker.KeyPressed += TimePickerOnKeyPressed;
