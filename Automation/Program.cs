@@ -10,6 +10,7 @@ namespace HomeAutomation
     using HomeAutomation.Hardware.Interfaces;
     using HomeAutomation.Hardware.LegoRemote;
     using HomeAutomation.Hardware.Mocks;
+    using HomeAutomation.Hardware.UI;
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
@@ -32,6 +33,11 @@ namespace HomeAutomation
         private static IRemoteCommandsService _remoteCommandsService;
         private static PressureLoggingService _pressureLoggingService;
         private static WaterFlowSensor _waterFlowSensor;
+        private static Lcd2004 _screen;
+        private static Clock _clock;
+        private static LegoSmallRemoteKeyboard _keyboard;
+        private static ScreenPowerButton _screenPowerButton;
+
 
         private static int _lightsRelayId;
         private static int _autoTurnOffPumpRelayId;
@@ -70,6 +76,18 @@ namespace HomeAutomation
             _remoteCommandsService.Init();
             _pressureLoggingService.Init(_config.PressureLogIntervalMin);
             _autoTurnOffPumpService.Init();
+
+            _screen.Init();
+            _screen.BackLightOn();
+            _screenPowerButton.Init();
+            
+            _keyboard.Init();
+
+            _clock = new Clock("Clock", _screen, _keyboard);
+            _clock.GetTime += RealTimeClock.GetTime;
+            _clock.SetTime += RealTimeClock.SetTime;
+            _clock.Setup();
+            _clock.Show(15, 0);
 
             #region Manual DST Adjustment
 
@@ -148,6 +166,8 @@ namespace HomeAutomation
             _pumpStateSensor = new PumpStateSensor(FEZ_Pin.Digital.An0);
             _legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
             _waterFlowSensor = new WaterFlowSensor(FEZ_Pin.Interrupt.Di12);
+            _screen = new Lcd2004(0x27);
+            _screenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, _screen);
 
             _lightsRelayId = 7;
             _autoTurnOffPumpRelayId = 5;
@@ -175,6 +195,7 @@ namespace HomeAutomation
             _remoteCommandsService = new RemoteCommandsService(_legoRemote, _lightsService);
 #endif
             _pressureLoggingService = new PressureLoggingService(_log, _sdCard, _pressureSensor);
+            _keyboard = new LegoSmallRemoteKeyboard(_legoRemote);
         }
 
         private static void ScheduleConfigReload()

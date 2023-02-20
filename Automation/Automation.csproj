@@ -41,6 +41,7 @@
     <Compile Include="Hardware\PressureSensor80.cs" />
     <Compile Include="Base.cs" />
     <Compile Include="Hardware\PumpStateSensor.cs" />
+    <Compile Include="Hardware\ScreenPowerButton.cs" />
     <Compile Include="Hardware\UI\Clock.cs" />
     <Compile Include="Hardware\UI\Control.cs" />
     <Compile Include="Hardware\UI\EventHandlers.cs" />
