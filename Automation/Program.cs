@@ -41,6 +41,7 @@ namespace HomeAutomation
 
         private static int _lightsRelayId;
         private static int _autoTurnOffPumpRelayId;
+        private static Menu _menu;
 
         public static DateTime Now
         {
@@ -73,7 +74,7 @@ namespace HomeAutomation
 
             ReloadConfig();
 
-            _remoteCommandsService.Init();
+            //_remoteCommandsService.Init();
             _pressureLoggingService.Init(_config.PressureLogIntervalMin);
             _autoTurnOffPumpService.Init();
 
@@ -83,12 +84,18 @@ namespace HomeAutomation
             
             _keyboard.Init();
 
+            _menu = new Menu("Menu", _screen, _keyboard);
+            _menu.Setup(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });
+
+            _keyboard.KeyPressed += KeyboardOnKeyPressed;
+            _menu.MenuItemEnter += MenuOnMenuItemEnter;
+
             _clock = new Clock("Clock", _screen, _keyboard);
             _clock.GetTime += RealTimeClock.GetTime;
             _clock.SetTime += RealTimeClock.SetTime;
             _clock.Setup();
             _clock.Show(15, 0);
-
+            
             #region Manual DST Adjustment
 
             if (_config.ManualStartDst)
@@ -146,6 +153,29 @@ namespace HomeAutomation
             }
 
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void MenuOnMenuItemEnter(int key)
+        {
+            switch (key)
+            {
+                case 0:
+                    _menu.Hide();
+                    _clock.Edit();
+                    break;
+                case 1:
+                    _menu.Hide();
+                    break;
+            }
+        }
+
+        private static void KeyboardOnKeyPressed(Key key)
+        {
+            if (key == Key.F8)
+            {
+                _menu.Show();
+                _menu.Focus();
+            }
         }
 
         private static void SetupHardware()
