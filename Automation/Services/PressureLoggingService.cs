@@ -7,6 +7,7 @@ namespace HomeAutomation.Services
 
     using HomeAutomation.Hardware;
     using HomeAutomation.Hardware.Interfaces;
+    using HomeAutomation.Hardware.SdCard;
     using HomeAutomation.Tools;
 
     using Microsoft.SPOT;

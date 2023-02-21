@@ -10,6 +10,7 @@ namespace HomeAutomation
     using HomeAutomation.Hardware.Interfaces;
     using HomeAutomation.Hardware.LegoRemote;
     using HomeAutomation.Hardware.Mocks;
+    using HomeAutomation.Hardware.SdCard;
     using HomeAutomation.Hardware.UI;
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
@@ -78,24 +79,10 @@ namespace HomeAutomation
             _pressureLoggingService.Init(_config.PressureLogIntervalMin);
             _autoTurnOffPumpService.Init();
 
-            _screen.Init();
-            _screen.BackLightOn();
-            _screenPowerButton.Init();
-            
-            _keyboard.Init();
+            _sdCard.CardStatusChanged += SdCardOnCardStatusChanged;
 
-            _menu = new Menu("Menu", _screen, _keyboard);
-            _menu.Setup(new[] { new MenuItem(MenuKeys.SetClock, "Set Clock"), new MenuItem(MenuKeys.Exit, "Exit") });
+            SetupUiAndHid();
 
-            _keyboard.KeyPressed += KeyboardOnKeyPressed;
-            _menu.MenuItemEnter += MenuOnMenuItemEnter;
-
-            _clock = new Clock("Clock", _screen, _keyboard);
-            _clock.GetTime += RealTimeClock.GetTime;
-            _clock.SetTime += RealTimeClock.SetTime;
-            _clock.Setup();
-            _clock.Show(15, 0);
-            
             #region Manual DST Adjustment
 
             if (_config.ManualStartDst)
@@ -153,6 +140,46 @@ namespace HomeAutomation
             }
 
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void SdCardOnCardStatusChanged(SdCardStatus status)
+        {
+            string statusText;
+            switch (status)
+            {
+                case SdCardStatus.Available:
+                    statusText = "  ";
+                    break;
+                case SdCardStatus.Unavailable:
+                    statusText = "S0";
+                    break;
+                case SdCardStatus.Error:
+                    statusText = "Sx";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("status");
+            }
+
+            _screen.WriteAndReturnCursor(13, 0, statusText);   
+        }
+
+        private static void SetupUiAndHid()
+        {
+            _screenPowerButton.Init();
+
+            _keyboard.Init();
+
+            _menu = new Menu("Menu", _screen, _keyboard);
+            _menu.Setup(new[] { new MenuItem(MenuKeys.SetClock, "Set Clock"), new MenuItem(MenuKeys.Exit, "Exit") });
+
+            _keyboard.KeyPressed += KeyboardOnKeyPressed;
+            _menu.MenuItemEnter += MenuOnMenuItemEnter;
+
+            _clock = new Clock("Clock", _screen, _keyboard);
+            _clock.GetTime += RealTimeClock.GetTime;
+            _clock.SetTime += RealTimeClock.SetTime;
+            _clock.Setup();
+            _clock.Show(15, 0);
         }
 
         private static void MenuOnMenuItemEnter(byte key)

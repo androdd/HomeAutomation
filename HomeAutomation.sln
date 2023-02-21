@@ -5,6 +5,7 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{475B2E12-C60F-4DBA-AF5E-165393298931}"
 	ProjectSection(SolutionItems) = preProject
+		Documents\!ToDo.txt = Documents\!ToDo.txt
 		Documents\config.txt = Documents\config.txt
 		Documents\dst.cfg = Documents\dst.cfg
 		Documents\dstEnd.cfg = Documents\dstEnd.cfg

@@ -22,9 +22,16 @@ namespace HomeAutomation.Hardware
         {
             _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeBoth);
             _interruptPort.OnInterrupt += InterruptPortOnOnInterrupt;
+
+            InitScreenIfOn();
         }
 
         private void InterruptPortOnOnInterrupt(uint data1, uint data2, DateTime time)
+        {
+            InitScreenIfOn();
+        }
+
+        private void InitScreenIfOn()
         {
             bool isTurnedOn = _interruptPort.Read();
 

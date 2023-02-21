@@ -1,4 +1,4 @@
-namespace HomeAutomation.Hardware
+namespace HomeAutomation.Hardware.SdCard
 {
     using System;
     using System.Collections;
@@ -14,10 +14,9 @@ namespace HomeAutomation.Hardware
         private PersistentStorage _sdCard;
         private bool _isLoaded;
 
-        public bool Exists
-        {
-            get { return PersistentStorage.DetectSDCard(); }
-        }
+        public delegate void CardStatusChangedEventHandler(SdCardStatus status);
+
+        public event CardStatusChangedEventHandler CardStatusChanged;
 
         public bool TryReadAllLines(string filename, out ArrayList result)
         {
@@ -161,17 +160,6 @@ namespace HomeAutomation.Hardware
             return true;
         }
 
-        public void UnmountSdCard()
-        {
-            if (!_isLoaded)
-            {
-                return;
-            }
-
-            _sdCard.UnmountFileSystem();
-            //Thread.Sleep(200);
-        }
-
         public void Dispose()
         {
             if (_sdCard == null)
@@ -181,6 +169,7 @@ namespace HomeAutomation.Hardware
 
             _sdCard.UnmountFileSystem();
             _sdCard.Dispose();
+            _sdCard = null;
         }
 
         private void InitCard()
@@ -189,7 +178,16 @@ namespace HomeAutomation.Hardware
             {
                 Debug.Print("SD card missing");
                 _isLoaded = false;
-                _sdCard = null;
+
+                if (_sdCard != null)
+                {
+                    _sdCard.UnmountFileSystem();
+                    _sdCard.Dispose();
+                    _sdCard = null;
+                }
+
+                RaiseStatusChanged(SdCardStatus.Unavailable);
+
                 return;
             }
 
@@ -203,11 +201,22 @@ namespace HomeAutomation.Hardware
                 _sdCard = new PersistentStorage("SD");
                 _sdCard.MountFileSystem();
                 _isLoaded = true;
+                RaiseStatusChanged(SdCardStatus.Available);
             }
             catch (Exception ex)
             {
                 Debug.Print("Failed to mount SD card: " + ex.Message);
                 _isLoaded = false;
+
+                RaiseStatusChanged(SdCardStatus.Error);
+            }
+        }
+
+        private void RaiseStatusChanged(SdCardStatus status)
+        {
+            if (CardStatusChanged != null)
+            {
+                CardStatusChanged(status);
             }
         }
 

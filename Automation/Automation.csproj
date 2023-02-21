@@ -42,6 +42,7 @@
     <Compile Include="Base.cs" />
     <Compile Include="Hardware\PumpStateSensor.cs" />
     <Compile Include="Hardware\ScreenPowerButton.cs" />
+    <Compile Include="Hardware\SdCard\SdCardStatus.cs" />
     <Compile Include="Hardware\UI\Clock.cs" />
     <Compile Include="Hardware\UI\Control.cs" />
     <Compile Include="Hardware\UI\EventHandlers.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Hardware\RelaysArray.cs" />
-    <Compile Include="Hardware\SdCard.cs" />
+    <Compile Include="Hardware\SdCard\SdCard.cs" />
     <Compile Include="Tools\RealTimer.cs" />
   </ItemGroup>
   <ItemGroup>

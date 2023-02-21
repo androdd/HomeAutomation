@@ -6,6 +6,7 @@ namespace HomeAutomation.Tools
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
+    using HomeAutomation.Hardware.SdCard;
     using HomeAutomation.Models;
 
     internal class Configuration
