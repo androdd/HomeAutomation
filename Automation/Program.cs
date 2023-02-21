@@ -58,7 +58,8 @@ namespace HomeAutomation
 
         public static void Main()
         {
-            //Now = new DateTime(2022, 9, 09, 21, 28, 3);
+            //var now = Now;
+            //Now = new DateTime(2023, 2, 21, now.Hour, now.Minute, now.Second);
 
             // Should be before SetupToolsAndServices because some of the hardware may be switched to mocks for testing in SetupToolsAndServices
             SetupHardware();

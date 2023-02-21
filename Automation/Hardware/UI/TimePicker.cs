@@ -7,16 +7,20 @@ namespace HomeAutomation.Hardware.UI
         private readonly NumericBox _hourBox;
         private readonly NumericBox _minuteBox;
 
+        private DateTime _value;
+
         public DateTime Value
         {
             get
             {
-                return new DateTime(2020, 1, 1, _hourBox.Value, _minuteBox.Value, 0);
+                _value = new DateTime(_value.Year, _value.Month, _value.Day, _hourBox.Value, _minuteBox.Value, 0);
+                return _value;
             }
             set
             {
-                _hourBox.Value = value.Hour;
-                _minuteBox.Value = value.Minute;
+                _value = new DateTime(_value.Year, _value.Month, _value.Day, value.Hour, value.Minute, 0);
+                _hourBox.Value = _value.Hour;
+                _minuteBox.Value = _value.Minute;
             }
         }
 

@@ -2,9 +2,7 @@ namespace HomeAutomation.Tools
 {
     using GHIElectronics.NETMF.Hardware;
 
-    using HomeAutomation.Hardware;
     using HomeAutomation.Hardware.SdCard;
-    using HomeAutomation.Services;
 
     using Microsoft.SPOT;
 

@@ -5,7 +5,6 @@ namespace HomeAutomation.Tools
 
     using GHIElectronics.NETMF.Hardware;
 
-    using HomeAutomation.Hardware;
     using HomeAutomation.Hardware.SdCard;
     using HomeAutomation.Models;
 
@@ -37,6 +36,16 @@ namespace HomeAutomation.Tools
             _log = log;
 
             AutoTurnOffPumpConfiguration = new AutoTurnOffPumpConfiguration();
+
+            // Hardcoded values if config is missing
+
+            SunriseOffsetMin = 0;
+            SunsetOffsetMin = 0;
+            PressureLogIntervalMin = 5;
+            AutoTurnOffPumpConfiguration.Interval = 1;
+            AutoTurnOffPumpConfiguration.MinPressure = 0.5;
+            AutoTurnOffPumpConfiguration.MaxEventsCount = 2;
+            AutoTurnOffPumpConfiguration.SignalLength = 500;
         }
 
         public void Load()
@@ -60,11 +69,12 @@ namespace HomeAutomation.Tools
 
         private void ReadSun()
         {
-            Sunrise = DateTime.MinValue;
-            Sunset = DateTime.MaxValue;
-
             var now = RealTimeClock.GetTime();
 
+            // Hardcoded values if config is missing
+            Sunrise = new DateTime(now.Year, now.Month, now.Day, 6, 0, 0);
+            Sunset = new DateTime(now.Year, now.Month, now.Day, 19, 0, 0); 
+            
             string month = now.Month.ToString();
             if (month.Length == 1)
             {
@@ -75,11 +85,11 @@ namespace HomeAutomation.Tools
 
             if (_sdCard.TryReadFixedLengthLine("Sun" + month + ".txt", 19, now.Day, out sunToday))
             {
-                _log.Write("Config SunDst: " + sunToday);
+                _log.Write("Config Sun: " + sunToday);
             }
             else
             {
-                _log.Write("Config SunDst is missing");
+                _log.Write("Config Sun is missing. Fallback to hardcoded values.");
                 return;
             }
             
@@ -99,7 +109,7 @@ namespace HomeAutomation.Tools
             }
             catch (Exception ex)
             {
-                _log.Write("Config SunDst Err: " + ex.Message);
+                _log.Write("Config Sun Err: " + ex.Message);
             }
         }
 
@@ -133,7 +143,7 @@ namespace HomeAutomation.Tools
             }
             else
             {
-                _log.Write("Config is missing");
+                _log.Write("Config is missing. Fallback to hardcoded values.");
                 return;
             }
 

@@ -1,4 +1,3 @@
-Start without SD card. Hardcode some config defaults;
 Label control.
 Set control position in setup and leave only drowing to Show and Hide.
 Implement IUiWorker interface with Start and Stop methods for Clock and other visual controls.
