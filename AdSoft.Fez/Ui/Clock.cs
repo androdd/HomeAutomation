@@ -6,7 +6,7 @@ namespace AdSoft.Fez.Ui
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
-    public class Clock : Control, IDisposable
+    public class Clock : Control, IDisposable, IUiWorker
     {
         private Timer _timer;
         private readonly TimePicker _timePicker;

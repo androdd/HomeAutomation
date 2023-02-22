@@ -1,2 +1,1 @@
-Implement IUiWorker interface with Start and Stop methods for Clock and other visual controls.
 UiService. Keep list of all controls and redraw them on monitor ON event. Stop IUiWorker controls on OFF event.
