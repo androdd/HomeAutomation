@@ -48,6 +48,7 @@
     <Compile Include="Hardware\UI\EventHandlers.cs" />
     <Compile Include="Hardware\UI\Interfaces\IKeyboard.cs" />
     <Compile Include="Hardware\UI\Key.cs" />
+    <Compile Include="Hardware\UI\Label.cs" />
     <Compile Include="Hardware\UI\LegoSmallRemoteKeyboard.cs" />
     <Compile Include="Hardware\UI\Menu\Menu.cs" />
     <Compile Include="Hardware\UI\Menu\MenuItem.cs" />

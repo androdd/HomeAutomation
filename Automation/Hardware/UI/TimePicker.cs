@@ -32,7 +32,7 @@ namespace HomeAutomation.Hardware.UI
             _minuteBox = new NumericBox(name + "_MB", Screen, Keyboard);
         }
 
-        public override void Setup(int col, int row)
+        public new void Setup(int col, int row)
         {
             _hourBox.Setup(col, row, 0, 23, exitRight: true);
 

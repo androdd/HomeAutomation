@@ -51,6 +51,8 @@ namespace HomeAutomation.Hardware.UI
 
             _exitLeft = exitLeft;
             _exitRight = exitRight;
+
+            base.Setup(col, row);
         }
 
         public override void Show()

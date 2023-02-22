@@ -30,7 +30,7 @@ namespace HomeAutomation.Services
         {
             var startDelay = new TimeSpan(0, 0, 3);
 
-            _timer = new Timer(Log, null, startDelay, new TimeSpan(0, 0, minutes * 2));
+            _timer = new Timer(Log, null, startDelay, new TimeSpan(0, minutes, 0));
 
             _log.Write("Pressure Logging Timer set for: " + Format(RealTimeClock.GetTime().Add(startDelay)) + " with period: " + minutes + " m");
         }

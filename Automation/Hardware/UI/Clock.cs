@@ -46,7 +46,7 @@ namespace HomeAutomation.Hardware.UI
             _timer.Dispose();
         }
 
-        public override void Setup(int col, int row)
+        public new void Setup(int col, int row)
         {
             _timePicker.Setup(col, row);
 

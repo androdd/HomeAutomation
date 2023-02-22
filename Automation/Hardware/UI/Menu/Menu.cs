@@ -45,11 +45,6 @@ namespace HomeAutomation.Hardware.UI
             base.Setup(0, 0);
         }
 
-        public override void Setup(int col, int row)
-        {
-            throw new NotImplementedException("Use Setup(MenuItem[] menuItems)");
-        }
-
         public override void Show()
         {
             _firstItemIndex = 0;

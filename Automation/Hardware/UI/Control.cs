@@ -28,7 +28,7 @@ namespace HomeAutomation.Hardware.UI
             Keyboard = keyboard;
         }
 
-        public virtual void Setup(int col, int row)
+        protected void Setup(int col, int row)
         {
             Debug.Print(Name + " Setup");
 

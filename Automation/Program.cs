@@ -35,14 +35,15 @@ namespace HomeAutomation
         private static PressureLoggingService _pressureLoggingService;
         private static WaterFlowSensor _waterFlowSensor;
         private static Lcd2004 _screen;
-        private static Clock _clock;
         private static LegoSmallRemoteKeyboard _keyboard;
         private static ScreenPowerButton _screenPowerButton;
 
 
         private static int _lightsRelayId;
         private static int _autoTurnOffPumpRelayId;
+        private static Clock _clock;
         private static Menu _menu;
+        private static Label _sdCardStatus;
 
         public static DateTime Now
         {
@@ -161,7 +162,7 @@ namespace HomeAutomation
                     throw new ArgumentOutOfRangeException("status");
             }
 
-            _screen.WriteAndReturnCursor(13, 0, statusText);   
+            _sdCardStatus.Text = statusText;
         }
 
         private static void SetupUiAndHid()
@@ -181,6 +182,10 @@ namespace HomeAutomation
             _clock.SetTime += RealTimeClock.SetTime;
             _clock.Setup(15, 0);
             _clock.Show();
+
+            _sdCardStatus = new Label("  ", _screen, _keyboard);
+            _sdCardStatus.Setup("  ", 12, 0);
+            _sdCardStatus.Show();
         }
 
         private static void MenuOnMenuItemEnter(byte key)
