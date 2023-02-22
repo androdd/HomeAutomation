@@ -30,7 +30,7 @@ namespace HomeAutomation.Hardware.UI
 
         protected void Setup(int col, int row)
         {
-            Debug.Print(Name + " Setup");
+            DebugEx.UiPrint(Name, "Setup");
 
             Col = col;
             Row = row;
@@ -42,14 +42,14 @@ namespace HomeAutomation.Hardware.UI
         
         public virtual void Show()
         {
-            Debug.Print(Name + " Show");
+            DebugEx.UiPrint(Name, "Show");
             
             IsVisible = true;
         }
 
         public virtual void Hide()
         {
-            Debug.Print(Name + " Hide");
+            DebugEx.UiPrint(Name, "Hide");
 
             Unfocus();
 
@@ -65,7 +65,7 @@ namespace HomeAutomation.Hardware.UI
 
         public virtual void Focus()
         {
-            Debug.Print(Name + " Focus");
+            DebugEx.UiPrint(Name, "Focus");
 
             if (!IsFocused)
             {
@@ -77,7 +77,7 @@ namespace HomeAutomation.Hardware.UI
 
         public virtual void Unfocus()
         {
-            Debug.Print(Name + " Unfocus");
+            DebugEx.UiPrint(Name, "Unfocus");
 
             if (IsFocused)
             {
@@ -91,7 +91,7 @@ namespace HomeAutomation.Hardware.UI
 
         protected virtual void OnExitLeft()
         {
-            Debug.Print(Name + " OnExitLeft");
+            DebugEx.UiPrint(Name, "OnExitLeft");
 
             if (ExitLeft != null)
             {
@@ -101,7 +101,7 @@ namespace HomeAutomation.Hardware.UI
 
         protected virtual void OnExitRight()
         {
-            Debug.Print(Name + " OnExitRight");
+            DebugEx.UiPrint(Name, "OnExitRight");
 
             if (ExitRight != null)
             {
@@ -111,7 +111,7 @@ namespace HomeAutomation.Hardware.UI
 
         protected virtual void OnKeyPressed(Key key)
         {
-            Debug.Print(Name + " OnKeyPressed");
+            DebugEx.UiPrint(Name, "OnKeyPressed");
 
             if (KeyPressed != null)
             {

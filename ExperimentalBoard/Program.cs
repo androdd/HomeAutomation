@@ -89,23 +89,5 @@ namespace ExperimentalBoard
 
             Thread.Sleep(Timeout.Infinite);
         }
-
-        private static void DebugWrite(byte data)
-        {
-            DebugWrite("", data);
-        }
-
-        private static void DebugWrite(string text, byte data)
-        {
-            text += (data / (1 << 7) % 2).ToString();
-            text += (data / (1 << 6) % 2).ToString();
-            text += (data / (1 << 5) % 2).ToString();
-            text += (data / (1 << 4) % 2).ToString();
-            text += (data / (1 << 3) % 2).ToString();
-            text += (data / (1 << 2) % 2).ToString();
-            text += (data / (1 << 1) % 2).ToString();
-            text += (data % 2).ToString();
-            Debug.Print(text);
-        }
     }
 }

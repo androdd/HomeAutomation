@@ -64,7 +64,7 @@ namespace HomeAutomation.Hardware.UI
 
             IsVisible = false;
 
-            Debug.Print(Name + " Hide");
+            DebugEx.UiPrint(Name, "Hide");
         }
 
         public override void Focus()

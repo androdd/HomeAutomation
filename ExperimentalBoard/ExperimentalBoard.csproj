@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DebugEx.cs" />
     <Compile Include="Hardware\Lcd2004\ControlBytes.cs" />
     <Compile Include="Hardware\Lcd2004\Lcd2004.cs" />
     <Compile Include="Hardware\LegoRemote\Enums.cs" />
