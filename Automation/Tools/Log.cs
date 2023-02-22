@@ -1,8 +1,8 @@
 namespace HomeAutomation.Tools
 {
-    using GHIElectronics.NETMF.Hardware;
+    using AdSoft.Fez.Hardware.SdCard;
 
-    using HomeAutomation.Hardware.SdCard;
+    using GHIElectronics.NETMF.Hardware;
 
     using Microsoft.SPOT;
 

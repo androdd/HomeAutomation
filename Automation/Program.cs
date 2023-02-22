@@ -3,16 +3,21 @@ namespace HomeAutomation
     using System;
     using System.Threading;
 
+    using AdSoft.Fez.Hardware;
+    using AdSoft.Fez.Hardware.Interfaces;
+    using AdSoft.Fez.Hardware.Lcd2004;
+    using AdSoft.Fez.Hardware.LegoRemote;
+    using AdSoft.Fez.Hardware.SdCard;
+    using AdSoft.Fez.Ui;
+    using AdSoft.Fez.Ui.Menu;
+
     using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
-    using HomeAutomation.Hardware.Interfaces;
-    using HomeAutomation.Hardware.LegoRemote;
-    using HomeAutomation.Hardware.Mocks;
-    using HomeAutomation.Hardware.SdCard;
-    using HomeAutomation.Hardware.UI;
     using HomeAutomation.Services;
+    using HomeAutomation.Services.AutoTurnOffPump;
+    using HomeAutomation.Services.Interfaces;
     using HomeAutomation.Tools;
 
     using Microsoft.SPOT.Hardware;
@@ -144,18 +149,18 @@ namespace HomeAutomation
             Thread.Sleep(Timeout.Infinite);
         }
 
-        private static void SdCardOnCardStatusChanged(SdCardStatus status)
+        private static void SdCardOnCardStatusChanged(Status status)
         {
             string statusText;
             switch (status)
             {
-                case SdCardStatus.Available:
+                case Status.Available:
                     statusText = "  ";
                     break;
-                case SdCardStatus.Unavailable:
+                case Status.Unavailable:
                     statusText = "S0";
                     break;
-                case SdCardStatus.Error:
+                case Status.Error:
                     statusText = "Sx";
                     break;
                 default:

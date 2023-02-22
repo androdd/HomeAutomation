@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportBuilder", "ReportBuil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExperimentalBoard", "ExperimentalBoard\ExperimentalBoard.csproj", "{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdSoft.Fez", "AdSoft.Fez\AdSoft.Fez.csproj", "{093798A0-2327-429B-9AD6-8B8172EBBCCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{895ACF88-EE71-48AB-9344-CD26EEE0A6BA}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{093798A0-2327-429B-9AD6-8B8172EBBCCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{093798A0-2327-429B-9AD6-8B8172EBBCCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{093798A0-2327-429B-9AD6-8B8172EBBCCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{093798A0-2327-429B-9AD6-8B8172EBBCCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

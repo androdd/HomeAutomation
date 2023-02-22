@@ -1,6 +1,6 @@
 namespace HomeAutomation.Hardware.Mocks
 {
-    using HomeAutomation.Hardware.Interfaces;
+    using AdSoft.Fez.Hardware.Interfaces;
 
     internal class PressureSensorMock : IPressureSensor
     {

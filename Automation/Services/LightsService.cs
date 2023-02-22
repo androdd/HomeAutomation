@@ -2,6 +2,8 @@ namespace HomeAutomation.Services
 {
     using System;
 
+    using AdSoft.Fez.Hardware;
+
     using HomeAutomation.Hardware;
     using HomeAutomation.Tools;
 

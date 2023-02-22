@@ -3,14 +3,14 @@ namespace ExperimentalBoard
     using System;
     using System.Threading;
 
-    using HomeAutomation.Hardware;
-    using HomeAutomation.Hardware.UI;
-
+    using AdSoft.Fez.Hardware.Lcd2004;
+    using AdSoft.Fez.Hardware.LegoRemote;
+    using AdSoft.Fez.Ui;
+    using AdSoft.Fez.Ui.Menu;
+    
     using GHIElectronics.NETMF.FEZ;
+    using GHIElectronics.NETMF.Hardware;
 
-    using HomeAutomation.Hardware.LegoRemote;
-
-    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class Program
@@ -85,6 +85,8 @@ namespace ExperimentalBoard
                         break;
                 }
             };
+
+            RealTimeClock.GetTime();
 
 
             Thread.Sleep(Timeout.Infinite);

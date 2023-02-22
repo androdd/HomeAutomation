@@ -1,8 +1,9 @@
 namespace HomeAutomation.Hardware.Mocks
 {
-    using HomeAutomation.Hardware.Interfaces;
-    using HomeAutomation.Hardware.LegoRemote;
-    using HomeAutomation.Models;
+    using AdSoft.Fez.Hardware.Interfaces;
+    using AdSoft.Fez.Hardware.LegoRemote;
+
+    using HomeAutomation.Services.Interfaces;
     using HomeAutomation.Tools;
 
     internal class AutoTurnOffPumpServiceTestRemoteCommandService : IRemoteCommandsService

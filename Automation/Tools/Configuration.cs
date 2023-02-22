@@ -3,10 +3,11 @@ namespace HomeAutomation.Tools
     using System;
     using System.Collections;
 
+    using AdSoft.Fez.Hardware.SdCard;
+
     using GHIElectronics.NETMF.Hardware;
 
-    using HomeAutomation.Hardware.SdCard;
-    using HomeAutomation.Models;
+    using HomeAutomation.Services.AutoTurnOffPump;
 
     internal class Configuration
     {
@@ -24,7 +25,7 @@ namespace HomeAutomation.Tools
         public int SunsetOffsetMin { get; private set; }
         public int PressureLogIntervalMin { get; set; }
 
-        public AutoTurnOffPumpConfiguration AutoTurnOffPumpConfiguration { get; private set; }
+        public Services.AutoTurnOffPump.Configuration AutoTurnOffPumpConfiguration { get; private set; }
 
         public bool IsDst { get; private set; }
         public bool ManualStartDst { get; private set; }
@@ -35,7 +36,7 @@ namespace HomeAutomation.Tools
             _sdCard = sdCard;
             _log = log;
 
-            AutoTurnOffPumpConfiguration = new AutoTurnOffPumpConfiguration();
+            AutoTurnOffPumpConfiguration = new Services.AutoTurnOffPump.Configuration();
 
             // Hardcoded values if config is missing
 

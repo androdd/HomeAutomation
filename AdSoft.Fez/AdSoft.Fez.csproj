@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
-    <AssemblyName>HomeAutomation</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>HomeAutomation</RootNamespace>
+    <AssemblyName>AdSoft.Fez</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>AdSoft.Fez</RootNamespace>
     <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{837BA826-91F1-42CC-96E4-B20259B862CF}</ProjectGuid>
+    <ProjectGuid>{093798A0-2327-429B-9AD6-8B8172EBBCCA}</ProjectGuid>
     <TargetFrameworkVersion>v4.1</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
     <TargetFrameworkProfile />
@@ -30,21 +30,34 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Hardware\Mocks\PressureSensorMock.cs" />
-    <Compile Include="Hardware\Mocks\PumpStateSensorMock.cs" />
-    <Compile Include="Hardware\Mocks\AutoTurnOffPumpServiceTestRemoteCommandService.cs" />
-    <Compile Include="Base.cs" />
-    <Compile Include="Services\AutoTurnOffPump\Configuration.cs" />
-    <Compile Include="Services\AutoTurnOffPump\AutoTurnOffPumpService.cs" />
-    <Compile Include="Services\Interfaces\IRemoteCommandsService.cs" />
-    <Compile Include="Services\LightsService.cs" />
-    <Compile Include="Services\PressureLoggingService.cs" />
-    <Compile Include="Services\RemoteCommandsService.cs" />
-    <Compile Include="Tools\Configuration.cs" />
-    <Compile Include="Tools\Log.cs" />
+    <Compile Include="DebugEx.cs" />
+    <Compile Include="Hardware\Interfaces\IPressureSensor.cs" />
+    <Compile Include="Hardware\Interfaces\IPumpStateSensor.cs" />
+    <Compile Include="Hardware\Lcd2004\ControlBytes.cs" />
+    <Compile Include="Hardware\Lcd2004\Lcd2004.cs" />
+    <Compile Include="Hardware\LegoRemote\Enums.cs" />
+    <Compile Include="Hardware\LegoRemote\LegoRemote.cs" />
+    <Compile Include="Hardware\LegoRemote\Message.cs" />
+    <Compile Include="Hardware\PressureSensor80.cs" />
+    <Compile Include="Hardware\PumpStateSensor.cs" />
+    <Compile Include="Hardware\RelaysArray.cs" />
+    <Compile Include="Hardware\ScreenPowerButton.cs" />
+    <Compile Include="Hardware\SdCard\SdCard.cs" />
+    <Compile Include="Hardware\SdCard\Status.cs" />
+    <Compile Include="Hardware\WaterFlowSensor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Tools\RealTimer.cs" />
+    <Compile Include="Ui\Clock.cs" />
+    <Compile Include="Ui\Control.cs" />
+    <Compile Include="Ui\EventHandlers.cs" />
+    <Compile Include="Ui\Interfaces\IKeyboard.cs" />
+    <Compile Include="Ui\Key.cs" />
+    <Compile Include="Ui\Label.cs" />
+    <Compile Include="Ui\LegoSmallRemoteKeyboard.cs" />
+    <Compile Include="Ui\Menu\Menu.cs" />
+    <Compile Include="Ui\Menu\MenuItem.cs" />
+    <Compile Include="Ui\NumericBox.cs" />
+    <Compile Include="Ui\TextDrum.cs" />
+    <Compile Include="Ui\TimePicker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FEZDomino_GHIElectronics.NETMF.FEZ, Version=4.1.5.0, Culture=neutral, processorArchitecture=MSIL" />
@@ -59,15 +72,6 @@
     <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native" />
     <Reference Include="System.IO" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AdSoft.Fez\AdSoft.Fez.csproj">
-      <Project>{093798A0-2327-429B-9AD6-8B8172EBBCCA}</Project>
-      <Name>AdSoft.Fez</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

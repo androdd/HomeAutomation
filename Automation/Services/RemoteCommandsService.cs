@@ -1,9 +1,9 @@
 namespace HomeAutomation.Services
 {
-    using HomeAutomation.Hardware;
-    using HomeAutomation.Hardware.Interfaces;
-    using HomeAutomation.Hardware.LegoRemote;
-    using HomeAutomation.Models;
+    using AdSoft.Fez.Hardware.Interfaces;
+    using AdSoft.Fez.Hardware.LegoRemote;
+
+    using HomeAutomation.Services.Interfaces;
 
     internal class RemoteCommandsService : IRemoteCommandsService
     {

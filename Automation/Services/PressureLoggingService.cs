@@ -3,11 +3,11 @@ namespace HomeAutomation.Services
     using System;
     using System.Threading;
 
+    using AdSoft.Fez.Hardware.Interfaces;
+    using AdSoft.Fez.Hardware.SdCard;
+
     using GHIElectronics.NETMF.Hardware;
 
-    using HomeAutomation.Hardware;
-    using HomeAutomation.Hardware.Interfaces;
-    using HomeAutomation.Hardware.SdCard;
     using HomeAutomation.Tools;
 
     using Microsoft.SPOT;
