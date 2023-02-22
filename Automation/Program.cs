@@ -179,8 +179,8 @@ namespace HomeAutomation
             _clock = new Clock("Clock", _screen, _keyboard);
             _clock.GetTime += RealTimeClock.GetTime;
             _clock.SetTime += RealTimeClock.SetTime;
-            _clock.Setup();
-            _clock.Show(15, 0);
+            _clock.Setup(15, 0);
+            _clock.Show();
         }
 
         private static void MenuOnMenuItemEnter(byte key)

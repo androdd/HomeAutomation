@@ -30,27 +30,27 @@ namespace HomeAutomation.Hardware.UI
             _minuteBox = new NumericBox(name + "_MB", Screen, Keyboard);
         }
 
-        public override void Setup()
+        public override void Setup(int col, int row)
         {
-            _hourBox.Setup(0, 23, exitRight: true);
+            _hourBox.Setup(col, row, 0, 23, exitRight: true);
 
-            _minuteBox.Setup(0, 59, exitLeft: true);
+            _minuteBox.Setup(col + 3, row, 0, 59, exitLeft: true);
 
             _hourBox.ExitRight += () => _minuteBox.Focus();
             _minuteBox.ExitLeft += () => _hourBox.Focus();
 
-            base.Setup();
+            base.Setup(col, row);
         }
 
-        public override void Show(int col, int row)
+        public override void Show()
         {
-            _hourBox.Show(col, row);
+            _hourBox.Show();
 
-            Screen.Write(col + 2, row, ":");
+            Screen.Write(Col + 2, Row, ":");
 
-            _minuteBox.Show(col + 3, row);
+            _minuteBox.Show();
 
-            base.Show(col, row);
+            base.Show();
         }
 
         public override void Focus()

@@ -40,42 +40,27 @@ namespace HomeAutomation.Hardware.UI
 
             _menuItems = menuItems;
             
-            base.Setup();
+            base.Setup(0, 0);
         }
 
-        public override void Setup()
+        public override void Setup(int col, int row)
         {
             throw new NotImplementedException("Use Setup(MenuItem[] menuItems)");
         }
 
-        public void Show()
+        public override void Show()
         {
-            if (IsVisible)
-            {
-                return;
-            }
-
             _firstItemIndex = 0;
 
             _itemsOnScreen = MenuItemsCount;
 
             ShowNext();
 
-            base.Show(0, 0);
-        }
-
-        public override void Show(int col, int row)
-        {
-            Show();
+            base.Show();
         }
 
         public override void Hide()
         {
-            if (!IsVisible)
-            {
-                return;
-            }
-
             Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
             
             Unfocus();

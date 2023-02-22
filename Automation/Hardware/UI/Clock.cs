@@ -44,11 +44,11 @@ namespace HomeAutomation.Hardware.UI
             _timer.Dispose();
         }
 
-        public override void Setup()
+        public override void Setup(int col, int row)
         {
-            _timePicker.Setup();
+            _timePicker.Setup(col, row);
 
-            base.Setup();
+            base.Setup(col, row);
         }
 
         public void Edit()
@@ -60,9 +60,11 @@ namespace HomeAutomation.Hardware.UI
 
             Stop();
             _timePicker.Value = GetTime();
-            _timePicker.Show(Col, Row);
+            _timePicker.Show();
             _timePicker.Focus();
             _timePicker.KeyPressed += TimePickerOnKeyPressed;
+
+            IsFocused = true;
         }
 
         private void TimePickerOnKeyPressed(Key key)
@@ -82,12 +84,13 @@ namespace HomeAutomation.Hardware.UI
             }
 
             _timePicker.Hide();
+            IsFocused = false;
             Start();
         }
 
-        public override void Show(int col, int row)
+        public override void Show()
         {
-            base.Show(col, row);
+            base.Show();
 
             Start();
         }

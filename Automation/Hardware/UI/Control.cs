@@ -26,21 +26,22 @@ namespace HomeAutomation.Hardware.UI
             Keyboard = keyboard;
         }
 
-        public virtual void Setup()
+        public virtual void Setup(int col, int row)
         {
             Debug.Print(Name + " Setup");
+
+            Col = col;
+            Row = row;
 
             IsVisible = false;
             IsFocused = false;
             MaxLength = GetLength();
         }
         
-        public virtual void Show(int col, int row)
+        public virtual void Show()
         {
             Debug.Print(Name + " Show");
-
-            Col = col;
-            Row = row;
+            
             IsVisible = true;
         }
 
