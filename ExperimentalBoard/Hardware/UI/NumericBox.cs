@@ -2,6 +2,8 @@ namespace HomeAutomation.Hardware.UI
 {
     using System;
 
+    using HomeAutomation.Hardware.UI.Interfaces;
+
     public class NumericBox : Control
     {
         private int _digitIndex;
@@ -37,7 +39,7 @@ namespace HomeAutomation.Hardware.UI
         {
         }
 
-        public void Setup(int minValue, int maxValue, bool exitLeft = false, bool exitRight = false)
+        public void Setup(int col, int row, int minValue, int maxValue, bool exitLeft = false, bool exitRight = false)
         {
             if (minValue >= maxValue || minValue < 0)
             {
@@ -49,9 +51,11 @@ namespace HomeAutomation.Hardware.UI
 
             _exitLeft = exitLeft;
             _exitRight = exitRight;
+
+            base.Setup(col, row);
         }
 
-        public override void Show(int col, int row)
+        public override void Show()
         {
             string placeHolder = Value.ToString();
             int valueLength = placeHolder.Length;
@@ -61,9 +65,9 @@ namespace HomeAutomation.Hardware.UI
                 placeHolder = " " + placeHolder;
             }
 
-            Screen.Write(col, row, placeHolder);
+            Screen.Write(Col, Row, placeHolder);
 
-            base.Show(col, row);
+            base.Show();
         }
 
         public override void Focus()

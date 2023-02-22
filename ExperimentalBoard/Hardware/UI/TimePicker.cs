@@ -2,21 +2,27 @@ namespace HomeAutomation.Hardware.UI
 {
     using System;
 
+    using HomeAutomation.Hardware.UI.Interfaces;
+
     public class TimePicker : Control
     {
         private readonly NumericBox _hourBox;
         private readonly NumericBox _minuteBox;
 
+        private DateTime _value;
+
         public DateTime Value
         {
             get
             {
-                return new DateTime(2020, 1, 1, _hourBox.Value, _minuteBox.Value, 0);
+                _value = new DateTime(_value.Year, _value.Month, _value.Day, _hourBox.Value, _minuteBox.Value, 0);
+                return _value;
             }
             set
             {
-                _hourBox.Value = value.Hour;
-                _minuteBox.Value = value.Minute;
+                _value = new DateTime(_value.Year, _value.Month, _value.Day, value.Hour, value.Minute, 0);
+                _hourBox.Value = _value.Hour;
+                _minuteBox.Value = _value.Minute;
             }
         }
 
@@ -26,27 +32,27 @@ namespace HomeAutomation.Hardware.UI
             _minuteBox = new NumericBox(name + "_MB", Screen, Keyboard);
         }
 
-        public override void Setup()
+        public new void Setup(int col, int row)
         {
-            _hourBox.Setup(0, 23, exitRight: true);
+            _hourBox.Setup(col, row, 0, 23, exitRight: true);
 
-            _minuteBox.Setup(0, 59, exitLeft: true);
+            _minuteBox.Setup(col + 3, row, 0, 59, exitLeft: true);
 
             _hourBox.ExitRight += () => _minuteBox.Focus();
             _minuteBox.ExitLeft += () => _hourBox.Focus();
 
-            base.Setup();
+            base.Setup(col, row);
         }
 
-        public override void Show(int col, int row)
+        public override void Show()
         {
-            _hourBox.Show(col, row);
+            _hourBox.Show();
 
-            Screen.Write(col + 2, row, ":");
+            Screen.Write(Col + 2, Row, ":");
 
-            _minuteBox.Show(col + 3, row);
+            _minuteBox.Show();
 
-            base.Show(col, row);
+            base.Show();
         }
 
         public override void Focus()

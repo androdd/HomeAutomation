@@ -57,8 +57,8 @@ namespace ExperimentalBoard
             Clock clock = new Clock("Clock", _lcd2004, keyboard);
             clock.GetTime += () => DateTime.Now;
             clock.SetTime += Utility.SetLocalTime;
-            clock.Setup();
-            clock.Show(15, 0);
+            clock.Setup(15, 0);
+            clock.Show();
 
             Menu menu = new Menu("Menu", _lcd2004, keyboard);
             menu.Setup(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });

@@ -3,7 +3,7 @@ namespace HomeAutomation.Hardware.UI
     using System;
     using System.Threading;
 
-    using Microsoft.SPOT.Hardware;
+    using HomeAutomation.Hardware.UI.Interfaces;
 
     public class Clock : Control, IDisposable
     {
@@ -46,25 +46,27 @@ namespace HomeAutomation.Hardware.UI
             _timer.Dispose();
         }
 
-        public override void Setup()
+        public new void Setup(int col, int row)
         {
-            _timePicker.Setup();
-            _timePicker.Value = DateTime.Now;
-            
-            base.Setup();
+            _timePicker.Setup(col, row);
+
+            base.Setup(col, row);
         }
 
         public void Edit()
         {
-            if (!IsVisible || SetTime == null)
+            if (!IsVisible || SetTime == null || GetTime == null)
             {
                 return;
             }
 
             Stop();
-            _timePicker.Show(Col, Row);
+            _timePicker.Value = GetTime();
+            _timePicker.Show();
             _timePicker.Focus();
             _timePicker.KeyPressed += TimePickerOnKeyPressed;
+
+            IsFocused = true;
         }
 
         private void TimePickerOnKeyPressed(Key key)
@@ -84,12 +86,13 @@ namespace HomeAutomation.Hardware.UI
             }
 
             _timePicker.Hide();
+            IsFocused = false;
             Start();
         }
 
-        public override void Show(int col, int row)
+        public override void Show()
         {
-            base.Show(col, row);
+            base.Show();
 
             Start();
         }

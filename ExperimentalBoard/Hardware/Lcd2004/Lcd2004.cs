@@ -1,5 +1,6 @@
 namespace HomeAutomation.Hardware
 {
+    using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
 
@@ -7,10 +8,9 @@ namespace HomeAutomation.Hardware
 
     using CB = HomeAutomation.Hardware.ControlBytes;
 
-    public class Lcd2004
+    public class Lcd2004 : IDisposable
     {
-        private I2CDevice.Configuration _config;
-        private I2CDevice _busI2C;
+        private readonly I2CDevice _busI2C;
 
         private byte _backLight;
         private readonly byte _lcdFunction;
@@ -19,7 +19,6 @@ namespace HomeAutomation.Hardware
         private int _currentRow;
         private int _currentCol;
         private bool _isCursorVisible;
-        private readonly ushort _address;
 
         public int Rows
         {
@@ -38,17 +37,15 @@ namespace HomeAutomation.Hardware
             _displayControl = CB.LCD_DISPLAYOFF | CB.LCD_CURSOROFF | CB.LCD_BLINKOFF;
 
             _isCursorVisible = false;
-
-            _address = address;
+            
+            var config = new I2CDevice.Configuration(address, 100);
+            _busI2C = new I2CDevice(config);
         }
         
         public void Init()
         {
-            Thread.Sleep(50);
-
-            _config = new I2CDevice.Configuration(_address, 100);
-            _busI2C = new I2CDevice(_config);
-
+            Thread.Sleep(50); 
+            
             SendI2C(_backLight);
             Thread.Sleep(1000);
 
@@ -404,6 +401,14 @@ namespace HomeAutomation.Hardware
             Thread.Sleep(1);        // commands need > 37us to settle
 
             #endregion
+        }
+
+        public void Dispose()
+        {
+            if (_busI2C != null)
+            {
+                _busI2C.Dispose();
+            }
         }
     }
 }

@@ -2,6 +2,8 @@ namespace HomeAutomation.Hardware.UI
 {
     using System;
 
+    using HomeAutomation.Hardware.UI.Interfaces;
+
     using Microsoft.SPOT;
 
     public class Menu : Control
@@ -16,12 +18,12 @@ namespace HomeAutomation.Hardware.UI
             get { return _menuItems.Length; }
         }
 
-        private int CurrentItemKey
+        private byte CurrentItemKey
         {
             get { return _menuItems[_firstItemIndex + _lastSelectedRow].Key; }
         }
 
-        public delegate void MenuItemEventHandler(int key);
+        public delegate void MenuItemEventHandler(byte key);
 
         public event MenuItemEventHandler MenuItemEnter;
         public event MenuItemEventHandler MenuItemSelected;
@@ -40,42 +42,22 @@ namespace HomeAutomation.Hardware.UI
 
             _menuItems = menuItems;
             
-            base.Setup();
+            base.Setup(0, 0);
         }
 
-        public override void Setup()
+        public override void Show()
         {
-            throw new NotImplementedException("Use Setup(MenuItem[] menuItems)");
-        }
-
-        public void Show()
-        {
-            if (IsVisible)
-            {
-                return;
-            }
-
             _firstItemIndex = 0;
 
             _itemsOnScreen = MenuItemsCount;
 
             ShowNext();
 
-            base.Show(0, 0);
-        }
-
-        public override void Show(int col, int row)
-        {
-            Show();
+            base.Show();
         }
 
         public override void Hide()
         {
-            if (!IsVisible)
-            {
-                return;
-            }
-
             Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
             
             Unfocus();
