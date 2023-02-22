@@ -2,6 +2,8 @@ namespace HomeAutomation.Hardware.UI
 {
     using System;
 
+    using HomeAutomation.Hardware.UI.Interfaces;
+
     using Microsoft.SPOT;
 
     public class Menu : Control

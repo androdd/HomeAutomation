@@ -2,6 +2,8 @@ namespace HomeAutomation.Hardware.UI
 {
     using System;
 
+    using HomeAutomation.Hardware.UI.Interfaces;
+
     public class TimePicker : Control
     {
         private readonly NumericBox _hourBox;

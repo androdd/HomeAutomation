@@ -1,6 +1,7 @@
 namespace HomeAutomation.Hardware.UI
 {
     using HomeAutomation.Hardware.LegoRemote;
+    using HomeAutomation.Hardware.UI.Interfaces;
 
     public class LegoSmallRemoteKeyboard : IKeyboard
     {

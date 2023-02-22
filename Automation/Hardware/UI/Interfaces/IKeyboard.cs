@@ -1,4 +1,4 @@
-namespace HomeAutomation.Hardware.UI
+namespace HomeAutomation.Hardware.UI.Interfaces
 {
     public interface IKeyboard
     {

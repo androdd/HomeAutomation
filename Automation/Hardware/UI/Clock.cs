@@ -3,6 +3,8 @@ namespace HomeAutomation.Hardware.UI
     using System;
     using System.Threading;
 
+    using HomeAutomation.Hardware.UI.Interfaces;
+
     public class Clock : Control, IDisposable
     {
         private Timer _timer;

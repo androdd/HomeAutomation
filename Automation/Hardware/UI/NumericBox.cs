@@ -2,6 +2,8 @@ namespace HomeAutomation.Hardware.UI
 {
     using System;
 
+    using HomeAutomation.Hardware.UI.Interfaces;
+
     public class NumericBox : Control
     {
         private int _digitIndex;
