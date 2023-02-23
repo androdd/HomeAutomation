@@ -15,6 +15,7 @@ namespace HomeAutomation
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Hardware;
+    using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;
     using HomeAutomation.Services.Interfaces;
@@ -26,29 +27,16 @@ namespace HomeAutomation
 
     public class Program
     {
-        private static SdCard _sdCard;
         private static Log _log;
-        private static RelaysArray _relaysArray;
         private static Configuration _config;
         private static RealTimer _realTimer;
         private static LightsService _lightsService;
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
-        private static IPressureSensor _pressureSensor;
-        private static IPumpStateSensor _pumpStateSensor;
-        private static LegoRemote _legoRemote;
-        private static IRemoteCommandsService _remoteCommandsService;
         private static PressureLoggingService _pressureLoggingService;
-        private static WaterFlowSensor _waterFlowSensor;
-        private static Lcd2004 _screen;
-        private static LegoSmallRemoteKeyboard _keyboard;
-        private static ScreenPowerButton _screenPowerButton;
-
-
-        private static int _lightsRelayId;
-        private static int _autoTurnOffPumpRelayId;
-        private static Clock _clock;
-        private static Menu _menu;
-        private static Label _sdCardStatus;
+        private static IRemoteCommandsService _remoteCommandsService;
+        
+        private static HardwareManager _hardwareManager;
+        private static UiManager _uiManager;
 
         public static DateTime Now
         {
@@ -67,28 +55,29 @@ namespace HomeAutomation
             //var now = Now;
             //Now = new DateTime(2023, 2, 21, now.Hour, now.Minute, now.Second);
 
-            // Should be before SetupToolsAndServices because some of the hardware may be switched to mocks for testing in SetupToolsAndServices
-            SetupHardware();
+            _log = new Log();
+
+            _log.Write("Starting hardware...");
+            
+            _hardwareManager = new HardwareManager(_log);
+            _hardwareManager.Setup();
+
+            _log.AddSdCard(_hardwareManager.SdCard);
+            
+            _log.Write("Starting...");
 
             SetupToolsAndServices();
-
-            _log.Write("Starting...");
             
-            _relaysArray.Init();
-            _pressureSensor.Init();
-            _pumpStateSensor.Init();
-            _legoRemote.Init();
-            _waterFlowSensor.Init();
-
             ReloadConfig();
 
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init(_config.PressureLogIntervalMin);
             _autoTurnOffPumpService.Init();
 
-            _sdCard.CardStatusChanged += SdCardOnCardStatusChanged;
+            _hardwareManager.SdCard.CardStatusChanged += SdCardOnCardStatusChanged;
 
-            SetupUiAndHid();
+            _uiManager = new UiManager(_log, _hardwareManager);
+            _uiManager.Setup();
 
             #region Manual DST Adjustment
 
@@ -155,115 +144,39 @@ namespace HomeAutomation
             switch (status)
             {
                 case Status.Available:
-                    statusText = "  ";
+                    statusText = "     ";
                     break;
                 case Status.Unavailable:
-                    statusText = "S0";
+                    statusText = "S:N/A";
                     break;
                 case Status.Error:
-                    statusText = "Sx";
+                    statusText = "S:Err";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("status");
             }
 
-            _sdCardStatus.Text = statusText;
-        }
-
-        private static void SetupUiAndHid()
-        {
-            _screenPowerButton.Init();
-
-            _keyboard.Init();
-
-            _menu = new Menu("Menu", _screen, _keyboard);
-            _menu.Setup(new[] { new MenuItem(MenuKeys.SetClock, "Set Clock"), new MenuItem(MenuKeys.Exit, "Exit") });
-
-            _keyboard.KeyPressed += KeyboardOnKeyPressed;
-            _menu.MenuItemEnter += MenuOnMenuItemEnter;
-
-            _clock = new Clock("Clock", _screen, _keyboard);
-            _clock.GetTime += RealTimeClock.GetTime;
-            _clock.SetTime += RealTimeClock.SetTime;
-            _clock.Setup(15, 0);
-            _clock.Show();
-
-            _sdCardStatus = new Label("  ", _screen, _keyboard);
-            _sdCardStatus.Setup("  ", 12, 0);
-            _sdCardStatus.Show();
-        }
-
-        private static void MenuOnMenuItemEnter(byte key)
-        {
-            switch (key)
-            {
-                case MenuKeys.SetClock:
-                    _menu.Hide();
-                    _clock.Edit();
-                    break;
-                case MenuKeys.Exit:
-                    _menu.Hide();
-                    break;
-            }
-        }
-
-        private static void KeyboardOnKeyPressed(Key key)
-        {
-            if (key == Key.F8)
-            {
-                _menu.Show();
-                _menu.Focus();
-            }
-        }
-
-        private static void SetupHardware()
-        {
-            _sdCard = new SdCard();
-            _relaysArray = new RelaysArray(new[]
-            {
-                FEZ_Pin.Digital.Di0,
-                FEZ_Pin.Digital.Di1,
-                FEZ_Pin.Digital.Di4,
-                FEZ_Pin.Digital.Di5,
-                FEZ_Pin.Digital.Di6,
-                FEZ_Pin.Digital.Di7,
-                FEZ_Pin.Digital.Di8,
-                FEZ_Pin.Digital.Di9
-            });
-            _pressureSensor = new PressureSensor80(FEZ_Pin.AnalogIn.An1);
-            _pumpStateSensor = new PumpStateSensor(FEZ_Pin.Digital.An0);
-            _legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
-            _waterFlowSensor = new WaterFlowSensor(FEZ_Pin.Interrupt.Di12);
-            _screen = new Lcd2004(0x27);
-            _screenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, _screen);
-
-            _lightsRelayId = 7;
-            _autoTurnOffPumpRelayId = 5;
+            _uiManager.SdCardStatus.Text = statusText;
         }
 
         private static void SetupToolsAndServices()
         {
-            _log = new Log(_sdCard);
-
-#if TEST_AUTO_TURN_OFF_SERVICE
-            _log.Write("TEST_AUTO_TURN_OFF_SERVICE enabled. PumpStateSensor and PressureSensor are controlled manually through mocks and remote.");
-
-            _pumpStateSensor = new PumpStateSensorMock();
-            _pressureSensor = new PressureSensorMock();
-            _remoteCommandsService = new AutoTurnOffPumpServiceTestRemoteCommandService(_log, _legoRemote, _pumpStateSensor, _pressureSensor);
-#endif
-
-            _config = new Configuration(_sdCard, _log);
+            _config = new Configuration(_hardwareManager.SdCard, _log);
 
             _realTimer = new RealTimer(_log);
-            _lightsService = new LightsService(_log, _config, _realTimer, _relaysArray, _lightsRelayId);
-            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _config, _pressureSensor, _pumpStateSensor, _relaysArray, _autoTurnOffPumpRelayId);
+            _lightsService = new LightsService(_log, _config, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);
+            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _config, _hardwareManager.PressureSensor, _hardwareManager.PumpStateSensor, _hardwareManager.RelaysArray, _hardwareManager.AutoTurnOffPumpRelayId);
+            _remoteCommandsService = new RemoteCommandsService(_hardwareManager.LegoRemote, _lightsService);
 
-#if !TEST_AUTO_TURN_OFF_SERVICE
-            _remoteCommandsService = new RemoteCommandsService(_legoRemote, _lightsService);
+#if TEST_AUTO_TURN_OFF_SERVICE
+            _remoteCommandsService = new AutoTurnOffPumpServiceTestRemoteCommandService(_log,
+                _hardwareManager.LegoRemote,
+                _hardwareManager.PumpStateSensor,
+                _hardwareManager.PressureSensor);
+            _remoteCommandsService.Init;
 #endif
-            _pressureLoggingService = new PressureLoggingService(_log, _sdCard, _pressureSensor);
-            _keyboard = new LegoSmallRemoteKeyboard(_legoRemote);
+
+            _pressureLoggingService = new PressureLoggingService(_log, _hardwareManager.SdCard, _hardwareManager.PressureSensor);
         }
 
         private static void ScheduleConfigReload()
@@ -353,11 +266,5 @@ namespace HomeAutomation
                    Now.Hour == 0 && // returns false when called again at 3 or 4 o'clock on restarting
                    Now.AddDays(7).Month != month;
         }
-    }
-
-    internal static class MenuKeys
-    {
-        public const byte SetClock = 0;
-        public const byte Exit = 1;
     }
 }

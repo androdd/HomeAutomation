@@ -10,8 +10,8 @@ namespace AdSoft.Fez.Ui
         protected readonly IKeyboard Keyboard;
 
         protected int MaxLength;
-        protected bool IsVisible;
-        protected bool IsFocused;
+        public bool IsVisible;
+        public bool IsFocused;
 
         public int Col { get; set; }
         public int Row { get; set; }

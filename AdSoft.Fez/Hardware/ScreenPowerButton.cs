@@ -12,6 +12,10 @@ namespace AdSoft.Fez.Hardware
         private readonly Lcd2004.Lcd2004 _screen;
         private InputPort _interruptPort;
 
+        public delegate void StateChangedEventHandler(bool isOn);
+
+        public event StateChangedEventHandler StateChanged;
+
         public ScreenPowerButton(FEZ_Pin.Digital portId, Lcd2004.Lcd2004 screen)
         {
             _portId = portId;
@@ -39,6 +43,11 @@ namespace AdSoft.Fez.Hardware
             {
                 _screen.Init();
                 _screen.BackLightOn();
+            }
+
+            if (StateChanged != null)
+            {
+                StateChanged(isTurnedOn);
             }
         }
     }

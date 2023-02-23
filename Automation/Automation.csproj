@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="HardwareManager.cs" />
     <Compile Include="Hardware\Mocks\PressureSensorMock.cs" />
     <Compile Include="Hardware\Mocks\PumpStateSensorMock.cs" />
     <Compile Include="Hardware\Mocks\AutoTurnOffPumpServiceTestRemoteCommandService.cs" />
@@ -45,6 +46,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tools\RealTimer.cs" />
+    <Compile Include="UiManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FEZDomino_GHIElectronics.NETMF.FEZ, Version=4.1.5.0, Culture=neutral, processorArchitecture=MSIL" />
@@ -66,9 +68,7 @@
       <Name>AdSoft.Fez</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

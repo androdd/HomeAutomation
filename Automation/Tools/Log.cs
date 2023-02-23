@@ -6,11 +6,11 @@ namespace HomeAutomation.Tools
 
     using Microsoft.SPOT;
 
-    internal class Log : Base
+    public class Log : Base
     {
-        private readonly SdCard _sdCard;
+        private SdCard _sdCard;
 
-        public Log(SdCard sdCard)
+        public void AddSdCard(SdCard sdCard)
         {
             _sdCard = sdCard;
         }
@@ -19,7 +19,11 @@ namespace HomeAutomation.Tools
         {
             var text = Format(RealTimeClock.GetTime()) + " - " + message;
             Debug.Print(text);
-            _sdCard.TryAppend("Log.txt", text + "\r\n");
+
+            if (_sdCard != null)
+            {
+                _sdCard.TryAppend("Log.txt", text + "\r\n");
+            }
         }
     }
 }

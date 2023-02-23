@@ -43,6 +43,11 @@ namespace AdSoft.Fez.Ui
 
         public void Stop()
         {
+            if (!_isStarted)
+            {
+                return;
+            }
+
             _isStarted = false;
             _timer.Dispose();
         }
