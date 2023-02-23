@@ -124,16 +124,7 @@ namespace HomeAutomation
 
             _log.Write("Started");
 
-            using (var led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, false))
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    Thread.Sleep(300);
-                    led.Write(true);
-                    Thread.Sleep(400);
-                    led.Write(false);
-                }
-            }
+            _hardwareManager.MbLed.Blink(3);
 
             Thread.Sleep(Timeout.Infinite);
         }

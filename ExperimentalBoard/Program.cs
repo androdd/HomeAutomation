@@ -3,6 +3,7 @@ namespace ExperimentalBoard
     using System;
     using System.Threading;
 
+    using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.LegoRemote;
     using AdSoft.Fez.Ui;
@@ -16,19 +17,16 @@ namespace ExperimentalBoard
     public class Program
     {
         private static Lcd2004 _lcd2004;
+        private static Led _led;
 
         public static void Main()
         {
-            using (var led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, false))
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    Thread.Sleep(300);
-                    led.Write(true);
-                    Thread.Sleep(400);
-                    led.Write(false);
-                }
-            }
+            _led = new Led(FEZ_Pin.Digital.LED);
+            _led.Init();
+            
+            _led.BlinkAsync(4, 1000);
+
+
 
             //using (var pin = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.Di13, false))
             //{ //Period 86us with no sleep
@@ -85,11 +83,12 @@ namespace ExperimentalBoard
                         break;
                 }
             };
-
-            RealTimeClock.GetTime();
+            
 
 
             Thread.Sleep(Timeout.Infinite);
         }
+
+        
     }
 }

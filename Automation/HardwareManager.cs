@@ -23,6 +23,7 @@ namespace HomeAutomation
         public WaterFlowSensor WaterFlowSensor { get; private set; }
         public Lcd2004 Screen { get; private set; }
         public ScreenPowerButton ScreenPowerButton { get; private set; }
+        public Led MbLed { get; private set; }
 
         public int LightsRelayId { get; private set; }
         public int AutoTurnOffPumpRelayId { get; private set; }
@@ -49,6 +50,7 @@ namespace HomeAutomation
             WaterFlowSensor = new WaterFlowSensor(FEZ_Pin.Interrupt.Di12);
             Screen = new Lcd2004(0x27);
             ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, Screen);
+            MbLed = new Led(FEZ_Pin.Digital.LED);
 
             LightsRelayId = 7;
             AutoTurnOffPumpRelayId = 5;
@@ -68,6 +70,7 @@ namespace HomeAutomation
             LegoRemote.Init();
             WaterFlowSensor.Init();
             ScreenPowerButton.Init();
+            MbLed.Init();
         }
     }
 }

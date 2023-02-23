@@ -35,6 +35,7 @@
     <Compile Include="Hardware\Interfaces\IPumpStateSensor.cs" />
     <Compile Include="Hardware\Lcd2004\ControlBytes.cs" />
     <Compile Include="Hardware\Lcd2004\Lcd2004.cs" />
+    <Compile Include="Hardware\Led.cs" />
     <Compile Include="Hardware\LegoRemote\Enums.cs" />
     <Compile Include="Hardware\LegoRemote\LegoRemote.cs" />
     <Compile Include="Hardware\LegoRemote\Message.cs" />

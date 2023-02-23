@@ -1,1 +1,9 @@
-UiService. Keep list of all controls and redraw them on monitor ON event. Stop IUiWorker controls on OFF event.
+Screensaver (Turn off backlight)
+Finish the text drum with max length, symbol for current row 
+Show current date
+Create date picker
+Edit date
+Show sensor value on a drum
+Edit coeficient of a sensor while showing the values
+Save coeficient in configuration
+Enable/Disable management mode - logs will not be writtent to sd card, screen saver will be turned off
