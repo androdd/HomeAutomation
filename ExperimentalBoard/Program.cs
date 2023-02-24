@@ -43,7 +43,7 @@ namespace ExperimentalBoard
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
-            LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di0);
+            LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
             legoRemote.Init();
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();

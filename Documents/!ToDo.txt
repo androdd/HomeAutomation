@@ -1,5 +1,4 @@
 Screensaver (Turn off backlight)
-Show current date
 Create date picker
 Edit date
 Show sensor value on a drum

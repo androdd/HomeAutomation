@@ -35,13 +35,18 @@ namespace HomeAutomation
         {
             _keyboard.Init();
 
-            _menu.Setup(new[] { new MenuItem(MenuKeys.SetClock, "Set Clock"), new MenuItem(MenuKeys.Exit, "Exit") });
+            _menu.Setup(new[]
+            {
+                new MenuItem(MenuKeys.SetClock, "Set Clock"),
+                new MenuItem(MenuKeys.ShowDate, "Show Date"),
+                new MenuItem(MenuKeys.Exit, "Exit")
+            });
 
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
             
-            _clock.GetTime += RealTimeClock.GetTime;
-            _clock.SetTime += RealTimeClock.SetTime;
+            _clock.GetTime += () => Program.Now;
+            _clock.SetTime += time => { Program.Now = time; };
             _clock.Setup(15, 0);
 
             SdCardStatus.Setup("     ", 15, 1);
@@ -67,14 +72,17 @@ namespace HomeAutomation
 
         private void MenuOnMenuItemEnter(byte key)
         {
+            _menu.Hide();
+
             switch (key)
             {
                 case MenuKeys.SetClock:
-                    _menu.Hide();
                     _clock.Edit();
                     break;
+                case MenuKeys.ShowDate:
+                    _hardwareManager.Screen.Write(0, 0, Program.Now.ToString("yyyy-MM-dd"));
+                    break;
                 case MenuKeys.Exit:
-                    _menu.Hide();
                     break;
             }
         }
@@ -92,6 +100,7 @@ namespace HomeAutomation
     internal static class MenuKeys
     {
         public const byte SetClock = 0;
-        public const byte Exit = 1;
+        public const byte ShowDate = 1;
+        public const byte Exit = 2;
     }
 }
