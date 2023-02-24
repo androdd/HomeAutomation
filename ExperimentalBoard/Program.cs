@@ -24,10 +24,6 @@ namespace ExperimentalBoard
             _led = new Led(FEZ_Pin.Digital.LED);
             _led.Init();
             
-            _led.BlinkAsync(4, 1000);
-
-
-
             //using (var pin = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.Di13, false))
             //{ //Period 86us with no sleep
             //    var millisecondsTimeout = 1;
@@ -58,6 +54,20 @@ namespace ExperimentalBoard
             clock.Setup(15, 0);
             clock.Show();
 
+            TextDrum textDrum = new TextDrum("TD1", _lcd2004, keyboard);
+            textDrum.Setup(11, 1, 10, 2);
+            textDrum.Show();
+
+            var thread = new Thread(() =>
+            {
+                for (int i = 40; i < 200; i+=4)
+                {
+                    textDrum.Write("Numbe:" + i);
+                    Thread.Sleep(450);
+                }
+            });
+            thread.Start();
+
             Menu menu = new Menu("Menu", _lcd2004, keyboard);
             menu.Setup(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });
 
@@ -83,8 +93,8 @@ namespace ExperimentalBoard
                         break;
                 }
             };
-            
 
+            _led.BlinkAsync(4, 600);
 
             Thread.Sleep(Timeout.Infinite);
         }

@@ -1,48 +1,88 @@
 namespace AdSoft.Fez.Ui
 {
     using AdSoft.Fez.Hardware.Lcd2004;
+    using AdSoft.Fez.Ui.Interfaces;
 
-    public class TextDrum
+    public class TextDrum : Control
     {
-        private readonly Lcd2004 _lcd2004;
-        private readonly byte _startCol;
-        private readonly byte _startRow;
-        private byte _nextRow;
+        private int _width;
+        private int _height;
+        private int _lastRow;
+        private int _nextRow;
 
-        public TextDrum(Lcd2004 lcd2004, byte startCol, byte startRow)
+        public TextDrum(string name, Lcd2004 screen, IKeyboard keyboard)
+            : base(name, screen, keyboard)
         {
-            if (startRow > 2)
+        }
+
+        public void Setup(int col, int row, int width, int height)
+        {
+            int lastColIndex = Screen.Cols - 2;
+
+            if (col > lastColIndex)
             {
-                startRow = 2;
+                col = lastColIndex;
             }
 
-            if (startCol > 19)
+            int lastRowsIndex = Screen.Rows - 2;
+
+            if (row > lastRowsIndex)
             {
-                startCol = 19;
+                row = lastRowsIndex;
             }
 
-            _lcd2004 = lcd2004;
-            _startCol = startCol;
-            _startRow = startRow;
-            _nextRow = startRow;
+            if (col + width > Screen.Cols)
+            {
+                width = Screen.Cols - col;
+            }
+
+            if (row + height > Screen.Rows)
+            {
+                height = Screen.Rows - row;
+            }
+
+            _width = width;
+            _height = height;
+            _lastRow = row;
+            _nextRow = row;
+
+            base.Setup(col, row);
         }
 
         public void Write(string text)
         {
-            if (text.Length + _startCol > 20)
+            if (text.Length > _width - 1)
             {
-                text = text.Substring(0, 20 - _startCol);
+                text = text.Substring(0, _width - 1);
             }
-            _lcd2004.Write(_startCol, _nextRow, text);
 
-            if (_nextRow == 3)
+            int cursorCol, cursorRow;
+            Screen.GetCursor(out cursorCol, out cursorRow);
+
+            if (_lastRow != _nextRow)
             {
-                _nextRow = _startRow;
+                Screen.Write(Col, _lastRow, " ");
+            }
+
+            Screen.Write(Col, _nextRow, (char)0xA5 + text); // dot in the middle
+
+            Screen.SetCursor(cursorCol, cursorRow);
+
+            _lastRow = _nextRow;
+
+            if (_nextRow == Row + _height - 1)
+            {
+                _nextRow = Row; 
             }
             else
             {
                 _nextRow++;
             }
+        }
+
+        protected override int GetLength()
+        {
+            return _width;
         }
     }
 }

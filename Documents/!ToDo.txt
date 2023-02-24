@@ -1,5 +1,4 @@
 Screensaver (Turn off backlight)
-Finish the text drum with max length, symbol for current row 
 Show current date
 Create date picker
 Edit date

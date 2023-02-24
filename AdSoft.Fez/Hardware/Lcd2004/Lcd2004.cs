@@ -217,6 +217,12 @@ namespace AdSoft.Fez.Hardware.Lcd2004
             _currentCol = col;
         }
 
+        public void GetCursor(out int col, out int row)
+        {
+            col = _currentCol;
+            row = _currentRow;
+        }
+
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void DisplayOff()
         {
