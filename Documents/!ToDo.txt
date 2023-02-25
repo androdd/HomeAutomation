@@ -1,6 +1,5 @@
 Screensaver (Turn off backlight)
 Create date picker
-Edit date
 Show sensor value on a drum
 Edit coeficient of a sensor while showing the values
 Save coeficient in configuration

@@ -80,9 +80,13 @@ namespace AdSoft.Fez.Ui
             switch (key)
             {
                 case Key.Enter:
-                    if (SetTime != null)
+                    if (SetTime != null && GetTime != null)
                     {
-                        SetTime(_timePicker.Value);
+                        var now = GetTime();
+
+                        var newDateTime = new DateTime(now.Year, now.Month, now.Day, _timePicker.Value.Hour, _timePicker.Value.Minute, 0);
+
+                        SetTime(newDateTime);
                     }
                     break;
                 case Key.Escape:

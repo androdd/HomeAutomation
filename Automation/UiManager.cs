@@ -1,5 +1,7 @@
 namespace HomeAutomation
 {
+    using System;
+
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
 
@@ -16,6 +18,7 @@ namespace HomeAutomation
         private readonly LegoSmallRemoteKeyboard _keyboard;
         private readonly Menu _menu;
         private readonly Clock _clock;
+        private readonly DatePicker _datePicker;
         public Label SdCardStatus { get; private set; }
 
         public UiManager(Log log, HardwareManager hardwareManager)
@@ -28,6 +31,7 @@ namespace HomeAutomation
             _keyboard = new LegoSmallRemoteKeyboard(hardwareManager.LegoRemote);
             _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
             _clock = (Clock)_controlsManager.Add(new Clock("Clock", hardwareManager.Screen, _keyboard));
+            _datePicker = (DatePicker)_controlsManager.Add(new DatePicker("Date", hardwareManager.Screen, _keyboard));
             SdCardStatus = (Label)_controlsManager.Add(new Label("SdStatus", hardwareManager.Screen, _keyboard));
         }
 
@@ -37,8 +41,8 @@ namespace HomeAutomation
 
             _menu.Setup(new[]
             {
-                new MenuItem(MenuKeys.SetClock, "Set Clock"),
-                new MenuItem(MenuKeys.ShowDate, "Show Date"),
+                new MenuItem(MenuKeys.SetTime, "Set Time"),
+                new MenuItem(MenuKeys.SetDate, "Set Date"),
                 new MenuItem(MenuKeys.Exit, "Exit")
             });
 
@@ -49,6 +53,9 @@ namespace HomeAutomation
             _clock.SetTime += time => { Program.Now = time; };
             _clock.Setup(15, 0);
 
+            _datePicker.Setup(0, 0);
+            _datePicker.KeyPressed += DatePickerOnKeyPressed;
+
             SdCardStatus.Setup("     ", 15, 1);
 
             _clock.Show();
@@ -56,7 +63,7 @@ namespace HomeAutomation
 
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
         }
-
+        
         private void ScreenPowerButtonOnStateChanged(bool isOn)
         {
             if (isOn)
@@ -76,11 +83,13 @@ namespace HomeAutomation
 
             switch (key)
             {
-                case MenuKeys.SetClock:
+                case MenuKeys.SetTime:
                     _clock.Edit();
                     break;
-                case MenuKeys.ShowDate:
-                    _hardwareManager.Screen.Write(0, 0, Program.Now.ToString("yyyy-MM-dd"));
+                case MenuKeys.SetDate:
+                    _datePicker.Value = Program.Now;
+                    _datePicker.Show();
+                    _datePicker.Focus();
                     break;
                 case MenuKeys.Exit:
                     break;
@@ -95,12 +104,35 @@ namespace HomeAutomation
                 _menu.Focus();
             }
         }
+
+        private void DatePickerOnKeyPressed(Key key)
+        {
+            if (key == Key.Enter)
+            {
+                var now = Program.Now;
+
+                var newDateTime = new DateTime(_datePicker.Value.Year,
+                    _datePicker.Value.Month,
+                    _datePicker.Value.Day,
+                    now.Hour,
+                    now.Minute,
+                    now.Second);
+
+                Program.Now = newDateTime;
+
+                _datePicker.Hide();
+            }
+            else if (key == Key.Escape)
+            {
+                _datePicker.Hide();
+            }
+        }
     }
 
     internal static class MenuKeys
     {
-        public const byte SetClock = 0;
-        public const byte ShowDate = 1;
+        public const byte SetTime = 0;
+        public const byte SetDate = 1;
         public const byte Exit = 2;
     }
 }
