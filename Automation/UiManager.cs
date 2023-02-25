@@ -47,6 +47,7 @@ namespace HomeAutomation
             {
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date"),
+                new MenuItem(MenuKeys.ManagementMode, "Management On"),
                 new MenuItem(MenuKeys.Exit, "Exit")
             });
 
@@ -95,6 +96,20 @@ namespace HomeAutomation
                     _datePicker.Show();
                     _datePicker.Focus();
                     break;
+                case MenuKeys.ManagementMode:
+                    Program.ManagementMode = !Program.ManagementMode;
+                    if (Program.ManagementMode)
+                    {
+                        _screenSaver.Disable();
+                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Management Off");
+                    }
+                    else
+                    {
+                        _screenSaver.Enable();
+                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Management On");
+
+                    }
+                    break;
                 case MenuKeys.Exit:
                     break;
             }
@@ -137,6 +152,7 @@ namespace HomeAutomation
     {
         public const byte SetTime = 0;
         public const byte SetDate = 1;
-        public const byte Exit = 2;
+        public const byte ManagementMode = 2;
+        public const byte Exit = 3;
     }
 }

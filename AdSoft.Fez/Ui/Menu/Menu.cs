@@ -178,5 +178,19 @@ namespace AdSoft.Fez.Ui.Menu
 
             return result + 1;
         }
+
+        public void ChangeTitle(byte key, string newTitle)
+        {
+            foreach (var menuItem in _menuItems)
+            {
+                if (menuItem.Key != key)
+                {
+                    continue;
+                }
+
+                menuItem.Title = newTitle;
+                break;
+            }
+        }
     }
 }

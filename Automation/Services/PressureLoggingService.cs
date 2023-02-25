@@ -61,7 +61,10 @@ namespace HomeAutomation.Services
             }
 
             var pressureLogText = Format(now) + "," + _pressureSensor.Pressure.ToString("F2") + "\r\n";
-            _sdCard.TryAppend(pressureLog, pressureLogText);
+            if (!Program.ManagementMode)
+            {
+                _sdCard.TryAppend(pressureLog, pressureLogText);
+            }
             Debug.Print(pressureLogText);
         }
 

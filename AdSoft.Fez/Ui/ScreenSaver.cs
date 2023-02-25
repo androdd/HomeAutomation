@@ -1,11 +1,12 @@
 namespace AdSoft.Fez.Ui
 {
+    using System;
     using System.Threading;
 
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
-    public class ScreenSaver
+    public class ScreenSaver : IDisposable
     {
         private readonly Lcd2004 _screen;
         private readonly IKeyboard _keyboard;
@@ -22,8 +23,31 @@ namespace AdSoft.Fez.Ui
         public void Init(int seconds)
         {
             _seconds = seconds;
-            _timer = new Timer(TimeElapsed, null, seconds * 1000, Timeout.Infinite);
+            CreateTimer();
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
+        }
+
+        public void Disable()
+        {
+            _timer.Dispose();
+        }
+        
+        public void Enable()
+        {
+            CreateTimer();
+        }
+
+        public void Dispose()
+        {
+            if (_timer != null)
+            {
+                _timer.Dispose();
+            }
+        }
+
+        private void CreateTimer()
+        {
+            _timer = new Timer(TimeElapsed, null, _seconds * 1000, Timeout.Infinite);
         }
 
         private void KeyboardOnKeyPressed(Key key)
@@ -42,7 +66,5 @@ namespace AdSoft.Fez.Ui
             _isOn = true;
             _screen.BackLightOff();
         }
-
-
     }
 }

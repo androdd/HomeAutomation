@@ -1,4 +1,4 @@
 Show sensor value on a drum
 Edit coeficient of a sensor while showing the values
-Save coeficient in configuration
-Enable/Disable management mode - logs will not be writtent to sd card, screen saver will be turned off
+Edit and save screensaver timeout
+Save coeficient in configuration, managemnetMode setting

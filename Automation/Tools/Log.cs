@@ -20,7 +20,7 @@ namespace HomeAutomation.Tools
             var text = Format(RealTimeClock.GetTime()) + " - " + message;
             Debug.Print(text);
 
-            if (_sdCard != null)
+            if (_sdCard != null && !Program.ManagementMode)
             {
                 _sdCard.TryAppend("Log.txt", text + "\r\n");
             }

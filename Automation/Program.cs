@@ -39,6 +39,8 @@ namespace HomeAutomation
         private static HardwareManager _hardwareManager;
         private static UiManager _uiManager;
 
+        public static bool ManagementMode { get; set; }
+
         public static DateTime Now
         {
             get
@@ -54,10 +56,7 @@ namespace HomeAutomation
         public static void Main()
         {
             Debug.EnableGCMessages(false);
-
-            //var now = Now;
-            //Now = new DateTime(2023, 2, 21, now.Hour, now.Minute, now.Second);
-
+            ManagementMode = false;
             _log = new Log();
 
             _log.Write("Starting hardware...");

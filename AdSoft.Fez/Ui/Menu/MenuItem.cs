@@ -1,8 +1,8 @@
 namespace AdSoft.Fez.Ui.Menu
 {
-    public struct MenuItem
+    public class MenuItem
     {
-        public MenuItem(byte key, string title) : this()
+        public MenuItem(byte key, string title)
         {
             Key = key;
             Title = title;
@@ -10,6 +10,6 @@ namespace AdSoft.Fez.Ui.Menu
 
         public byte Key { get; private set; }
 
-        public string Title { get; private set; }
+        public string Title { get; set; }
     }
 }
