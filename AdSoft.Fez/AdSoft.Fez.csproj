@@ -60,6 +60,7 @@
     <Compile Include="Ui\Menu\Menu.cs" />
     <Compile Include="Ui\Menu\MenuItem.cs" />
     <Compile Include="Ui\NumericBox.cs" />
+    <Compile Include="Ui\ScreenSaver.cs" />
     <Compile Include="Ui\TextDrum.cs" />
     <Compile Include="Ui\TimePicker.cs" />
   </ItemGroup>

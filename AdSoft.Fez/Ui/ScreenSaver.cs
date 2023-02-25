@@ -1,0 +1,48 @@
+namespace AdSoft.Fez.Ui
+{
+    using System.Threading;
+
+    using AdSoft.Fez.Hardware.Lcd2004;
+    using AdSoft.Fez.Ui.Interfaces;
+
+    public class ScreenSaver
+    {
+        private readonly Lcd2004 _screen;
+        private readonly IKeyboard _keyboard;
+        private Timer _timer;
+        private int _seconds;
+        private bool _isOn;
+
+        public ScreenSaver(Lcd2004 screen, IKeyboard keyboard)
+        {
+            _screen = screen;
+            _keyboard = keyboard;
+        }
+
+        public void Init(int seconds)
+        {
+            _seconds = seconds;
+            _timer = new Timer(TimeElapsed, null, seconds * 1000, Timeout.Infinite);
+            _keyboard.KeyPressed += KeyboardOnKeyPressed;
+        }
+
+        private void KeyboardOnKeyPressed(Key key)
+        {
+            if (_isOn)
+            {
+                _isOn = false;
+                _screen.BackLightOn();
+            }
+
+            _timer.Change(_seconds * 1000, Timeout.Infinite);
+        }
+
+        private void TimeElapsed(object state)
+        {
+            _isOn = true;
+            _screen.BackLightOff();
+        }
+
+
+    }
+}

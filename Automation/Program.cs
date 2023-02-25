@@ -21,6 +21,7 @@ namespace HomeAutomation
     using HomeAutomation.Services.Interfaces;
     using HomeAutomation.Tools;
 
+    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     using Configuration = HomeAutomation.Tools.Configuration;
@@ -52,6 +53,8 @@ namespace HomeAutomation
 
         public static void Main()
         {
+            Debug.EnableGCMessages(false);
+
             //var now = Now;
             //Now = new DateTime(2023, 2, 21, now.Hour, now.Minute, now.Second);
 

@@ -16,6 +16,7 @@ namespace HomeAutomation
         
         private readonly ControlsManager _controlsManager;
         private readonly LegoSmallRemoteKeyboard _keyboard;
+        private readonly ScreenSaver _screenSaver;
         private readonly Menu _menu;
         private readonly Clock _clock;
         private readonly DatePicker _datePicker;
@@ -29,6 +30,8 @@ namespace HomeAutomation
             _controlsManager = new ControlsManager();
 
             _keyboard = new LegoSmallRemoteKeyboard(hardwareManager.LegoRemote);
+            _screenSaver = new ScreenSaver(hardwareManager.Screen, _keyboard);
+
             _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
             _clock = (Clock)_controlsManager.Add(new Clock("Clock", hardwareManager.Screen, _keyboard));
             _datePicker = (DatePicker)_controlsManager.Add(new DatePicker("Date", hardwareManager.Screen, _keyboard));
@@ -38,6 +41,7 @@ namespace HomeAutomation
         public void Setup()
         {
             _keyboard.Init();
+            _screenSaver.Init(5 * 60);
 
             _menu.Setup(new[]
             {

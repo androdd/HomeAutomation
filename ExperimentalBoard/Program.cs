@@ -12,6 +12,7 @@ namespace ExperimentalBoard
     using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
+    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class Program
@@ -21,6 +22,8 @@ namespace ExperimentalBoard
 
         public static void Main()
         {
+            Debug.EnableGCMessages(false);
+
             _led = new Led(FEZ_Pin.Digital.LED);
             _led.Init();
             
@@ -47,6 +50,9 @@ namespace ExperimentalBoard
             legoRemote.Init();
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();
+
+            var screenSaver = new ScreenSaver(_lcd2004, keyboard);
+            screenSaver.Init(2);
 
             Clock clock = new Clock("Clock", _lcd2004, keyboard);
             clock.GetTime += () => DateTime.Now;
