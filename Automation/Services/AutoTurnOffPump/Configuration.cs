@@ -1,6 +1,6 @@
 namespace HomeAutomation.Services.AutoTurnOffPump
 {
-    internal class Configuration
+    public class Configuration
     {
         public byte Interval { get; set; }
 

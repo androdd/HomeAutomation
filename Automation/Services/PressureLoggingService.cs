@@ -12,18 +12,22 @@ namespace HomeAutomation.Services
 
     using Microsoft.SPOT;
 
+    using Configuration = HomeAutomation.Tools.Configuration;
+
     internal class PressureLoggingService : Base, IDisposable
     {
         private readonly Log _log;
         private readonly SdCard _sdCard;
         private readonly IPressureSensor _pressureSensor;
+        private readonly Configuration _configuration;
         private Timer _timer;
 
-        public PressureLoggingService(Log log, SdCard sdCard, IPressureSensor pressureSensor)
+        public PressureLoggingService(Configuration configuration, Log log, SdCard sdCard, IPressureSensor pressureSensor)
         {
             _log = log;
             _sdCard = sdCard;
             _pressureSensor = pressureSensor;
+            _configuration = configuration;
         }
 
         public void Init(int minutes)
@@ -61,7 +65,7 @@ namespace HomeAutomation.Services
             }
 
             var pressureLogText = Format(now) + "," + _pressureSensor.Pressure.ToString("F2") + "\r\n";
-            if (!Program.ManagementMode)
+            if (!_configuration.ManagementMode)
             {
                 _sdCard.TryAppend(pressureLog, pressureLogText);
             }

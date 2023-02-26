@@ -9,8 +9,12 @@ namespace HomeAutomation
 
     using HomeAutomation.Tools;
 
+    using Configuration = HomeAutomation.Tools.Configuration;
+
     public class UiManager
     {
+        private readonly Configuration _configuration;
+        private readonly ConfigurationManager _configurationManager;
         private readonly Log _log;
         private readonly HardwareManager _hardwareManager;
         
@@ -22,8 +26,10 @@ namespace HomeAutomation
         private readonly DatePicker _datePicker;
         public Label SdCardStatus { get; private set; }
 
-        public UiManager(Log log, HardwareManager hardwareManager)
+        public UiManager(Configuration configuration, ConfigurationManager configurationManager, Log log, HardwareManager hardwareManager)
         {
+            _configuration = configuration;
+            _configurationManager = configurationManager;
             _log = log;
             _hardwareManager = hardwareManager;
 
@@ -41,13 +47,13 @@ namespace HomeAutomation
         public void Setup()
         {
             _keyboard.Init();
-            _screenSaver.Init(5 * 60);
+            _screenSaver.Init(5 * 60, !_configuration.ManagementMode);
 
             _menu.Setup(new[]
             {
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date"),
-                new MenuItem(MenuKeys.ManagementMode, "Management On"),
+                new MenuItem(MenuKeys.ManagementMode, "Management " + (_configuration.ManagementMode ? "Off" : "On")),
                 new MenuItem(MenuKeys.Exit, "Exit")
             });
 
@@ -97,8 +103,9 @@ namespace HomeAutomation
                     _datePicker.Focus();
                     break;
                 case MenuKeys.ManagementMode:
-                    Program.ManagementMode = !Program.ManagementMode;
-                    if (Program.ManagementMode)
+                    _configuration.ManagementMode = !_configuration.ManagementMode;
+                    _configurationManager.SetManagementMode(_configuration.ManagementMode);
+                    if (_configuration.ManagementMode)
                     {
                         _screenSaver.Disable();
                         _menu.ChangeTitle(MenuKeys.ManagementMode, "Management Off");

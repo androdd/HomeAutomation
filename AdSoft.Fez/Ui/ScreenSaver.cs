@@ -20,10 +20,15 @@ namespace AdSoft.Fez.Ui
             _keyboard = keyboard;
         }
 
-        public void Init(int seconds)
+        public void Init(int seconds, bool enabled)
         {
             _seconds = seconds;
-            CreateTimer();
+
+            if (enabled)
+            {
+                CreateTimer();
+            }
+
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
         }
 
@@ -47,7 +52,10 @@ namespace AdSoft.Fez.Ui
 
         private void CreateTimer()
         {
-            _timer = new Timer(TimeElapsed, null, _seconds * 1000, Timeout.Infinite);
+            if (_timer == null)
+            {
+                _timer = new Timer(TimeElapsed, null, _seconds * 1000, Timeout.Infinite);
+            }
         }
 
         private void KeyboardOnKeyPressed(Key key)
@@ -58,7 +66,10 @@ namespace AdSoft.Fez.Ui
                 _screen.BackLightOn();
             }
 
-            _timer.Change(_seconds * 1000, Timeout.Infinite);
+            if (_timer != null)
+            {
+                _timer.Change(_seconds * 1000, Timeout.Infinite);
+            }
         }
 
         private void TimeElapsed(object state)

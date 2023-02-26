@@ -42,6 +42,7 @@
     <Compile Include="Services\PressureLoggingService.cs" />
     <Compile Include="Services\RemoteCommandsService.cs" />
     <Compile Include="Tools\Configuration.cs" />
+    <Compile Include="Tools\ConfigurationManager.cs" />
     <Compile Include="Tools\Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />

@@ -52,7 +52,7 @@ namespace ExperimentalBoard
             keyboard.Init();
 
             var screenSaver = new ScreenSaver(_lcd2004, keyboard);
-            screenSaver.Init(2);
+            screenSaver.Init(10);
 
             Clock clock = new Clock("Clock", _lcd2004, keyboard);
             clock.GetTime += () => DateTime.Now;
@@ -60,22 +60,14 @@ namespace ExperimentalBoard
             clock.Setup(15, 0);
             clock.Show();
 
-            TextDrum textDrum = new TextDrum("TD1", _lcd2004, keyboard);
-            textDrum.Setup(11, 1, 10, 2);
-            textDrum.Show();
-
-            var thread = new Thread(() =>
-            {
-                for (int i = 40; i < 200; i+=4)
-                {
-                    textDrum.Write("Numbe:" + i);
-                    Thread.Sleep(450);
-                }
-            });
-            thread.Start();
-
             Menu menu = new Menu("Menu", _lcd2004, keyboard);
-            menu.Setup(new[] { new MenuItem(0, "Set Clock"), new MenuItem(1, "Exit") });
+            menu.Setup(new[]
+            {
+                new MenuItem(0, "Set Clock"),
+                new MenuItem(2, "Screen Saver Off"), 
+                new MenuItem(3, "Screen Saver On"), 
+                new MenuItem(1, "Exit")
+            });
 
             keyboard.KeyPressed += key =>
             {
@@ -88,14 +80,20 @@ namespace ExperimentalBoard
 
             menu.MenuItemEnter += key =>
             {
+                menu.Hide();
                 switch (key)
                 {
                     case 0:
-                        menu.Hide();
                         clock.Edit();
                         break;
+                    case 2:
+                        screenSaver.Disable();
+                        break;
+                    case 3:
+                        screenSaver.Enable();
+                        break;
                     case 1:
-                        menu.Hide();
+                        
                         break;
                 }
             };

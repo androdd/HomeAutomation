@@ -28,11 +28,11 @@ namespace HomeAutomation
         public int LightsRelayId { get; private set; }
         public int AutoTurnOffPumpRelayId { get; private set; }
 
-        public HardwareManager(Log log)
+        public HardwareManager(Log log, SdCard sdCard)
         {
             _log = log;
+            SdCard = sdCard;
 
-            SdCard = new SdCard();
             RelaysArray = new RelaysArray(new[]
             {
                 FEZ_Pin.Digital.Di0,

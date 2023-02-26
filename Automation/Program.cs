@@ -3,33 +3,24 @@ namespace HomeAutomation
     using System;
     using System.Threading;
 
-    using AdSoft.Fez.Hardware;
-    using AdSoft.Fez.Hardware.Interfaces;
-    using AdSoft.Fez.Hardware.Lcd2004;
-    using AdSoft.Fez.Hardware.LegoRemote;
     using AdSoft.Fez.Hardware.SdCard;
-    using AdSoft.Fez.Ui;
-    using AdSoft.Fez.Ui.Menu;
 
-    using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
-    using HomeAutomation.Hardware;
-    using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;
     using HomeAutomation.Services.Interfaces;
     using HomeAutomation.Tools;
 
     using Microsoft.SPOT;
-    using Microsoft.SPOT.Hardware;
 
     using Configuration = HomeAutomation.Tools.Configuration;
 
     public class Program
     {
         private static Log _log;
-        private static Configuration _config;
+        private static Configuration _configuration;
+        private static ConfigurationManager _configurationManager;
         private static RealTimer _realTimer;
         private static LightsService _lightsService;
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
@@ -38,8 +29,6 @@ namespace HomeAutomation
         
         private static HardwareManager _hardwareManager;
         private static UiManager _uiManager;
-
-        public static bool ManagementMode { get; set; }
 
         public static DateTime Now
         {
@@ -56,16 +45,16 @@ namespace HomeAutomation
         public static void Main()
         {
             Debug.EnableGCMessages(false);
-            ManagementMode = false;
-            _log = new Log();
+
+            var sdCard = new SdCard();
+            _configuration = new Configuration();
+            _log = new Log(_configuration, sdCard);
 
             _log.Write("Starting hardware...");
             
-            _hardwareManager = new HardwareManager(_log);
+            _hardwareManager = new HardwareManager(_log, sdCard);
             _hardwareManager.Setup();
 
-            _log.AddSdCard(_hardwareManager.SdCard);
-            
             _log.Write("Starting...");
 
             SetupToolsAndServices();
@@ -73,26 +62,26 @@ namespace HomeAutomation
             ReloadConfig();
 
             //_remoteCommandsService.Init();
-            _pressureLoggingService.Init(_config.PressureLogIntervalMin);
+            _pressureLoggingService.Init(_configuration.PressureLogIntervalMin);
             _autoTurnOffPumpService.Init();
 
             _hardwareManager.SdCard.CardStatusChanged += SdCardOnCardStatusChanged;
 
-            _uiManager = new UiManager(_log, _hardwareManager);
+            _uiManager = new UiManager(_configuration, _configurationManager, _log, _hardwareManager);
             _uiManager.Setup();
 
             #region Manual DST Adjustment
 
-            if (_config.ManualStartDst)
+            if (_configuration.ManualStartDst)
             {
-                _config.SaveDst();
+                _configurationManager.SaveDst();
                 Now = Now.AddHours(1);
                 _log.Write("Time manually adjusted with 1 hour.");
             }
 
-            if (_config.ManualEndDst)
+            if (_configuration.ManualEndDst)
             {
-                _config.DeleteDst();
+                _configurationManager.DeleteDst();
                 Now = Now.AddHours(-1);
                 _log.Write("Time manually adjusted with -1 hour.");
             }
@@ -154,11 +143,12 @@ namespace HomeAutomation
 
         private static void SetupToolsAndServices()
         {
-            _config = new Configuration(_hardwareManager.SdCard, _log);
+            _configuration = new Configuration();
+            _configurationManager = new ConfigurationManager(_configuration, _hardwareManager.SdCard, _log);
 
             _realTimer = new RealTimer(_log);
-            _lightsService = new LightsService(_log, _config, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);
-            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _config, _hardwareManager.PressureSensor, _hardwareManager.PumpStateSensor, _hardwareManager.RelaysArray, _hardwareManager.AutoTurnOffPumpRelayId);
+            _lightsService = new LightsService(_log, _configuration, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);
+            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _configuration, _hardwareManager.PressureSensor, _hardwareManager.PumpStateSensor, _hardwareManager.RelaysArray, _hardwareManager.AutoTurnOffPumpRelayId);
             _remoteCommandsService = new RemoteCommandsService(_hardwareManager.LegoRemote, _lightsService);
 
 #if TEST_AUTO_TURN_OFF_SERVICE
@@ -169,7 +159,7 @@ namespace HomeAutomation
             _remoteCommandsService.Init;
 #endif
 
-            _pressureLoggingService = new PressureLoggingService(_log, _hardwareManager.SdCard, _hardwareManager.PressureSensor);
+            _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.SdCard, _hardwareManager.PressureSensor);
         }
 
         private static void ScheduleConfigReload()
@@ -187,7 +177,7 @@ namespace HomeAutomation
 
         private static void ReloadConfig()
         {
-            _config.Load();
+            _configurationManager.Load();
 
             #region Automatic DST Adjustment
             // https://www.timeanddate.com/time/change/bulgaria
@@ -215,14 +205,14 @@ namespace HomeAutomation
 
         private static void DstStart(object state)
         {
-            _config.SaveDst();
+            _configurationManager.SaveDst();
 
             AdjustTimeAndRestart(1);
         }
 
         private static void DstEnd(object state)
         {
-            _config.DeleteDst();
+            _configurationManager.DeleteDst();
 
             AdjustTimeAndRestart(-1);
         }
