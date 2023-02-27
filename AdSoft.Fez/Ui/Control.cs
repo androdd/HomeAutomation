@@ -9,7 +9,7 @@ namespace AdSoft.Fez.Ui
         protected readonly Lcd2004 Screen;
         protected readonly IKeyboard Keyboard;
 
-        protected int MaxLength;
+        public int MaxLength;
         public bool IsVisible;
         public bool IsFocused;
 

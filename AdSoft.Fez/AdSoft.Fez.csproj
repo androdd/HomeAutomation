@@ -51,6 +51,7 @@
     <Compile Include="Ui\Control.cs" />
     <Compile Include="Ui\ControlsManager.cs" />
     <Compile Include="Ui\DatePicker.cs" />
+    <Compile Include="Ui\DoublePicker.cs" />
     <Compile Include="Ui\EventHandlers.cs" />
     <Compile Include="Ui\Interfaces\IKeyboard.cs" />
     <Compile Include="Ui\Interfaces\IUiWorker.cs" />

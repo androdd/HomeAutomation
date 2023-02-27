@@ -52,7 +52,18 @@ namespace ExperimentalBoard
             keyboard.Init();
 
             var screenSaver = new ScreenSaver(_lcd2004, keyboard);
-            screenSaver.Init(10);
+            screenSaver.Init(60, true);
+
+            var doublePicker = new DoublePicker("", _lcd2004, keyboard);
+            doublePicker.Setup(8, 0, 2, 0, 3);
+            doublePicker.KeyPressed += key =>
+            {
+                if (key == Key.Enter)
+                {
+                    doublePicker.Hide();
+                    _lcd2004.Write(0, 2, doublePicker.Value.ToString("F9"));
+                }
+            };
 
             Clock clock = new Clock("Clock", _lcd2004, keyboard);
             clock.GetTime += () => DateTime.Now;
@@ -63,9 +74,10 @@ namespace ExperimentalBoard
             Menu menu = new Menu("Menu", _lcd2004, keyboard);
             menu.Setup(new[]
             {
+                new MenuItem(4, "Set double"),
                 new MenuItem(0, "Set Clock"),
-                new MenuItem(2, "Screen Saver Off"), 
-                new MenuItem(3, "Screen Saver On"), 
+                new MenuItem(2, "SS Off"), 
+                new MenuItem(3, "SS On"), 
                 new MenuItem(1, "Exit")
             });
 
@@ -92,8 +104,12 @@ namespace ExperimentalBoard
                     case 3:
                         screenSaver.Enable();
                         break;
+                    case 4:
+                        doublePicker.Value = 1;
+                        doublePicker.Show();
+                        doublePicker.Focus();
+                        break;
                     case 1:
-                        
                         break;
                 }
             };

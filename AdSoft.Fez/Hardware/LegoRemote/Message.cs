@@ -107,15 +107,13 @@ namespace AdSoft.Fez.Hardware.LegoRemote
             int command;
             switch (Mode)
             {
+                case Mode.SinglePinContinuous:
+                case Mode.SinglePinTimeout:
                 case Mode.Extended:
-                    throw new NotImplementedException();
+                    return Command.Na;
                 case Mode.ComboDirect:
                     command = isA ? GetBitsInt(10, 2) : GetBitsInt(8, 2);
                     return (Command)command;
-                case Mode.SinglePinContinuous:
-                    throw new NotImplementedException();
-                case Mode.SinglePinTimeout:
-                    throw new NotImplementedException();
                 case Mode.SingleOutput:
                     int output = GetBitsInt(7, 1);
 
