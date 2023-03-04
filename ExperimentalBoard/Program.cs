@@ -1,14 +1,18 @@
 namespace ExperimentalBoard
 {
     using System;
+    using System.Collections;
     using System.Threading;
 
+    using AdSoft.Fez;
+    using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.LegoRemote;
+    using AdSoft.Fez.Hardware.SdCard;
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
-    
+
     using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
 
@@ -26,7 +30,7 @@ namespace ExperimentalBoard
 
             _led = new Led(FEZ_Pin.Digital.LED);
             _led.Init();
-            
+
             //using (var pin = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.Di13, false))
             //{ //Period 86us with no sleep
             //    var millisecondsTimeout = 1;
@@ -46,13 +50,15 @@ namespace ExperimentalBoard
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
+            SdCard sdCard = new SdCard();
+            
+            SettingsFile settingsFile = new SettingsFile(sdCard, "test.txt");
+            
+            
             LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
             legoRemote.Init();
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();
-
-            var screenSaver = new ScreenSaver(_lcd2004, keyboard);
-            screenSaver.Init(60, true);
 
             var doublePicker = new DoublePicker("", _lcd2004, keyboard);
             doublePicker.Setup(8, 0, 2, 0, 3);
@@ -65,20 +71,15 @@ namespace ExperimentalBoard
                 }
             };
 
-            Clock clock = new Clock("Clock", _lcd2004, keyboard);
-            clock.GetTime += () => DateTime.Now;
-            clock.SetTime += Utility.SetLocalTime;
-            clock.Setup(15, 0);
-            clock.Show();
-
             Menu menu = new Menu("Menu", _lcd2004, keyboard);
             menu.Setup(new[]
             {
-                new MenuItem(4, "Set double"),
-                new MenuItem(0, "Set Clock"),
-                new MenuItem(2, "SS Off"), 
-                new MenuItem(3, "SS On"), 
-                new MenuItem(1, "Exit")
+                new MenuItem(10, "Reload"),
+                new MenuItem(20, "Delete"),
+                new MenuItem(30, "Save"),
+                new MenuItem(40, "Print"),
+                new MenuItem(45, "Unmount"),
+                new MenuItem(50, "Set double")
             });
 
             keyboard.KeyPressed += key =>
@@ -90,26 +91,68 @@ namespace ExperimentalBoard
                 }
             };
 
+            menu.KeyPressed += key => Debug.Print("KeyPressed:" + DebugEx.KeyToString(key));
+
             menu.MenuItemEnter += key =>
             {
                 menu.Hide();
                 switch (key)
                 {
-                    case 0:
-                        clock.Edit();
+                    case 10:
+                        if (settingsFile.TryLoadSettings())
+                        {
+                            byte b = settingsFile.GetByteValue("Pre", 100); // 5
+                            int i = settingsFile.GetInt32Value("Set1", -1); // -10
+                            double d = settingsFile.GetDoubleValue("Sun2", -0.1); // 10
+                            ushort u = settingsFile.GetUshortValue("u", 123);
+
+                            _lcd2004.WriteLine(0, "b:" + b);
+                            _lcd2004.WriteLine(1, "i:" + i);
+                            _lcd2004.WriteLine(2, "d:" + d);
+
+                            settingsFile.AddOrUpdateValue("Sun2", 0.123.ToString());
+                            settingsFile.AddOrUpdateValue("Sun3", 123.ToString());
+
+                            d = settingsFile.GetDoubleValue("Sun2", -0.1);
+                            _lcd2004.WriteLine(3, "d:" + d);
+
+                            if (settingsFile.TrySaveSettings())
+                            {
+                                Debug.Print("Saved");
+                            }
+                        }
                         break;
-                    case 2:
-                        screenSaver.Disable();
+                    case 20:
+                        sdCard.TryDelete("test.txt");
                         break;
-                    case 3:
-                        screenSaver.Enable();
+                    case 30:
+                        settingsFile.AddOrUpdateValue("Pre", "5");
+                        settingsFile.AddOrUpdateValue("Set1", "-10");
+                        settingsFile.AddOrUpdateValue("Sun2", "10");
+
+                        if (settingsFile.TrySaveSettings())
+                        {
+                            Debug.Print("Saved New");
+                        }
                         break;
-                    case 4:
+                    case 40:
+                        bool exists;
+                        ArrayList lines;
+                        if (sdCard.TryIsExists("test.txt", out exists) && exists && sdCard.TryReadAllLines("test.txt", out lines))
+                        {
+                            foreach (var line in lines)
+                            {
+                                Debug.Print((string)line);
+                            }
+                        }
+                        break;
+                    case 45:
+                        sdCard.Unmount();
+                        break;
+                    case 50:
                         doublePicker.Value = 1;
                         doublePicker.Show();
                         doublePicker.Focus();
-                        break;
-                    case 1:
                         break;
                 }
             };
@@ -119,6 +162,6 @@ namespace ExperimentalBoard
             Thread.Sleep(Timeout.Infinite);
         }
 
-        
+
     }
 }
