@@ -209,8 +209,11 @@ namespace AdSoft.Fez.Ui
                 value = " " + value;
             }
 
-            Screen.Write(Col, Row, value);
-            ResetCursor();
+            Screen.Sync(() =>
+            {
+                Screen.Write(Col, Row, value);
+                ResetCursor();
+            });
         }
 
         private void ResetCursor()

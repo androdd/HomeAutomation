@@ -56,17 +56,20 @@ namespace AdSoft.Fez.Ui
                 text = text.Substring(0, _width - 1);
             }
 
-            int cursorCol, cursorRow;
-            Screen.GetCursor(out cursorCol, out cursorRow);
-
-            if (_lastRow != _nextRow)
+            Screen.Sync(() =>
             {
-                Screen.Write(Col, _lastRow, " ");
-            }
+                int cursorCol, cursorRow;
+                Screen.GetCursor(out cursorCol, out cursorRow);
 
-            Screen.Write(Col, _nextRow, (char)0xA5 + text); // dot in the middle
+                if (_lastRow != _nextRow)
+                {
+                    Screen.Write(Col, _lastRow, " ");
+                }
 
-            Screen.SetCursor(cursorCol, cursorRow);
+                Screen.Write(Col, _nextRow, (char)0xA5 + text); // dot in the middle
+
+                Screen.SetCursor(cursorCol, cursorRow);
+            });
 
             _lastRow = _nextRow;
 

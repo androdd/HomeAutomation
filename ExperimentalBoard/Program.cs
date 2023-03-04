@@ -53,21 +53,20 @@ namespace ExperimentalBoard
             SdCard sdCard = new SdCard();
             
             SettingsFile settingsFile = new SettingsFile(sdCard, "test.txt");
-            
-            
+
             LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
             legoRemote.Init();
             LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
             keyboard.Init();
 
             var doublePicker = new DoublePicker("", _lcd2004, keyboard);
-            doublePicker.Setup(8, 0, 2, 0, 3);
+            doublePicker.Setup(4, 0, 2, 0, 0);
+            doublePicker.Value = 1;
             doublePicker.KeyPressed += key =>
             {
                 if (key == Key.Enter)
                 {
                     doublePicker.Hide();
-                    _lcd2004.Write(0, 2, doublePicker.Value.ToString("F9"));
                 }
             };
 
@@ -79,7 +78,7 @@ namespace ExperimentalBoard
                 new MenuItem(30, "Save"),
                 new MenuItem(40, "Print"),
                 new MenuItem(45, "Unmount"),
-                new MenuItem(50, "Set double")
+                new MenuItem(50, "Set Dbl")
             });
 
             keyboard.KeyPressed += key =>
@@ -150,12 +149,35 @@ namespace ExperimentalBoard
                         sdCard.Unmount();
                         break;
                     case 50:
-                        doublePicker.Value = 1;
                         doublePicker.Show();
                         doublePicker.Focus();
                         break;
                 }
             };
+
+            var drum = new TextDrum("TD", _lcd2004, keyboard);
+            drum.Setup(10, 0, 10, 4);
+            drum.Show();
+            
+            var thread = new Thread(() =>
+            {
+                int num = 0;
+                while (true)
+                {
+                    num++;
+                    if (num == 10)
+                    {
+                        num = 1;
+                    }
+
+                    var value = num * doublePicker.Value;
+                    drum.Write(value.ToString("N5"));
+
+                    Thread.Sleep(1000);
+                }
+            });
+            thread.Start();
+
 
             _led.BlinkAsync(4, 600);
 
