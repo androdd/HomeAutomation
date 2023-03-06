@@ -5,11 +5,13 @@ namespace AdSoft.Fez.Configuration
 
     using AdSoft.Fez.Hardware.SdCard;
 
+    using Microsoft.SPOT;
+
     public class SettingsFile
     {
         private readonly SdCard _sdCard;
         private readonly string _filename;
-        private ArrayList _settings;
+        private readonly ArrayList _settings;
 
         public SettingsFile(SdCard sdCard, string filename)
         {
@@ -23,6 +25,7 @@ namespace AdSoft.Fez.Configuration
             ArrayList lines;
             if (!_sdCard.TryReadAllLines(_filename, out lines))
             {
+                Debug.Print(_filename + " can not be read.");
                 return false;
             }
 
@@ -80,9 +83,13 @@ namespace AdSoft.Fez.Configuration
             var value = GetValue(key);
 
             int result;
-            return value == null || !Converter.TryParse(value, out result)
-                ? defaultValue
-                : result;
+            if (value != null && Converter.TryParse(value, out result))
+            {
+                return result;
+            }
+            
+            Debug.Print(_settings + "=>" + key + " cannot be loaded as Int32. Will use:" + defaultValue);
+            return defaultValue;
         }
 
         public bool TryGetInt32Value(string key, out int result)
@@ -98,9 +105,13 @@ namespace AdSoft.Fez.Configuration
             var value = GetValue(key);
 
             byte result;
-            return value == null || !Converter.TryParse(value, out result)
-                ? defaultValue
-                : result;
+            if (value != null && Converter.TryParse(value, out result))
+            {
+                return result;
+            }
+
+            Debug.Print(_settings + "=>" + key + " cannot be loaded as |Byte. Will use:" + defaultValue);
+            return defaultValue;
         }
 
         public bool TryGetByteValue(string key, out byte result)
@@ -116,9 +127,13 @@ namespace AdSoft.Fez.Configuration
             var value = GetValue(key);
 
             ushort result;
-            return value == null || !Converter.TryParse(value, out result)
-                ? defaultValue
-                : result;
+            if (value != null && Converter.TryParse(value, out result))
+            {
+                return result;
+            }
+
+            Debug.Print(_settings + "=>" + key + " cannot be loaded as UShort. Will use:" + defaultValue);
+            return defaultValue;
         }
 
         public bool TryGetUshortValue(string key, out ushort result)
@@ -134,9 +149,13 @@ namespace AdSoft.Fez.Configuration
             var value = GetValue(key);
 
             double result;
-            return value == null || !Converter.TryParse(value, out result)
-                ? defaultValue
-                : result;
+            if (value != null && Converter.TryParse(value, out result))
+            {
+                return result;
+            }
+
+            Debug.Print(_settings + "=>" + key + " cannot be loaded as Double. Will use:" + defaultValue);
+            return defaultValue;
         }
 
         public bool TryGetDoubleValue(string key, out double result)

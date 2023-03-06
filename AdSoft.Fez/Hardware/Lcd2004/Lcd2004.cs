@@ -3,14 +3,14 @@ namespace AdSoft.Fez.Hardware.Lcd2004
     using System;
     using System.Threading;
 
+    using AdSoft.Fez.Ui;
+
     using Microsoft.SPOT.Hardware;
 
     using CB = AdSoft.Fez.Hardware.Lcd2004.ControlBytes;
 
     public class Lcd2004 : IDisposable
     {
-        public delegate void SyncCallback();
-        
         private readonly object _screenLock = new object();
 
         private readonly I2CDevice _busI2C;
@@ -400,7 +400,7 @@ namespace AdSoft.Fez.Hardware.Lcd2004
             }
         }
 
-        public void Sync(SyncCallback callback)
+        public void Sync(ActionEventHandler callback)
         {
             lock (_screenLock)
             {

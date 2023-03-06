@@ -1,8 +1,8 @@
 namespace HomeAutomation.Tools
 {
     using System;
-    using System.Collections;
 
+    using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware.SdCard;
 
     using GHIElectronics.NETMF.Hardware;
@@ -15,12 +15,14 @@ namespace HomeAutomation.Tools
         private const string ManagementModeCfg = "MgmtMode.cfg";
 
         private readonly Configuration _configuration;
+        private readonly SettingsFile _settingsFile;
         private readonly SdCard _sdCard;
         private readonly Log _log;
         
-        public ConfigurationManager(Configuration configuration, SdCard sdCard, Log log)
+        public ConfigurationManager(Configuration configuration, SettingsFile settingsFile, SdCard sdCard, Log log)
         {
             _configuration = configuration;
+            _settingsFile = settingsFile;
             _sdCard = sdCard;
             _log = log;
         }
@@ -124,61 +126,23 @@ namespace HomeAutomation.Tools
 
         private void Read()
         {
-            ArrayList configLines;
-            if (_sdCard.TryReadAllLines("config.txt", out configLines))
+            if (!_settingsFile.TryLoadSettings())
             {
-                _log.Write("Config: loaded");
-            }
-            else
-            {
-                _log.Write("Config is missing. Fallback to hardcoded values.");
                 return;
             }
 
-            foreach (var configLine in configLines)
-            {
-                try
-                {
-                    var line = configLine.ToString().Trim();
-                    if (line == "")
-                    {
-                        continue;
-                    }
 
-                    var configParts = line.Split(':', ';');
-                    var name = configParts[0].Trim();
-                    var value = configParts[1].Trim();
-                    switch (name)
-                    {
-                        case "SunriseOffset":
-                            _configuration.SunriseOffsetMin = int.Parse(value);
-                            break;
-                        case "SunsetOffset":
-                            _configuration.SunsetOffsetMin = int.Parse(value);
-                            break;
-                        case "PressureLogInterval":
-                            _configuration.PressureLogIntervalMin = int.Parse(value);
-                            break;
-
-                        case "AutoTurnOffPump-Interval":
-                            _configuration.AutoTurnOffPumpConfiguration.Interval = byte.Parse(value);
-                            break;
-                        case "AutoTurnOffPump-MinPressure":
-                            _configuration.AutoTurnOffPumpConfiguration.MinPressure = double.Parse(value);
-                            break;
-                        case "AutoTurnOffPump-MaxEventsCount":
-                            _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount = byte.Parse(value);
-                            break;
-                        case "AutoTurnOffPump-SignalLength":
-                            _configuration.AutoTurnOffPumpConfiguration.SignalLength = ushort.Parse(value);
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _log.Write("Config line (" + configLine + ") Err: " + ex.Message);
-                }
-            }
+            _configuration.SunriseOffsetMin = _settingsFile.GetInt32Value("SunriseOffset", _configuration.SunriseOffsetMin);
+            _configuration.SunsetOffsetMin = _settingsFile.GetInt32Value("SunsetOffset", _configuration.SunsetOffsetMin);
+            _configuration.PressureLogIntervalMin = _settingsFile.GetInt32Value("PressureLogInterval", _configuration.PressureLogIntervalMin);
+            _configuration.AutoTurnOffPumpConfiguration.Interval =
+                _settingsFile.GetByteValue("AutoTurnOffPump-Interval", _configuration.AutoTurnOffPumpConfiguration.Interval);
+            _configuration.AutoTurnOffPumpConfiguration.MinPressure = 
+                _settingsFile.GetDoubleValue("AutoTurnOffPump-MinPressure", _configuration.AutoTurnOffPumpConfiguration.MinPressure);
+            _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount = 
+                _settingsFile.GetByteValue("AutoTurnOffPump-MaxEventsCount", _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount);
+            _configuration.AutoTurnOffPumpConfiguration.SignalLength = 
+                _settingsFile.GetUshortValue("AutoTurnOffPump-SignalLength", _configuration.AutoTurnOffPumpConfiguration.SignalLength);
         }
 
         private static DateTime ToTime(DateTime now, string text)

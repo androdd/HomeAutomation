@@ -22,13 +22,15 @@ namespace AdSoft.Fez.Hardware
 
         public double Pressure
         {
-            get { return (Voltage - 0.5) / 0.756833333; }
+            get { return (Voltage - 0.5) * PressureMultiplier / 0.756833333; }
 
             // Formula: P = (V - b) / a
             // Sensor                       b       a
             // 80 psi Experimental (air)    0.48    0.756833333
             // 80 psi Factory               0.5     0.727272727
         }
+
+        public double PressureMultiplier { get; set; }
 
         public void Init()
         {

@@ -3,6 +3,7 @@ namespace HomeAutomation
     using System;
     using System.Threading;
 
+    using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware.SdCard;
 
     using GHIElectronics.NETMF.Hardware;
@@ -11,6 +12,7 @@ namespace HomeAutomation
     using HomeAutomation.Services.AutoTurnOffPump;
     using HomeAutomation.Services.Interfaces;
     using HomeAutomation.Tools;
+    using HomeAutomation.Ui;
 
     using Microsoft.SPOT;
 
@@ -29,6 +31,7 @@ namespace HomeAutomation
         
         private static HardwareManager _hardwareManager;
         private static UiManager _uiManager;
+        private static SettingsFile _settingsFile;
 
         public static DateTime Now
         {
@@ -60,6 +63,8 @@ namespace HomeAutomation
             SetupToolsAndServices();
             
             ReloadConfig();
+
+            _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
 
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init(_configuration.PressureLogIntervalMin);
@@ -144,7 +149,8 @@ namespace HomeAutomation
         private static void SetupToolsAndServices()
         {
             _configuration = new Configuration();
-            _configurationManager = new ConfigurationManager(_configuration, _hardwareManager.SdCard, _log);
+            _settingsFile = new SettingsFile(_hardwareManager.SdCard, "config.txt");
+            _configurationManager = new ConfigurationManager(_configuration, _settingsFile, _hardwareManager.SdCard, _log);
 
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _configuration, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);

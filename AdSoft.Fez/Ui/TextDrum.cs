@@ -1,5 +1,7 @@
 namespace AdSoft.Fez.Ui
 {
+    using System.Threading;
+
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
@@ -9,6 +11,7 @@ namespace AdSoft.Fez.Ui
         private int _height;
         private int _lastRow;
         private int _nextRow;
+        private Thread _thread;
 
         public TextDrum(string name, Lcd2004 screen, IKeyboard keyboard)
             : base(name, screen, keyboard)
@@ -81,6 +84,54 @@ namespace AdSoft.Fez.Ui
             {
                 _nextRow++;
             }
+        }
+
+        public void WriteInfinite(int millisecondsInterval, StringFunctionEventHandler getText)
+        {
+            if (_thread != null)
+            {
+                _thread.Abort();
+            }
+
+            if (getText == null)
+            {
+                return;
+            }
+
+            _thread = new Thread(() =>
+            {
+                while (true)
+                {
+                    Write(getText());
+
+                    Thread.Sleep(millisecondsInterval);
+                }
+            });
+            _thread.Start();
+        }
+
+        public void StopWriteInfinite()
+        {
+            if (_thread == null)
+            {
+                return;
+            }
+
+            _thread.Abort();
+            _thread = null;
+        }
+
+        public override void Hide()
+        {
+            StopWriteInfinite();
+
+            DebugEx.UiPrint(Name, "Hide");
+
+            Unfocus();
+
+            IsVisible = false;
+
+            Screen.Clear(Col, Row, Col + _width - 1, Row + _height - 1);
         }
 
         protected override int GetLength()

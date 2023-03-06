@@ -96,12 +96,15 @@ namespace AdSoft.Fez.Ui.Menu
                 _itemsOnScreen = Screen.Rows;
             }
 
-            Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
-
-            for (int i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
+            Screen.Sync(() =>
             {
-                Screen.Write(0, i - _firstItemIndex, " " + _menuItems[i].Title);
-            }
+                Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
+
+                for (int i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
+                {
+                    Screen.Write(0, i - _firstItemIndex, " " + _menuItems[i].Title);
+                }
+            });
         }
 
         protected override void OnKeyPressed(Key key)

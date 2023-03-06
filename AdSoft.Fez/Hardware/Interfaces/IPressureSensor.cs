@@ -16,6 +16,8 @@ namespace AdSoft.Fez.Hardware.Interfaces
             // 150 psi Factory              0.5     0.388349515
         }
 
+        double PressureMultiplier { get; set; }
+
         void Init();
     }
 }

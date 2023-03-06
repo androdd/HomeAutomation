@@ -1,11 +1,9 @@
-namespace HomeAutomation
+namespace HomeAutomation.Ui
 {
     using System;
 
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
-
-    using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Tools;
 
@@ -24,6 +22,11 @@ namespace HomeAutomation
         private readonly Menu _menu;
         private readonly Clock _clock;
         private readonly DatePicker _datePicker;
+        private readonly TextDrum _textDrum;
+        private readonly DoublePicker _doublePicker;
+
+        private UiStatus _status;
+
         public Label SdCardStatus { get; private set; }
 
         public UiManager(Configuration configuration, ConfigurationManager configurationManager, Log log, HardwareManager hardwareManager)
@@ -41,6 +44,9 @@ namespace HomeAutomation
             _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
             _clock = (Clock)_controlsManager.Add(new Clock("Clock", hardwareManager.Screen, _keyboard));
             _datePicker = (DatePicker)_controlsManager.Add(new DatePicker("Date", hardwareManager.Screen, _keyboard));
+            _textDrum = (TextDrum)_controlsManager.Add(new TextDrum("Drum", hardwareManager.Screen, _keyboard));
+            _doublePicker = (DoublePicker)_controlsManager.Add(new DoublePicker("Double", hardwareManager.Screen, _keyboard));
+
             SdCardStatus = (Label)_controlsManager.Add(new Label("SdStatus", hardwareManager.Screen, _keyboard));
         }
 
@@ -51,9 +57,10 @@ namespace HomeAutomation
 
             _menu.Setup(new[]
             {
+                new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date"),
-                new MenuItem(MenuKeys.ManagementMode, "Management " + (_configuration.ManagementMode ? "Off" : "On")),
+                new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
                 new MenuItem(MenuKeys.Exit, "Exit")
             });
 
@@ -61,11 +68,21 @@ namespace HomeAutomation
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
             
             _clock.GetTime += () => Program.Now;
-            _clock.SetTime += time => { Program.Now = time; };
+            _clock.SetTime += time =>
+            {
+                Program.Now = time;
+
+                _status = UiStatus.None;
+            };
             _clock.Setup(15, 0);
 
             _datePicker.Setup(0, 0);
             _datePicker.KeyPressed += DatePickerOnKeyPressed;
+
+            _textDrum.Setup(0, 0, 10, 4);
+
+            _doublePicker.Setup(7, 0, 2, 11, 3);
+            _doublePicker.KeyPressed += DoublePickerOnKeyPressed;
 
             SdCardStatus.Setup("     ", 15, 1);
 
@@ -74,7 +91,7 @@ namespace HomeAutomation
 
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
         }
-        
+
         private void ScreenPowerButtonOnStateChanged(bool isOn)
         {
             if (isOn)
@@ -95,9 +112,13 @@ namespace HomeAutomation
             switch (key)
             {
                 case MenuKeys.SetTime:
+                    _status = UiStatus.SetTime;
+
                     _clock.Edit();
                     break;
                 case MenuKeys.SetDate:
+                    _status = UiStatus.SetDate;
+
                     _datePicker.Value = Program.Now;
                     _datePicker.Show();
                     _datePicker.Focus();
@@ -108,24 +129,64 @@ namespace HomeAutomation
                     if (_configuration.ManagementMode)
                     {
                         _screenSaver.Disable();
-                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Management Off");
+                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Mgmt Off");
                     }
                     else
                     {
                         _screenSaver.Enable();
-                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Management On");
+                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Mgmt On");
 
                     }
+                    break;
+                case MenuKeys.TunePressure:
+                    _status = UiStatus.TunePressure;
+
+                    _doublePicker.Value = _configuration.PressureSensorMultiplier;
+                    _doublePicker.Show();
+                    _doublePicker.Focus();
+
+                    _textDrum.WriteInfinite(2 * 1000,
+                        () =>
+                        {
+                            var pressure = _hardwareManager.PressureSensor.Pressure * _doublePicker.Value;
+                            return pressure.ToString("F5");
+                        });
                     break;
                 case MenuKeys.Exit:
                     break;
             }
+
+            _status = UiStatus.None;
+        }
+
+        private void DoublePickerOnKeyPressed(Key key)
+        {
+            if (key == Key.Enter)
+            {
+                _configuration.PressureSensorMultiplier = _doublePicker.Value;
+                _hardwareManager.PressureSensor.PressureMultiplier = _doublePicker.Value;
+            }
+            else if (key == Key.Escape)
+            {
+                _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
+            }
+            else
+            {
+                _hardwareManager.PressureSensor.PressureMultiplier = _doublePicker.Value;
+                return;
+            }
+
+            _textDrum.Hide();
+            _doublePicker.Hide();
+            _status = UiStatus.None;
         }
 
         private void KeyboardOnKeyPressed(Key key)
         {
-            if (key == Key.F8)
+            if (key == Key.F8 && _status == UiStatus.None)
             {
+                _status = UiStatus.Menu;
+
                 _menu.Show();
                 _menu.Focus();
             }
@@ -145,21 +206,17 @@ namespace HomeAutomation
                     now.Second);
 
                 Program.Now = newDateTime;
-
-                _datePicker.Hide();
             }
             else if (key == Key.Escape)
             {
-                _datePicker.Hide();
             }
+            else
+            {
+                return;
+            }
+            
+            _datePicker.Hide();
+            _status = UiStatus.None;
         }
-    }
-
-    internal static class MenuKeys
-    {
-        public const byte SetTime = 0;
-        public const byte SetDate = 1;
-        public const byte ManagementMode = 2;
-        public const byte Exit = 3;
     }
 }

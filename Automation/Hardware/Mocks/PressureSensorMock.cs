@@ -8,10 +8,13 @@ namespace HomeAutomation.Hardware.Mocks
 
         public double Pressure { get; set; }
 
+        public double PressureMultiplier { get; set; }
+
         public void Init()
         {
             Voltage = 3;
             Pressure = 2;
+            PressureMultiplier = 1;
         }
     }
 }

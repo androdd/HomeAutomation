@@ -1,4 +1,1 @@
-Show sensor value on a drum
-Edit coeficient of a sensor while showing the values
-Edit and save screensaver timeout
 Save coeficient in configuration

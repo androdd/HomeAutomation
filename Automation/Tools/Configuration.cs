@@ -12,6 +12,8 @@ namespace HomeAutomation.Tools
         public int SunriseOffsetMin { get; set; }
         public int SunsetOffsetMin { get; set; }
         public int PressureLogIntervalMin { get; set; }
+        public double PressureSensorMultiplier { get; set; }
+        public double WaterFlowSensorMultiplier { get; set; }
 
         public Services.AutoTurnOffPump.Configuration AutoTurnOffPumpConfiguration { get; private set; }
 
@@ -34,6 +36,8 @@ namespace HomeAutomation.Tools
             SunriseOffsetMin = 0;
             SunsetOffsetMin = 0;
             PressureLogIntervalMin = 5;
+            PressureSensorMultiplier = 1;
+            WaterFlowSensorMultiplier = 1;
 
             AutoTurnOffPumpConfiguration.Interval = 1;
             AutoTurnOffPumpConfiguration.MinPressure = 0.5;
