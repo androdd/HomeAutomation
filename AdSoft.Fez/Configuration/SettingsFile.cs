@@ -11,13 +11,13 @@ namespace AdSoft.Fez.Configuration
     {
         private readonly SdCard _sdCard;
         private readonly string _filename;
-        private readonly ArrayList _settings;
+        public ArrayList Settings { get; private set; }
 
         public SettingsFile(SdCard sdCard, string filename)
         {
             _sdCard = sdCard;
             _filename = filename;
-            _settings = new ArrayList();
+            Settings = new ArrayList();
         }
 
         public bool TryLoadSettings()
@@ -29,10 +29,14 @@ namespace AdSoft.Fez.Configuration
                 return false;
             }
 
-            _settings.Clear();
+            Settings.Clear();
             for (var i = 0; i < lines.Count; i++)
             {
                 var line = (string)lines[i];
+                if (line.IndexOf(":") == -1)
+                {
+                    continue;
+                }
 
                 var parts = line.Split(':', ';');
 
@@ -44,12 +48,13 @@ namespace AdSoft.Fez.Configuration
                     }
                 }
 
-                _settings.Add(new Setting
+                Settings.Add(new Setting
                 {
                     Key = parts[0].Trim(),
                     Value = parts.Length < 2
                         ? string.Empty
-                        : parts[1].Trim()
+                        : parts[1].Trim(),
+                    TypeCode = TypeCode.String
                 });
             }
 
@@ -58,17 +63,23 @@ namespace AdSoft.Fez.Configuration
 
         public string GetValue(string key)
         {
-            for (var i = 0; i < _settings.Count; i++)
+            var setting = GetSetting(key);
+            return setting == null ? null : setting.Value;
+        }
+
+        private Setting GetSetting(string key)
+        {
+            for (var i = 0; i < Settings.Count; i++)
             {
-                var setting = (Setting)_settings[i];
+                var setting = (Setting)Settings[i];
                 if (setting.Key != key)
                 {
                     continue;
                 }
 
-                return setting.Value;
+                return setting;
             }
-            
+
             return null;
         }
 
@@ -80,107 +91,132 @@ namespace AdSoft.Fez.Configuration
 
         public int GetInt32Value(string key, int defaultValue)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             int result;
-            if (value != null && Converter.TryParse(value, out result))
+            if (setting != null && Converter.TryParse(setting.Value, out result))
             {
+                setting.TypeCode = TypeCode.Int32;
                 return result;
             }
             
-            Debug.Print(_settings + "=>" + key + " cannot be loaded as Int32. Will use:" + defaultValue);
+            Debug.Print(Settings + "=>" + key + " cannot be loaded as Int32. Will use:" + defaultValue);
             return defaultValue;
         }
 
         public bool TryGetInt32Value(string key, out int result)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             result = 0;
-            return value != null && Converter.TryParse(value, out result);
+            if (setting != null && Converter.TryParse(setting.Value, out result))
+            {
+                setting.TypeCode = TypeCode.Int32;
+                return true;
+            }
+            
+            return false;
         }
 
         public byte GetByteValue(string key, byte defaultValue)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             byte result;
-            if (value != null && Converter.TryParse(value, out result))
+            if (setting != null && Converter.TryParse(setting.Value, out result))
             {
+                setting.TypeCode = TypeCode.Byte;
                 return result;
             }
 
-            Debug.Print(_settings + "=>" + key + " cannot be loaded as |Byte. Will use:" + defaultValue);
+            Debug.Print(Settings + "=>" + key + " cannot be loaded as |Byte. Will use:" + defaultValue);
             return defaultValue;
         }
 
         public bool TryGetByteValue(string key, out byte result)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             result = 0;
-            return value != null && Converter.TryParse(value, out result);
+            if (setting != null && Converter.TryParse(setting.Value, out result))
+            {
+                setting.TypeCode = TypeCode.Byte;
+                return true;
+            }
+            
+            return false;
         }
 
         public ushort GetUshortValue(string key, ushort defaultValue)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             ushort result;
-            if (value != null && Converter.TryParse(value, out result))
+            if (setting != null && Converter.TryParse(setting.Value, out result))
             {
+                setting.TypeCode = TypeCode.UInt16;
                 return result;
             }
 
-            Debug.Print(_settings + "=>" + key + " cannot be loaded as UShort. Will use:" + defaultValue);
+            Debug.Print(Settings + "=>" + key + " cannot be loaded as UShort. Will use:" + defaultValue);
             return defaultValue;
         }
 
         public bool TryGetUshortValue(string key, out ushort result)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             result = 0;
-            return value != null && Converter.TryParse(value, out result);
+            if (setting != null && Converter.TryParse(setting.Value, out result))
+            {
+                setting.TypeCode = TypeCode.UInt16;
+                return true;
+            }
+            
+            return false;
         }
 
         public double GetDoubleValue(string key, double defaultValue)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             double result;
-            if (value != null && Converter.TryParse(value, out result))
+            if (setting != null && Converter.TryParse(setting.Value, out result))
             {
+                setting.TypeCode = TypeCode.Double;
                 return result;
             }
 
-            Debug.Print(_settings + "=>" + key + " cannot be loaded as Double. Will use:" + defaultValue);
+            Debug.Print(Settings + "=>" + key + " cannot be loaded as Double. Will use:" + defaultValue);
             return defaultValue;
         }
 
         public bool TryGetDoubleValue(string key, out double result)
         {
-            var value = GetValue(key);
+            var setting = GetSetting(key);
 
             result = 0;
-            return value != null && Converter.TryParse(value, out result);
+            if (setting != null && Converter.TryParse(setting.Value, out result))
+            {
+                setting.TypeCode = TypeCode.Double;
+                return true;
+            }
+            
+            return false;
         }
 
-        public void AddOrUpdateValue(string key, string newValue)
+        public void AddOrUpdateValue(string key, string newValue, TypeCode typeCode = TypeCode.String)
         {
-            for (var i = 0; i < _settings.Count; i++)
+            var setting = GetSetting(key);
+
+            if (setting != null)
             {
-                var setting = (Setting)_settings[i];
-                if (setting.Key != key)
-                {
-                    continue;
-                }
-
                 setting.Value = newValue;
-                return;
             }
-
-            _settings.Add(new Setting { Key = key, Value = newValue });
+            else
+            {
+                Settings.Add(new Setting { Key = key, Value = newValue, TypeCode = typeCode });
+            }
         }
 
         public bool TrySaveSettings()
@@ -257,9 +293,9 @@ namespace AdSoft.Fez.Configuration
                         }
                     }
 
-                    for (var i = 0; i < _settings.Count; i++)
+                    for (var i = 0; i < Settings.Count; i++)
                     {
-                        var setting = (Setting)_settings[i];
+                        var setting = (Setting)Settings[i];
                         if (StringExists(writtenKeys, setting.Key))
                         {
                             continue;

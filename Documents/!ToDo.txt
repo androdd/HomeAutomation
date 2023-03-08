@@ -1,1 +1,2 @@
-Save coeficient in configuration
+Save coeficient in configuration  - check every n seconds and save if something is changed
+Edit settings

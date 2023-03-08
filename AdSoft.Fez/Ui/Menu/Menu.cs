@@ -7,6 +7,7 @@ namespace AdSoft.Fez.Ui.Menu
     public class Menu : Control
     {
         private MenuItem[] _menuItems;
+        private int _rows;
         private int _lastSelectedRow;
         private int _itemsOnScreen;
         private int _firstItemIndex;
@@ -31,14 +32,25 @@ namespace AdSoft.Fez.Ui.Menu
             _lastSelectedRow = int.MaxValue;
         }
 
-        public void Setup(MenuItem[] menuItems) 
+        public void Setup(MenuItem[] menuItems)
+        {
+            Setup(menuItems, Screen.Rows);
+        }
+
+        public void Setup(MenuItem[] menuItems, int rows) 
         {
             if (menuItems == null)
             {
                 return;
             }
 
+            if (rows < 1 || rows > Screen.Rows)
+            {
+                rows = Screen.Rows;
+            }
+
             _menuItems = menuItems;
+            _rows = rows;
             
             base.Setup(0, 0);
         }
@@ -56,7 +68,7 @@ namespace AdSoft.Fez.Ui.Menu
 
         public override void Hide()
         {
-            Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
+            Screen.Clear(0, 0, MaxLength - 1, _rows - 1);
             
             Unfocus();
 
@@ -91,18 +103,18 @@ namespace AdSoft.Fez.Ui.Menu
 
         private void ShowNext()
         {
-            if (_itemsOnScreen > Screen.Rows)
+            if (_itemsOnScreen > _rows)
             {
-                _itemsOnScreen = Screen.Rows;
+                _itemsOnScreen = _rows;
             }
 
             Screen.Sync(() =>
             {
-                Screen.Clear(0, 0, MaxLength, Screen.Rows - 1);
+                Screen.Clear(0, 0, MaxLength - 1, _rows - 1);
 
                 for (int i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
                 {
-                    Screen.Write(0, i - _firstItemIndex, " " + _menuItems[i].Title);
+                    Screen.WriteLine(i - _firstItemIndex, " " + _menuItems[i].Title + "                   ");
                 }
             });
         }
@@ -122,11 +134,11 @@ namespace AdSoft.Fez.Ui.Menu
                     {
                         // There are more items up
 
-                        _firstItemIndex -= Screen.Rows;
-                        _itemsOnScreen = Screen.Rows;
+                        _firstItemIndex -= _rows;
+                        _itemsOnScreen = _rows;
 
                         ShowNext();
-                        Select((Screen.Rows - 1));
+                        Select(_rows - 1);
                     }
                     break;
                 case Key.DownArrow:

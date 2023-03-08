@@ -1,6 +1,7 @@
 namespace HomeAutomation.Tools
 {
     using System;
+    using System.Collections;
 
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware.SdCard;
@@ -18,7 +19,7 @@ namespace HomeAutomation.Tools
         private readonly SettingsFile _settingsFile;
         private readonly SdCard _sdCard;
         private readonly Log _log;
-        
+
         public ConfigurationManager(Configuration configuration, SettingsFile settingsFile, SdCard sdCard, Log log)
         {
             _configuration = configuration;
@@ -59,6 +60,30 @@ namespace HomeAutomation.Tools
             {
                 _sdCard.TryDelete(ManagementModeCfg);
             }
+        }
+
+        public string GetValue(string key)
+        {
+            return _settingsFile.GetValue(key);
+        }
+
+        public ArrayList GetAllSettings()
+        {
+            var result = new ArrayList();
+
+            foreach (var setting in _settingsFile.Settings)
+            {
+                result.Add(setting);
+            }
+
+            result.Add(new Setting { Key = "Sunrise", Value = _configuration.Sunrise.ToString("T"), TypeCode = TypeCode.Empty });
+            result.Add(new Setting { Key = "Sunset", Value = _configuration.Sunset.ToString("T"), TypeCode = TypeCode.Empty });
+            result.Add(new Setting { Key = "IsDst", Value = _configuration.IsDst.ToString(), TypeCode = TypeCode.Empty });
+            result.Add(new Setting { Key = "ManualStartDst", Value = _configuration.ManualStartDst.ToString(), TypeCode = TypeCode.Empty });
+            result.Add(new Setting { Key = "ManualEndDst", Value = _configuration.ManualEndDst.ToString(), TypeCode = TypeCode.Empty });
+            result.Add(new Setting { Key = "ManagementMode", Value = _configuration.ManagementMode.ToString(), TypeCode = TypeCode.Empty });
+
+            return result;
         }
 
         private void ReadSun()
@@ -130,7 +155,6 @@ namespace HomeAutomation.Tools
             {
                 return;
             }
-
 
             _configuration.SunriseOffsetMin = _settingsFile.GetInt32Value("SunriseOffset", _configuration.SunriseOffsetMin);
             _configuration.SunsetOffsetMin = _settingsFile.GetInt32Value("SunsetOffset", _configuration.SunsetOffsetMin);

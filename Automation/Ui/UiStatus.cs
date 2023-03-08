@@ -7,6 +7,7 @@ namespace HomeAutomation.Ui
         SetTime,
         SetDate,
         TunePressure,
-        TuneWaterFlow
+        TuneWaterFlow,
+        ShowConfig
     }
 }

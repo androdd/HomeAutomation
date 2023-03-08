@@ -1,11 +1,15 @@
 namespace HomeAutomation.Ui
 {
     using System;
+    using System.Collections;
 
+    using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
 
     using HomeAutomation.Tools;
+
+    using Microsoft.SPOT;
 
     using Configuration = HomeAutomation.Tools.Configuration;
 
@@ -20,12 +24,14 @@ namespace HomeAutomation.Ui
         private readonly LegoSmallRemoteKeyboard _keyboard;
         private readonly ScreenSaver _screenSaver;
         private readonly Menu _menu;
+        private Menu _configMenu;
         private readonly Clock _clock;
         private readonly DatePicker _datePicker;
         private readonly TextDrum _textDrum;
         private readonly DoublePicker _doublePicker;
 
         private UiStatus _status;
+        private ArrayList _allSettings;
 
         public Label SdCardStatus { get; private set; }
 
@@ -57,13 +63,13 @@ namespace HomeAutomation.Ui
 
             _menu.Setup(new[]
             {
-                new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
+                new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date"),
                 new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
                 new MenuItem(MenuKeys.Exit, "Exit")
             });
-
+            
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
             
@@ -124,6 +130,8 @@ namespace HomeAutomation.Ui
                     _datePicker.Focus();
                     break;
                 case MenuKeys.ManagementMode:
+                    _status = UiStatus.None;
+
                     _configuration.ManagementMode = !_configuration.ManagementMode;
                     _configurationManager.SetManagementMode(_configuration.ManagementMode);
                     if (_configuration.ManagementMode)
@@ -152,11 +160,57 @@ namespace HomeAutomation.Ui
                             return pressure.ToString("F5");
                         });
                     break;
+                case MenuKeys.ShowConfig:
+                    _status = UiStatus.ShowConfig;
+
+                    if (_configMenu == null)
+                    {
+                        _configMenu = (Menu)_controlsManager.Add(new Menu("ConfigMenu", _hardwareManager.Screen, _keyboard));
+                        _allSettings = _configurationManager.GetAllSettings();
+
+                        var menuItems = new MenuItem[_allSettings.Count];
+
+                        for (int i = 0; i < _allSettings.Count; i++)
+                        {
+                            var title = ((Setting)_allSettings[i]).Key;
+
+                            if (title.IndexOf("AutoTurnOffPump") == 0)
+                            {
+                                title = "AP-" + title.Substring(16);
+                            }
+
+                            menuItems[i] = new MenuItem((byte)i, title);
+                        }
+
+                        _configMenu.Setup(menuItems, _hardwareManager.Screen.Rows - 1);
+                        _configMenu.KeyPressed += ConfigMenuOnKeyPressed;
+                        _configMenu.MenuItemSelected += ConfigMenuOnMenuItemSelected;
+                    }
+
+                    _configMenu.Show();
+                    _configMenu.Focus();
+
+                    break;
                 case MenuKeys.Exit:
+                    _status = UiStatus.None;
                     break;
             }
+        }
 
-            _status = UiStatus.None;
+        private void ConfigMenuOnMenuItemSelected(byte key)
+        {
+            _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, " => " + ((Setting)_allSettings[key]).Value + "                    ");
+        }
+
+        private void ConfigMenuOnKeyPressed(Key key)
+        {
+            if (key == Key.Escape)
+            {
+                _configMenu.Hide();
+                _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, "                     ");
+                _status = UiStatus.None;
+                _clock.Show();
+            }
         }
 
         private void DoublePickerOnKeyPressed(Key key)

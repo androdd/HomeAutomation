@@ -31,11 +31,7 @@ namespace AdSoft.Fez.Ui
             }
 
             _isStarted = true;
-            _timer = new Timer(state =>
-                {
-                    var time = GetTime().ToString("HH:mm"); // 5 bytes
-                    Screen.WriteAndReturnCursor(Col, Row, time);
-                },
+            _timer = new Timer(state => { WriteTime(); },
                 null,
                 0,
                 30 * 1000);
@@ -102,6 +98,8 @@ namespace AdSoft.Fez.Ui
 
         public override void Show()
         {
+            WriteTime();
+
             base.Show();
 
             Start();
@@ -129,6 +127,17 @@ namespace AdSoft.Fez.Ui
             {
                 _timer.Dispose();
             }
+        }
+
+        private void WriteTime()
+        {
+            if (GetTime == null)
+            {
+                return;
+            }
+
+            var time = GetTime().ToString("HH:mm"); // 5 bytes
+            Screen.WriteAndReturnCursor(Col, Row, time);
         }
     }
 }

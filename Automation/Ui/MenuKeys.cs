@@ -7,5 +7,6 @@ namespace HomeAutomation.Ui
         internal const byte ManagementMode = 2;
         internal const byte Exit = 3;
         internal const byte TunePressure = 4;
+        internal const byte ShowConfig = 5;
     }
 }
