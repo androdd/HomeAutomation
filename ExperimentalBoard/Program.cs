@@ -9,6 +9,7 @@ namespace ExperimentalBoard
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.LegoRemote;
+    using AdSoft.Fez.Hardware.NecRemote;
     using AdSoft.Fez.Hardware.SdCard;
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
@@ -28,6 +29,46 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
+            _lcd2004 = new Lcd2004(0x27);
+
+            _lcd2004.Init();
+            _lcd2004.BackLightOn();
+
+            TextDrum textDrum = new TextDrum("TD", _lcd2004, null);
+            textDrum.Setup(0, 0, 20, 4);
+
+            NecRemote necRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
+            necRemote.Init();
+            necRemote.NecButtonPressed += msg =>
+            {
+                textDrum.Write(msg.Address + " - " + msg.Command);
+            };
+
+            Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void PinCapture()
+        {
+            PinCapture cap = new PinCapture((Cpu.Pin)FEZ_Pin.Digital.Di11, Port.ResistorMode.Disabled);
+            uint[] buffer = new uint[300];
+
+            int edges = cap.Read(false, buffer, 0, buffer.Length, 3000);
+            if (edges == 0)
+            {
+                Debug.Print("Nothing was captured");
+            }
+            else
+            {
+                Debug.Print("We have " + edges + " edges");
+                for (int i = 0; i < edges; i++)
+                {
+                    Debug.Print("Edge #" + i + "= " + buffer[i]);
+                }
+            }
+        }
+
+        private static void SettingsTest()
+        {
             _led = new Led(FEZ_Pin.Digital.LED);
             _led.Init();
 
@@ -51,7 +92,7 @@ namespace ExperimentalBoard
             _lcd2004.BackLightOn();
 
             SdCard sdCard = new SdCard();
-            
+
             SettingsFile settingsFile = new SettingsFile(sdCard, "test.txt");
 
             LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
@@ -120,6 +161,7 @@ namespace ExperimentalBoard
                                 Debug.Print("Saved");
                             }
                         }
+
                         break;
                     case 20:
                         sdCard.TryDelete("test.txt");
@@ -133,6 +175,7 @@ namespace ExperimentalBoard
                         {
                             Debug.Print("Saved New");
                         }
+
                         break;
                     case 40:
                         bool exists;
@@ -144,6 +187,7 @@ namespace ExperimentalBoard
                                 Debug.Print((string)line);
                             }
                         }
+
                         break;
                     case 45:
                         sdCard.Unmount();
@@ -158,7 +202,7 @@ namespace ExperimentalBoard
             var drum = new TextDrum("TD", _lcd2004, keyboard);
             drum.Setup(10, 0, 10, 4);
             drum.Show();
-            
+
             var thread = new Thread(() =>
             {
                 int num = 0;
@@ -180,10 +224,6 @@ namespace ExperimentalBoard
 
 
             _led.BlinkAsync(4, 600);
-
-            Thread.Sleep(Timeout.Infinite);
         }
-
-
     }
 }
