@@ -29,6 +29,13 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
+            MiniRemoteRead();
+
+            Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void MiniRemoteRead()
+        {
             _lcd2004 = new Lcd2004(0x27);
 
             _lcd2004.Init();
@@ -43,8 +50,6 @@ namespace ExperimentalBoard
             MiniRemoteKeyboard keyboard = new MiniRemoteKeyboard(necRemote);
             keyboard.Init();
             keyboard.KeyPressed += key => { textDrum.Write(DebugEx.KeyToString(key) + "           "); };
-            
-            Thread.Sleep(Timeout.Infinite);
         }
 
         private static void NecRemoteRead()

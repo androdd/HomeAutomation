@@ -5,6 +5,8 @@ namespace AdSoft.Fez.Hardware.NecRemote
     public class Message
     {
         private readonly byte[] _bits;
+        private bool _isChecked;
+        private bool _isValid;
 
         public byte this[int index]
         {
@@ -38,7 +40,9 @@ namespace AdSoft.Fez.Hardware.NecRemote
         {
             get
             {
-                return Check();
+                return _isChecked
+                    ? _isValid
+                    : _isValid = Check();
             }
         }
 
@@ -46,11 +50,14 @@ namespace AdSoft.Fez.Hardware.NecRemote
 
         public Message()
         {
+            _isChecked = false;
+            _isValid = false;
             _bits = new byte[32];
         }
 
         private bool Check()
         {
+            _isChecked = true;
             int byte1Int = GetBitsInt(0, 8);
             int byte2Int = GetBitsInt(8, 8);
             int byte3Int = GetBitsInt(16, 8);

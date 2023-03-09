@@ -66,7 +66,7 @@ namespace AdSoft.Fez.Ui
                     key = Key.Multiply;
                     break;
                 case 176:
-                    key = Key.Decimal;
+                    key = Key.Escape;
                     break;
                 case 56:
                     key = Key.Enter;

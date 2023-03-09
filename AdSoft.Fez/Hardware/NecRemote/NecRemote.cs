@@ -78,6 +78,12 @@ namespace AdSoft.Fez.Hardware.NecRemote
                 _message = new Message();
             }
 
+            if (bit == 40 && _message.IsValid)
+            {
+                _message.Time = time;
+                _mQ.Enqueue(_message);
+            }
+
             if (_messageIndex < 32 && bit != 10)
             {
                 _message[_messageIndex] = bit;
@@ -100,9 +106,14 @@ namespace AdSoft.Fez.Hardware.NecRemote
             if (pulseTime > 2000 && pulseTime < 2500)
                 return 1;
 
+            if (pulseTime > 2500 && pulseTime < 3000)
+                return 30; // End2
+            if (pulseTime > 100000 && pulseTime < 110000)
+                return 40; // Repeat
+
             if (pulseTime > 4900 && pulseTime < 5200)
                 return 10; // Start
-            if (pulseTime > 40000)
+            if (pulseTime > 45000 && pulseTime < 50000)
                 return 20; // End
 
             return 100; // Wrong
