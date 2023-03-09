@@ -39,12 +39,27 @@ namespace ExperimentalBoard
 
             NecRemote necRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
             necRemote.Init();
-            necRemote.NecButtonPressed += msg =>
-            {
-                textDrum.Write(msg.Address + " - " + msg.Command);
-            };
 
+            MiniRemoteKeyboard keyboard = new MiniRemoteKeyboard(necRemote);
+            keyboard.Init();
+            keyboard.KeyPressed += key => { textDrum.Write(DebugEx.KeyToString(key) + "           "); };
+            
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void NecRemoteRead()
+        {
+            _lcd2004 = new Lcd2004(0x27);
+
+            _lcd2004.Init();
+            _lcd2004.BackLightOn();
+
+            TextDrum textDrum = new TextDrum("TD", _lcd2004, null);
+            textDrum.Setup(0, 0, 20, 4);
+
+            NecRemote necRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
+            necRemote.Init();
+            necRemote.NecButtonPressed += msg => { textDrum.Write(msg.Address + " - " + msg.Command + "     "); };
         }
 
         private static void PinCapture()

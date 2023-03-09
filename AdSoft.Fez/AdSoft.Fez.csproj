@@ -65,6 +65,7 @@
     <Compile Include="Ui\LegoSmallRemoteKeyboard.cs" />
     <Compile Include="Ui\Menu\Menu.cs" />
     <Compile Include="Ui\Menu\MenuItem.cs" />
+    <Compile Include="Ui\MiniRemoteKeyboard.cs" />
     <Compile Include="Ui\NumericBox.cs" />
     <Compile Include="Ui\ScreenSaver.cs" />
     <Compile Include="Ui\TextDrum.cs" />
