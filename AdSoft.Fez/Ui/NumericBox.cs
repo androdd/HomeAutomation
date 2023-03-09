@@ -90,6 +90,21 @@ namespace AdSoft.Fez.Ui
 
             switch (key)
             {
+                case Key.D0:
+                case Key.D1:
+                case Key.D2:
+                case Key.D3:
+                case Key.D4:
+                case Key.D5:
+                case Key.D6:
+                case Key.D7:
+                case Key.D8:
+                case Key.D9:
+                    newDigit = KeyEx.GetDigit(key);
+                    newValue += (int)pow * (newDigit - digit);
+
+                    SetAndWriteNewValue(newValue, newDigit);
+                    break;
                 case Key.UpArrow:
                     if (digit == 9)
                     {
@@ -234,7 +249,7 @@ namespace AdSoft.Fez.Ui
             int count = 0;
             while (value != 0)
             {
-                value = value / 10;
+                value /= 10;
                 ++count;
             }
             return count;

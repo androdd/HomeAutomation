@@ -61,6 +61,7 @@
     <Compile Include="Ui\Interfaces\IKeyboard.cs" />
     <Compile Include="Ui\Interfaces\IUiWorker.cs" />
     <Compile Include="Ui\Key.cs" />
+    <Compile Include="Ui\KeyEx.cs" />
     <Compile Include="Ui\Label.cs" />
     <Compile Include="Ui\LegoSmallRemoteKeyboard.cs" />
     <Compile Include="Ui\Menu\Menu.cs" />

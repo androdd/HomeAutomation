@@ -111,7 +111,7 @@ namespace AdSoft.Fez.Ui
 
         protected virtual void OnKeyPressed(Key key)
         {
-            DebugEx.UiPrint(Name, "OnKeyPressed", DebugEx.KeyToString(key));
+            DebugEx.UiPrint(Name, "OnKeyPressed", KeyEx.KeyToString(key));
 
             if (KeyPressed != null)
             {

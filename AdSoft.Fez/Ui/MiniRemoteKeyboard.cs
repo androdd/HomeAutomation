@@ -85,7 +85,7 @@ namespace AdSoft.Fez.Ui
                     break;
             }
 
-            DebugEx.UiPrint("LegoSmallRemoteKeyboard", "KeyPressed", DebugEx.KeyToString(key));
+            DebugEx.UiPrint("LegoSmallRemoteKeyboard", "KeyPressed", KeyEx.KeyToString(key));
 
             KeyPressed(key);
         }
