@@ -25,7 +25,7 @@ namespace AdSoft.Fez.Configuration
             ArrayList lines;
             if (!_sdCard.TryReadAllLines(_filename, out lines))
             {
-                Debug.Print(_filename + " can not be read.");
+                DebugEx.Print(_filename + " can not be read.");
                 return false;
             }
 
@@ -129,7 +129,7 @@ namespace AdSoft.Fez.Configuration
                 return result;
             }
 
-            Debug.Print(Settings + "=>" + key + " cannot be loaded as |Byte. Will use:" + defaultValue);
+            Debug.Print(Settings + "=>" + key + " cannot be loaded as Byte. Will use:" + defaultValue);
             return defaultValue;
         }
 
@@ -249,7 +249,6 @@ namespace AdSoft.Fez.Configuration
                     for (var i = 0; i < lines.Count; i++)
                     {
                         var line = (string)lines[i];
-                        Debug.Print(line);
 
                         var parts = line.Split(':');
 

@@ -206,7 +206,7 @@ namespace AdSoft.Fez.Hardware.SdCard
             }
             catch (Exception ex)
             {
-                Debug.Print(ex.Message);
+                DebugEx.Print(ex.Message);
                 return false;
             }
 
@@ -241,7 +241,7 @@ namespace AdSoft.Fez.Hardware.SdCard
         {
             if (!PersistentStorage.DetectSDCard())
             {
-                Debug.Print("SD card missing");
+                DebugEx.Print("SD card missing");
                 _isLoaded = false;
 
                 Unmount();
@@ -265,7 +265,7 @@ namespace AdSoft.Fez.Hardware.SdCard
             }
             catch (Exception ex)
             {
-                Debug.Print("Failed to mount SD card: " + ex.Message);
+                DebugEx.Print("Failed to mount SD card: " + ex.Message);
                 _isLoaded = false;
 
                 RaiseStatusChanged(Status.Error);

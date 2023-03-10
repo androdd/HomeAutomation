@@ -3,14 +3,13 @@ namespace HomeAutomation.Services
     using System;
     using System.Threading;
 
+    using AdSoft.Fez;
     using AdSoft.Fez.Hardware.Interfaces;
     using AdSoft.Fez.Hardware.SdCard;
 
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Tools;
-
-    using Microsoft.SPOT;
 
     using Configuration = HomeAutomation.Tools.Configuration;
 
@@ -69,7 +68,7 @@ namespace HomeAutomation.Services
             {
                 _sdCard.TryAppend(pressureLog, pressureLogText);
             }
-            Debug.Print(pressureLogText);
+            DebugEx.Print(pressureLogText);
         }
 
         public void Dispose()

@@ -1,10 +1,9 @@
 namespace HomeAutomation.Tools
 {
+    using AdSoft.Fez;
     using AdSoft.Fez.Hardware.SdCard;
 
     using GHIElectronics.NETMF.Hardware;
-
-    using Microsoft.SPOT;
 
     public class Log : Base
     {
@@ -20,7 +19,7 @@ namespace HomeAutomation.Tools
         public void Write(string message)
         {
             var text = Format(RealTimeClock.GetTime()) + " - " + message;
-            Debug.Print(text);
+            DebugEx.Print(text);
 
             if (_sdCard != null && !_configuration.ManagementMode)
             {
