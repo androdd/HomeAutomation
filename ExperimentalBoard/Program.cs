@@ -29,7 +29,7 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
-            MiniRemoteRead();
+            SettingsTest();
 
             Thread.Sleep(Timeout.Infinite);
         }
@@ -49,7 +49,7 @@ namespace ExperimentalBoard
 
             MiniRemoteKeyboard keyboard = new MiniRemoteKeyboard(necRemote);
             keyboard.Init();
-            keyboard.KeyPressed += key => { textDrum.Write(DebugEx.KeyToString(key) + "           "); };
+            keyboard.KeyPressed += key => { textDrum.Write(KeyEx.KeyToString(key) + "           "); };
         }
 
         private static void NecRemoteRead()
@@ -113,11 +113,11 @@ namespace ExperimentalBoard
 
             SdCard sdCard = new SdCard();
 
-            SettingsFile settingsFile = new SettingsFile(sdCard, "test.txt");
+            SettingsFile settingsFile = new SettingsFile(sdCard, "config.txt");
 
-            LegoRemote legoRemote = new LegoRemote(FEZ_Pin.Interrupt.Di11);
-            legoRemote.Init();
-            LegoSmallRemoteKeyboard keyboard = new LegoSmallRemoteKeyboard(legoRemote);
+            var necRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
+            necRemote.Init();
+            var keyboard = new MiniRemoteKeyboard(necRemote);
             keyboard.Init();
 
             var doublePicker = new DoublePicker("", _lcd2004, keyboard);
@@ -144,14 +144,14 @@ namespace ExperimentalBoard
 
             keyboard.KeyPressed += key =>
             {
-                if (key == Key.F8)
+                if (key == Key.Multiply)
                 {
                     menu.Show();
                     menu.Focus();
                 }
             };
 
-            menu.KeyPressed += key => Debug.Print("KeyPressed:" + DebugEx.KeyToString(key));
+            menu.KeyPressed += key => Debug.Print("KeyPressed:" + KeyEx.KeyToString(key));
 
             menu.MenuItemEnter += key =>
             {
@@ -184,7 +184,14 @@ namespace ExperimentalBoard
 
                         break;
                     case 20:
-                        sdCard.TryDelete("test.txt");
+                        bool exists;
+                        if (sdCard.TryIsExists("config.txt", out exists) && exists && 
+                            sdCard.TryDelete("config.txt") &&
+                            sdCard.TryCopy("config.org", "config.txt"))
+                        {
+                            Debug.Print("Copied");
+                        }
+
                         break;
                     case 30:
                         settingsFile.AddOrUpdateValue("Pre", "5");
@@ -198,9 +205,8 @@ namespace ExperimentalBoard
 
                         break;
                     case 40:
-                        bool exists;
                         ArrayList lines;
-                        if (sdCard.TryIsExists("test.txt", out exists) && exists && sdCard.TryReadAllLines("test.txt", out lines))
+                        if (sdCard.TryIsExists("config.txt", out exists) && exists && sdCard.TryReadAllLines("config.txt", out lines))
                         {
                             foreach (var line in lines)
                             {
@@ -220,7 +226,7 @@ namespace ExperimentalBoard
             };
 
             var drum = new TextDrum("TD", _lcd2004, keyboard);
-            drum.Setup(10, 0, 10, 4);
+            drum.Setup(12, 0, 8, 4);
             drum.Show();
 
             var thread = new Thread(() =>

@@ -100,6 +100,37 @@ namespace AdSoft.Fez.Hardware.SdCard
             return true;
         }
 
+        public bool TryCopy(string filename, string newName)
+        {
+            InitCard();
+
+            if (!_isLoaded)
+            {
+                return false;
+            }
+
+            string source = GetPath(filename);
+            string destination = GetPath(newName);
+            File.Copy(source, destination);
+
+            return true;
+        }
+
+        public bool TryGetFiles(string path, out string[] files)
+        {
+            InitCard();
+
+            if (!_isLoaded)
+            {
+                files = null;
+                return false;
+            }
+
+            files = Directory.GetFiles(GetPath(path));
+
+            return true;
+        }
+
         public bool TryReadFixedLengthLine(string filename, int lineLength, int lineNumber, out string result)
         {
             InitCard();

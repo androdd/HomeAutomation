@@ -249,39 +249,47 @@ namespace AdSoft.Fez.Configuration
                     for (var i = 0; i < lines.Count; i++)
                     {
                         var line = (string)lines[i];
+                        Debug.Print(line);
 
-                        var parts = line.Split(':', ';');
+                        var parts = line.Split(':');
 
-                        string key;
+                        string key = string.Empty;
                         string newLine = i == 0 ? string.Empty : "\r\n";
-                        if (parts.Length == 1 && parts[0].Trim() != "")
+                        if (parts.Length == 1)
                         {
-                            key = parts[0].Trim();
-                            var value = GetValue(key);
-
-                            if (value == null)
+                            if (parts[0].Trim() != "")
                             {
-                                newLine += key;
-                            }
-                            else
-                            {
-                                newLine += key + ": " + value;
-                            }
-                        }
-                        else if (parts.Length == 2)
-                        {
-                            key = parts[0].Trim();
-                            var value = GetValue(key) ?? parts[1].Trim();
+                                key = parts[0].Trim();
+                                var value = GetValue(key);
 
-                            newLine += key + ": " + value;
+                                if (value == null)
+                                {
+                                    newLine += key;
+                                }
+                                else
+                                {
+                                    newLine += key + " : " + value;
+                                }
+                            }
                         }
                         else
                         {
                             key = parts[0].Trim();
-                            var value = GetValue(key) ?? parts[1].Trim();
-                            var comment = parts[2].Trim();
+                            var valueAndComment = parts[1].Trim();
+                            parts = valueAndComment.Split(';');
 
-                            newLine += key + ": " + value + " ; " + comment;
+                            var value = GetValue(key) ?? parts[0].Trim();
+
+                            if (parts.Length == 1)
+                            {
+                                newLine += key + " : " + value;
+                            }
+                            else
+                            {
+                                var comment = parts[1].Trim();
+
+                                newLine += key + " : " + value + " ; " + comment;
+                            }
                         }
 
                         SdCard.WriteToStream(stream, newLine);
