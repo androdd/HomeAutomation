@@ -8,6 +8,7 @@ namespace HomeAutomation.Ui
     using AdSoft.Fez.Ui.Interfaces;
     using AdSoft.Fez.Ui.Menu;
 
+    using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
     using Microsoft.SPOT;
@@ -20,7 +21,8 @@ namespace HomeAutomation.Ui
         private readonly ConfigurationManager _configurationManager;
         private readonly Log _log;
         private readonly HardwareManager _hardwareManager;
-        
+        private readonly LightsService _lightsService;
+
         private readonly ControlsManager _controlsManager;
         private readonly MiniRemoteKeyboard _keyboard;
         private readonly ScreenSaver _screenSaver;
@@ -36,12 +38,18 @@ namespace HomeAutomation.Ui
 
         public Label SdCardStatus { get; private set; }
 
-        public UiManager(Configuration configuration, ConfigurationManager configurationManager, Log log, HardwareManager hardwareManager)
+        public UiManager(
+            Configuration configuration,
+            ConfigurationManager configurationManager,
+            Log log,
+            HardwareManager hardwareManager,
+            LightsService lightsService)
         {
             _configuration = configuration;
             _configurationManager = configurationManager;
             _log = log;
             _hardwareManager = hardwareManager;
+            _lightsService = lightsService;
 
             _controlsManager = new ControlsManager();
 
@@ -65,9 +73,10 @@ namespace HomeAutomation.Ui
             _menu.Setup(new[]
             {
                 new MenuItem(MenuKeys.ShowConfig, "Show Config"),
+                new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
+                new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date"),
-                new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
                 new MenuItem(MenuKeys.Exit, "Exit")
             });
             
@@ -135,17 +144,8 @@ namespace HomeAutomation.Ui
 
                     _configuration.ManagementMode = !_configuration.ManagementMode;
                     _configurationManager.SetManagementMode(_configuration.ManagementMode);
-                    if (_configuration.ManagementMode)
-                    {
-                        _screenSaver.Disable();
-                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Mgmt Off");
-                    }
-                    else
-                    {
-                        _screenSaver.Enable();
-                        _menu.ChangeTitle(MenuKeys.ManagementMode, "Mgmt On");
-
-                    }
+                    _screenSaver.Enable(!_configuration.ManagementMode);
+                    _menu.ChangeTitle(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On"));
                     break;
                 case MenuKeys.TunePressure:
                     _status = UiStatus.TunePressure;
@@ -191,6 +191,15 @@ namespace HomeAutomation.Ui
                     _configMenu.Show();
                     _configMenu.Focus();
 
+                    break;
+                case MenuKeys.ToggleLights:
+                    _status = UiStatus.None;
+
+                    var areOn = _lightsService.GetLightsState();
+                    
+                    _menu.ChangeTitle(MenuKeys.ToggleLights, "Lights " + (!areOn ? "Off" : "On"));
+
+                   _lightsService.SetLights(!areOn, "Manual ");
                     break;
                 case MenuKeys.Exit:
                     _status = UiStatus.None;

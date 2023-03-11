@@ -6,9 +6,7 @@ namespace HomeAutomation.Tools
 
     using GHIElectronics.NETMF.Hardware;
 
-    using HomeAutomation.Services;
-
-    internal class RealTimer : Base
+    public class RealTimer : Base
     {
         private readonly Log _log;
         private readonly Hashtable _hashtable;

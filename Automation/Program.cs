@@ -71,7 +71,7 @@ namespace HomeAutomation
 
             _hardwareManager.SdCard.CardStatusChanged += SdCardOnCardStatusChanged;
 
-            _uiManager = new UiManager(_configuration, _configurationManager, _log, _hardwareManager);
+            _uiManager = new UiManager(_configuration, _configurationManager, _log, _hardwareManager, _lightsService);
             _uiManager.Setup();
 
             #region Manual DST Adjustment

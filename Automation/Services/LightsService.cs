@@ -4,10 +4,9 @@ namespace HomeAutomation.Services
 
     using AdSoft.Fez.Hardware;
 
-    using HomeAutomation.Hardware;
     using HomeAutomation.Tools;
 
-    internal class LightsService
+    public class LightsService
     {
         private readonly int _relayId;
 
@@ -53,6 +52,11 @@ namespace HomeAutomation.Services
                 var lightsOn = now < sunrise || sunset <= now;
                 SetLights(lightsOn, "Init ");
             }
+        }
+
+        public bool GetLightsState()
+        {
+            return _relaysArray.Get(_relayId);
         }
 
         public void SetLights(bool lightsOn, string logPrefix = "")

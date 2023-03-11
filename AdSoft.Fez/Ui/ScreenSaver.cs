@@ -37,9 +37,16 @@ namespace AdSoft.Fez.Ui
             _timer.Dispose();
         }
         
-        public void Enable()
+        public void Enable(bool isEnabled = true)
         {
-            CreateTimer();
+            if (isEnabled)
+            {
+                CreateTimer();
+            }
+            else
+            {
+                Disable();
+            }
         }
 
         public void Dispose()
