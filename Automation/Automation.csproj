@@ -40,7 +40,6 @@
     <Compile Include="Services\Interfaces\IRemoteCommandsService.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />
-    <Compile Include="Services\RemoteCommandsService.cs" />
     <Compile Include="Tools\Configuration.cs" />
     <Compile Include="Tools\ConfigurationManager.cs" />
     <Compile Include="Tools\Log.cs" />

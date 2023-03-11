@@ -27,7 +27,6 @@ namespace HomeAutomation
         private static LightsService _lightsService;
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
         private static PressureLoggingService _pressureLoggingService;
-        private static IRemoteCommandsService _remoteCommandsService;
         
         private static HardwareManager _hardwareManager;
         private static UiManager _uiManager;
@@ -155,8 +154,7 @@ namespace HomeAutomation
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _configuration, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);
             _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _configuration, _hardwareManager.PressureSensor, _hardwareManager.PumpStateSensor, _hardwareManager.RelaysArray, _hardwareManager.AutoTurnOffPumpRelayId);
-            _remoteCommandsService = new RemoteCommandsService(_hardwareManager.LegoRemote, _lightsService);
-
+            
 #if TEST_AUTO_TURN_OFF_SERVICE
             _remoteCommandsService = new AutoTurnOffPumpServiceTestRemoteCommandService(_log,
                 _hardwareManager.LegoRemote,
