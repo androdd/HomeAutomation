@@ -102,11 +102,17 @@ namespace AdSoft.Fez.Hardware.Lcd2004
             }
         }
 
-        public void WriteLine(int row, string text)
+        public void WriteLine(int row, string text, bool overwriteWholeLine = false)
         {
             lock (_screenLock)
             {
                 SetCursor(0, row);
+                
+                if (overwriteWholeLine)
+                {
+                    text += "                    ";
+                }
+
                 if (text.Length > 20)
                 {
                     text = text.Substring(0, 20);

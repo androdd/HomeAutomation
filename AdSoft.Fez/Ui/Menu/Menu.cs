@@ -114,7 +114,7 @@ namespace AdSoft.Fez.Ui.Menu
 
                 for (int i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
                 {
-                    Screen.WriteLine(i - _firstItemIndex, " " + _menuItems[i].Title + "                   ");
+                    Screen.WriteLine(i - _firstItemIndex, " " + _menuItems[i].Title, true);
                 }
             });
         }

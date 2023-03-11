@@ -5,6 +5,7 @@ namespace HomeAutomation.Ui
 
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Ui;
+    using AdSoft.Fez.Ui.Interfaces;
     using AdSoft.Fez.Ui.Menu;
 
     using HomeAutomation.Tools;
@@ -21,7 +22,7 @@ namespace HomeAutomation.Ui
         private readonly HardwareManager _hardwareManager;
         
         private readonly ControlsManager _controlsManager;
-        private readonly LegoSmallRemoteKeyboard _keyboard;
+        private readonly MiniRemoteKeyboard _keyboard;
         private readonly ScreenSaver _screenSaver;
         private readonly Menu _menu;
         private Menu _configMenu;
@@ -44,7 +45,7 @@ namespace HomeAutomation.Ui
 
             _controlsManager = new ControlsManager();
 
-            _keyboard = new LegoSmallRemoteKeyboard(hardwareManager.LegoRemote);
+            _keyboard = new MiniRemoteKeyboard(hardwareManager.NecRemote);
             _screenSaver = new ScreenSaver(hardwareManager.Screen, _keyboard);
 
             _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
@@ -199,7 +200,7 @@ namespace HomeAutomation.Ui
 
         private void ConfigMenuOnMenuItemSelected(byte key)
         {
-            _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, " => " + ((Setting)_allSettings[key]).Value + "                    ");
+            _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, " => " + ((Setting)_allSettings[key]).Value, true);
         }
 
         private void ConfigMenuOnKeyPressed(Key key)
@@ -207,7 +208,7 @@ namespace HomeAutomation.Ui
             if (key == Key.Escape)
             {
                 _configMenu.Hide();
-                _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, "                     ");
+                _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, "", true);
                 _status = UiStatus.None;
                 _clock.Show();
             }
@@ -237,7 +238,7 @@ namespace HomeAutomation.Ui
 
         private void KeyboardOnKeyPressed(Key key)
         {
-            if (key == Key.F8 && _status == UiStatus.None)
+            if ((key == Key.F8 || key == Key.Multiply ) && _status == UiStatus.None)
             {
                 _status = UiStatus.Menu;
 
