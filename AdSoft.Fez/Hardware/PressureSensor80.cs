@@ -36,6 +36,8 @@ namespace AdSoft.Fez.Hardware
         {
             _pressureSensor = new AnalogIn((AnalogIn.Pin)_portId);
             _pressureSensor.SetLinearScale(0, 3300 * 2); // Voltage divider is installed
+
+            PressureMultiplier = 1;
         }
     }
 }

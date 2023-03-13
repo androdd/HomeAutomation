@@ -5,17 +5,24 @@ namespace AdSoft.Fez.Ui
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
+    using Microsoft.SPOT;
+
     public class TextDrum : Control
     {
+        private readonly AutoResetEvent _resetEvent;
+
         private int _width;
         private int _height;
         private int _lastRow;
         private int _nextRow;
         private Thread _thread;
 
+        private string _spaces;
+
         public TextDrum(string name, Lcd2004 screen, IKeyboard keyboard)
             : base(name, screen, keyboard)
         {
+            _resetEvent = new AutoResetEvent(false);
         }
 
         public void Setup(int col, int row, int width, int height)
@@ -49,16 +56,20 @@ namespace AdSoft.Fez.Ui
             _lastRow = row;
             _nextRow = row;
 
+            _spaces = "";
+            for (int i = 0; i < width; i++)
+            {
+                _spaces += " ";
+            }
+
             base.Setup(col, row);
         }
 
         public void Write(string text)
         {
-            if (text.Length > _width - 1)
-            {
-                text = text.Substring(0, _width - 1);
-            }
-
+            text += _spaces;
+            text = text.Substring(0, _width - 1);
+            
             Screen.Sync(() =>
             {
                 int cursorCol, cursorRow;
@@ -90,7 +101,7 @@ namespace AdSoft.Fez.Ui
         {
             if (_thread != null)
             {
-                _thread.Abort();
+                _resetEvent.Set();
             }
 
             if (getText == null)
@@ -100,11 +111,9 @@ namespace AdSoft.Fez.Ui
 
             _thread = new Thread(() =>
             {
-                while (true)
+                while (!_resetEvent.WaitOne(millisecondsInterval, false))
                 {
                     Write(getText());
-
-                    Thread.Sleep(millisecondsInterval);
                 }
             });
             _thread.Start();
@@ -117,7 +126,7 @@ namespace AdSoft.Fez.Ui
                 return;
             }
 
-            _thread.Abort();
+            _resetEvent.Set();
             _thread = null;
         }
 

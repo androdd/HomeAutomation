@@ -1,3 +1,4 @@
+// ReSharper disable StringIndexOfIsCultureSpecific.1 - Not applicable in .NETMF
 namespace HomeAutomation.Ui
 {
     using System;
@@ -5,21 +6,15 @@ namespace HomeAutomation.Ui
 
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Ui;
-    using AdSoft.Fez.Ui.Interfaces;
     using AdSoft.Fez.Ui.Menu;
 
     using HomeAutomation.Services;
     using HomeAutomation.Tools;
 
-    using Microsoft.SPOT;
-
-    using Configuration = HomeAutomation.Tools.Configuration;
-
     public class UiManager
     {
         private readonly Configuration _configuration;
         private readonly ConfigurationManager _configurationManager;
-        private readonly Log _log;
         private readonly HardwareManager _hardwareManager;
         private readonly LightsService _lightsService;
 
@@ -41,13 +36,11 @@ namespace HomeAutomation.Ui
         public UiManager(
             Configuration configuration,
             ConfigurationManager configurationManager,
-            Log log,
             HardwareManager hardwareManager,
             LightsService lightsService)
         {
             _configuration = configuration;
             _configurationManager = configurationManager;
-            _log = log;
             _hardwareManager = hardwareManager;
             _lightsService = lightsService;
 
@@ -72,12 +65,12 @@ namespace HomeAutomation.Ui
 
             _menu.Setup(new[]
             {
-                new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
+                new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
+                new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
-                new MenuItem(MenuKeys.SetDate, "Set Date"),
-                new MenuItem(MenuKeys.Exit, "Exit")
+                new MenuItem(MenuKeys.SetDate, "Set Date")
             });
             
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
@@ -157,17 +150,19 @@ namespace HomeAutomation.Ui
                     _textDrum.WriteInfinite(2 * 1000,
                         () =>
                         {
-                            var pressure = _hardwareManager.PressureSensor.Pressure * _doublePicker.Value;
+                            var pressure = _hardwareManager.PressureSensor.Pressure * _doublePicker.Value /
+                                           _hardwareManager.PressureSensor.PressureMultiplier;
                             return pressure.ToString("F5");
                         });
                     break;
                 case MenuKeys.ShowConfig:
                     _status = UiStatus.ShowConfig;
 
+                    _allSettings = _configurationManager.GetAllSettings();
+
                     if (_configMenu == null)
                     {
                         _configMenu = (Menu)_controlsManager.Add(new Menu("ConfigMenu", _hardwareManager.Screen, _keyboard));
-                        _allSettings = _configurationManager.GetAllSettings();
 
                         var menuItems = new MenuItem[_allSettings.Count];
 
@@ -201,9 +196,6 @@ namespace HomeAutomation.Ui
 
                    _lightsService.SetLights(!areOn, "Manual ");
                     break;
-                case MenuKeys.Exit:
-                    _status = UiStatus.None;
-                    break;
             }
         }
 
@@ -227,16 +219,15 @@ namespace HomeAutomation.Ui
         {
             if (key == Key.Enter)
             {
-                _configuration.PressureSensorMultiplier = _doublePicker.Value;
+                _configurationManager.SetPressureSensorMultiplier(_doublePicker.Value);
                 _hardwareManager.PressureSensor.PressureMultiplier = _doublePicker.Value;
+                _configurationManager.Save();
             }
             else if (key == Key.Escape)
             {
-                _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
             }
             else
             {
-                _hardwareManager.PressureSensor.PressureMultiplier = _doublePicker.Value;
                 return;
             }
 

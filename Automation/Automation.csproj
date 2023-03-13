@@ -62,6 +62,7 @@
     <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
     <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native" />
+    <Reference Include="Microsoft.SPOT.Net" />
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>

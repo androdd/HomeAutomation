@@ -3,7 +3,6 @@ namespace HomeAutomation
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Interfaces;
     using AdSoft.Fez.Hardware.Lcd2004;
-    using AdSoft.Fez.Hardware.LegoRemote;
     using AdSoft.Fez.Hardware.NecRemote;
     using AdSoft.Fez.Hardware.SdCard;
 
@@ -59,6 +58,11 @@ namespace HomeAutomation
 #if TEST_AUTO_TURN_OFF_SERVICE
             _log.Write("TEST_AUTO_TURN_OFF_SERVICE enabled. PumpStateSensor and PressureSensor are controlled manually through mocks and remote.");
             PumpStateSensor = new PumpStateSensorMock();
+            PressureSensor = new PressureSensorMock();
+#endif
+            
+#if TEST_TUNE_PRESSURE
+            _log.Write("TEST_TUNE_PRESSURE enabled. PressureSensor are controlled manually through mocks and remote.");
             PressureSensor = new PressureSensorMock();
 #endif
         }

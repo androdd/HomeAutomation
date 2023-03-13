@@ -1,3 +1,4 @@
+// ReSharper disable StringIndexOfIsCultureSpecific.1 - Not applicable in .NETMF
 namespace AdSoft.Fez.Configuration
 {
     using System;
@@ -99,8 +100,8 @@ namespace AdSoft.Fez.Configuration
                 setting.TypeCode = TypeCode.Int32;
                 return result;
             }
-            
-            Debug.Print(Settings + "=>" + key + " cannot be loaded as Int32. Will use:" + defaultValue);
+
+            Debug.Print("Settings=>" + key + " cannot be loaded as Int32. Will use:" + defaultValue);
             return defaultValue;
         }
 
@@ -129,7 +130,7 @@ namespace AdSoft.Fez.Configuration
                 return result;
             }
 
-            Debug.Print(Settings + "=>" + key + " cannot be loaded as Byte. Will use:" + defaultValue);
+            Debug.Print("Settings=>" + key + " cannot be loaded as Byte. Will use:" + defaultValue);
             return defaultValue;
         }
 
@@ -158,7 +159,7 @@ namespace AdSoft.Fez.Configuration
                 return result;
             }
 
-            Debug.Print(Settings + "=>" + key + " cannot be loaded as UShort. Will use:" + defaultValue);
+            Debug.Print("Settings=>" + key + " cannot be loaded as UShort. Will use:" + defaultValue);
             return defaultValue;
         }
 
@@ -187,7 +188,7 @@ namespace AdSoft.Fez.Configuration
                 return result;
             }
 
-            Debug.Print(Settings + "=>" + key + " cannot be loaded as Double. Will use:" + defaultValue);
+            Debug.Print("Settings=>" + key + " cannot be loaded as Double. Will use:" + defaultValue);
             return defaultValue;
         }
 

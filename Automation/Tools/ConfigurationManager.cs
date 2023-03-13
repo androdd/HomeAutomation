@@ -3,6 +3,7 @@ namespace HomeAutomation.Tools
     using System;
     using System.Collections;
 
+    using AdSoft.Fez;
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware.SdCard;
 
@@ -14,6 +15,12 @@ namespace HomeAutomation.Tools
         private const string DstStartCfg = "dstStart.cfg";
         private const string DstEndCfg = "dstEnd.cfg";
         private const string ManagementModeCfg = "MgmtMode.cfg";
+
+        private const string SunriseOffset = "SunriseOffset";
+        private const string SunsetOffset = "SunsetOffset";
+        private const string PressureLogInterval = "PressureLogInterval";
+        private const string PressureSensorMultiplier = "PressureSensorMultiplier";
+        private const string WaterFlowSensorMultiplier = "WaterFlowSensorMultiplier";
 
         private readonly Configuration _configuration;
         private readonly SettingsFile _settingsFile;
@@ -36,6 +43,14 @@ namespace HomeAutomation.Tools
 
             bool managementModeCfgExists;
             _configuration.ManagementMode = _sdCard.TryIsExists(ManagementModeCfg, out managementModeCfgExists) && managementModeCfgExists;
+        }
+
+        public void Save()
+        {
+            if (_settingsFile.TrySaveSettings())
+            {
+                DebugEx.Print("Configuration saved to file.");
+            }
         }
 
         public void SaveDst()
@@ -61,12 +76,7 @@ namespace HomeAutomation.Tools
                 _sdCard.TryDelete(ManagementModeCfg);
             }
         }
-
-        public string GetValue(string key)
-        {
-            return _settingsFile.GetValue(key);
-        }
-
+        
         public ArrayList GetAllSettings()
         {
             var result = new ArrayList();
@@ -156,9 +166,12 @@ namespace HomeAutomation.Tools
                 return;
             }
 
-            _configuration.SunriseOffsetMin = _settingsFile.GetInt32Value("SunriseOffset", _configuration.SunriseOffsetMin);
-            _configuration.SunsetOffsetMin = _settingsFile.GetInt32Value("SunsetOffset", _configuration.SunsetOffsetMin);
-            _configuration.PressureLogIntervalMin = _settingsFile.GetInt32Value("PressureLogInterval", _configuration.PressureLogIntervalMin);
+            _configuration.SunriseOffsetMin = _settingsFile.GetInt32Value(SunriseOffset, _configuration.SunriseOffsetMin);
+            _configuration.SunsetOffsetMin = _settingsFile.GetInt32Value(SunsetOffset, _configuration.SunsetOffsetMin);
+            _configuration.PressureLogIntervalMin = _settingsFile.GetInt32Value(PressureLogInterval, _configuration.PressureLogIntervalMin);
+            _configuration.PressureSensorMultiplier = _settingsFile.GetDoubleValue(PressureSensorMultiplier, _configuration.PressureSensorMultiplier);
+            _configuration.WaterFlowSensorMultiplier = _settingsFile.GetDoubleValue(WaterFlowSensorMultiplier, _configuration.WaterFlowSensorMultiplier);
+
             _configuration.AutoTurnOffPumpConfiguration.Interval =
                 _settingsFile.GetByteValue("AutoTurnOffPump-Interval", _configuration.AutoTurnOffPumpConfiguration.Interval);
             _configuration.AutoTurnOffPumpConfiguration.MinPressure = 
@@ -167,6 +180,18 @@ namespace HomeAutomation.Tools
                 _settingsFile.GetByteValue("AutoTurnOffPump-MaxEventsCount", _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount);
             _configuration.AutoTurnOffPumpConfiguration.SignalLength = 
                 _settingsFile.GetUshortValue("AutoTurnOffPump-SignalLength", _configuration.AutoTurnOffPumpConfiguration.SignalLength);
+        }
+
+        public void SetPressureSensorMultiplier(double value)
+        {
+            _configuration.PressureSensorMultiplier = value;
+            _settingsFile.AddOrUpdateValue(PressureSensorMultiplier, value.ToString("F7"));
+        }
+
+        public void SetWaterFlowSensorMultiplier(double value)
+        {
+            _configuration.WaterFlowSensorMultiplier = value;
+            _settingsFile.AddOrUpdateValue(WaterFlowSensorMultiplier, value.ToString("F7"));
         }
 
         private static DateTime ToTime(DateTime now, string text)

@@ -19,6 +19,8 @@ namespace AdSoft.Fez.Hardware
             _portId = portId;
         }
 
+        public double FlowRateMultiplier { get; set; }
+
         public void Init()
         {
             _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);

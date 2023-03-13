@@ -10,7 +10,6 @@ namespace HomeAutomation
 
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;
-    using HomeAutomation.Services.Interfaces;
     using HomeAutomation.Tools;
     using HomeAutomation.Ui;
 
@@ -64,6 +63,7 @@ namespace HomeAutomation
             ReloadConfig();
 
             _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
+            _hardwareManager.WaterFlowSensor.FlowRateMultiplier = _configuration.WaterFlowSensorMultiplier;
 
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init(_configuration.PressureLogIntervalMin);
@@ -71,7 +71,7 @@ namespace HomeAutomation
 
             _hardwareManager.SdCard.CardStatusChanged += SdCardOnCardStatusChanged;
 
-            _uiManager = new UiManager(_configuration, _configurationManager, _log, _hardwareManager, _lightsService);
+            _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService);
             _uiManager.Setup();
 
             #region Manual DST Adjustment
