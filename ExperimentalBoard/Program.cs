@@ -2,6 +2,8 @@ namespace ExperimentalBoard
 {
     using System;
     using System.Collections;
+    using System.IO.Ports;
+    using System.Text;
     using System.Threading;
 
     using AdSoft.Fez;
@@ -16,6 +18,8 @@ namespace ExperimentalBoard
 
     using GHIElectronics.NETMF.FEZ;
     using GHIElectronics.NETMF.Hardware;
+    using GHIElectronics.NETMF.IO;
+    using GHIElectronics.NETMF.USBClient;
 
     using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
@@ -29,9 +33,93 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
-            SettingsTest();
+            SerialTest();
 
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void SerialTest()
+        {
+            _lcd2004 = new Lcd2004(0x27);
+
+            _lcd2004.Init();
+            _lcd2004.BackLightOn();
+
+            var current = Configuration.DebugInterface.GetCurrent();
+
+            _lcd2004.WriteAndReturnCursor(0, 0, current.ToString());
+
+            if (current == Configuration.DebugInterface.Port.USB1)
+            {
+                _lcd2004.WriteAndReturnCursor(0, 0, "USB");
+
+
+                SerialPort UART = new SerialPort("COM1", 115200);
+                UART.ReadTimeout = 2000;
+
+                int read_count = 0;
+                byte[] tx_data;
+                byte[] rx_data = new byte[10];
+                tx_data = Encoding.UTF8.GetBytes("FEZ");
+                UART.Open();
+                while (true)
+                {
+                    UART.Flush();
+                    UART.Write(tx_data, 0, tx_data.Length);
+
+                    Thread.Sleep(100);
+
+                    read_count = UART.Read(rx_data, 0, rx_data.Length);
+
+                    if (read_count != 3)
+                    {
+                        // we sent 3 so we should have 3 back
+                        Debug.Print("Wrong size: " + read_count.ToString());
+                    }
+                    else
+                    {
+                        // the count is correct so check the values
+                        // I am doing this the easy way so the code is more clear
+                        if (tx_data[0] == rx_data[0])
+                        {
+                            if (tx_data[1] == rx_data[1])
+                            {
+                                if (tx_data[2] == rx_data[2])
+                                {
+                                    Debug.Print("Perfect data!");
+                                }
+                            }
+                        }
+                    }
+
+                    Thread.Sleep(100);
+                }
+            }
+            else
+            {
+                _lcd2004.WriteAndReturnCursor(0, 0, "StartMassStorage");
+                var massStorage = USBClientController.StandardDevices.StartMassStorage();
+
+                PersistentStorage sd;
+                try
+                {
+                    sd = new PersistentStorage("SD");
+                }
+                catch
+                {
+                    throw new Exception("SD card not detected");
+                }
+
+                massStorage.AttachLun(0, sd, "A&D Soft", "Home Automation");
+                massStorage.EnableLun(0);
+            }
+
+            while (true)
+            {
+                Debug.Print(DateTime.Now.ToString());
+                _lcd2004.WriteAndReturnCursor(0, 3, DateTime.Now.ToString());
+                Thread.Sleep(1500);
+            }
         }
 
         private static void MiniRemoteRead()
