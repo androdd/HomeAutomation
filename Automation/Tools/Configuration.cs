@@ -23,8 +23,7 @@ namespace HomeAutomation.Tools
         
         public Configuration()
         {
-            // Until there is no real configuration loaded ManagementMode is in effect
-            ManagementMode = true;
+            ManagementMode = false;
 
             AutoTurnOffPumpConfiguration = new Services.AutoTurnOffPump.Configuration();
 

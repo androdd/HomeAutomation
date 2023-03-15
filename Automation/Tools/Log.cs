@@ -19,7 +19,7 @@ namespace HomeAutomation.Tools
         public void Write(string message)
         {
             var text = Format(RealTimeClock.GetTime()) + " - " + message;
-            DebugEx.Print(text);
+            DebugEx.Print(DebugEx.Target.Log, text);
 
             if (_sdCard != null && !_configuration.ManagementMode)
             {

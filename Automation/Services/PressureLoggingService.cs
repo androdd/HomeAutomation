@@ -63,12 +63,15 @@ namespace HomeAutomation.Services
                 _log.Write("Created " + pressureLog + " file.");
             }
 
-            var pressureLogText = Format(now) + "," + _pressureSensor.Pressure.ToString("F2") + "\r\n";
+            var pressureLogText = Format(now) + "," + _pressureSensor.Pressure.ToString("F2");
+            DebugEx.Print(DebugEx.Target.PressureLog, pressureLogText);
+            
             if (!_configuration.ManagementMode)
             {
+                pressureLogText += "\r\n";
                 _sdCard.TryAppend(pressureLog, pressureLogText);
             }
-            DebugEx.Print(pressureLogText);
+            
         }
 
         public void Dispose()

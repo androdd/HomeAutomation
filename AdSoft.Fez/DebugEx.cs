@@ -53,7 +53,8 @@ namespace AdSoft.Fez
             ScreenSaver = 1,
             Ui = 1 << 1,
             Log = 1 << 2,
-            Keyboard = 1 << 3
+            Keyboard = 1 << 3,
+            PressureLog = 1 << 4
         }
     }
 }
