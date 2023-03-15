@@ -1,9 +1,21 @@
 namespace AdSoft.Fez
 {
+    using System;
+
     using Microsoft.SPOT;
 
     public static class DebugEx
     {
+        public static Target Targets { get; set; }
+
+        public static void Print(Target target, string text)
+        {
+            if ((Targets & target) > 0)
+            {
+                Debug.Print(text);
+            }
+        }
+
         public static void Print(string text)
         {
             Debug.Print(text);
@@ -32,6 +44,16 @@ namespace AdSoft.Fez
             text += (data / (1 << 1) % 2).ToString();
             text += (data % 2).ToString();
             Debug.Print(text);
+        }
+
+        [Flags]
+        public enum Target
+        {
+            None = 0,
+            ScreenSaver = 1,
+            Ui = 1 << 1,
+            Log = 1 << 2,
+            Keyboard = 1 << 3
         }
     }
 }

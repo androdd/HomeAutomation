@@ -3,6 +3,7 @@ namespace HomeAutomation
     using System;
     using System.Threading;
 
+    using AdSoft.Fez;
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware.SdCard;
 
@@ -45,6 +46,7 @@ namespace HomeAutomation
 
         public static void Main()
         {
+            DebugEx.Targets = DebugEx.Target.ScreenSaver | DebugEx.Target.Keyboard;
             Debug.EnableGCMessages(false);
 
             var sdCard = new SdCard();

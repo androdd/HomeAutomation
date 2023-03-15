@@ -23,7 +23,7 @@ namespace AdSoft.Fez.Hardware
         {
             _portId = portId;
 
-            _lastFlowRate = 1;
+            _lastFlowRate = 0;
         }
 
         public double FlowRateMultiplier { get; set; }

@@ -28,19 +28,26 @@ namespace AdSoft.Fez.Ui
             {
                 CreateTimer();
             }
-
-            _keyboard.KeyPressed += KeyboardOnKeyPressed;
         }
 
         public void Disable()
         {
-            _timer.Dispose();
+            if (_timer != null)
+            {
+                DebugEx.Print(DebugEx.Target.ScreenSaver, "ScreenSaver - Disable");
+
+                _keyboard.KeyPressed -= KeyboardOnKeyPressed;
+
+                _timer.Dispose();
+                _timer = null;
+            }
         }
         
         public void Enable(bool isEnabled = true)
         {
             if (isEnabled)
             {
+                DebugEx.Print(DebugEx.Target.ScreenSaver, "ScreenSaver - Enable");
                 CreateTimer();
             }
             else
@@ -53,7 +60,9 @@ namespace AdSoft.Fez.Ui
         {
             if (_timer != null)
             {
+                DebugEx.Print(DebugEx.Target.ScreenSaver, "ScreenSaver - Dispose");
                 _timer.Dispose();
+                _timer = null;
             }
         }
 
@@ -61,7 +70,10 @@ namespace AdSoft.Fez.Ui
         {
             if (_timer == null)
             {
+                DebugEx.Print(DebugEx.Target.ScreenSaver, "ScreenSaver - New timer");
                 _timer = new Timer(TimeElapsed, null, _seconds * 1000, Timeout.Infinite);
+
+                _keyboard.KeyPressed += KeyboardOnKeyPressed;
             }
         }
 
@@ -69,18 +81,21 @@ namespace AdSoft.Fez.Ui
         {
             if (_isOn)
             {
+                DebugEx.Print(DebugEx.Target.ScreenSaver, "ScreenSaver - Off");
                 _isOn = false;
                 _screen.BackLightOn();
             }
 
             if (_timer != null)
             {
+                DebugEx.Print(DebugEx.Target.ScreenSaver, "ScreenSaver - Timer reset");
                 _timer.Change(_seconds * 1000, Timeout.Infinite);
             }
         }
 
         private void TimeElapsed(object state)
         {
+            DebugEx.Print(DebugEx.Target.ScreenSaver, "ScreenSaver - On");
             _isOn = true;
             _screen.BackLightOff();
         }

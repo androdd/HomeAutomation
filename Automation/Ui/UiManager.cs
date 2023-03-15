@@ -61,7 +61,7 @@ namespace HomeAutomation.Ui
         public void Setup()
         {
             _keyboard.Init();
-            _screenSaver.Init(5 * 60, !_configuration.ManagementMode);
+            _screenSaver.Init(3 * 60, !_configuration.ManagementMode);
 
             _menu.Setup(new[]
             {
