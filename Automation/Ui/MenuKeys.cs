@@ -8,5 +8,6 @@ namespace HomeAutomation.Ui
         internal const byte TunePressure = 4;
         internal const byte ShowConfig = 5;
         internal const byte ToggleLights = 6;
+        internal const byte TuneFlowRate = 7;
     }
 }

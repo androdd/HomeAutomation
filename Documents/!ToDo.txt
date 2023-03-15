@@ -1,2 +1,1 @@
 Edit settings
-Tune FlowRate sensor and save multiplier to config

@@ -67,6 +67,7 @@ namespace HomeAutomation.Ui
             {
                 new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
+                new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
                 new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
@@ -75,6 +76,7 @@ namespace HomeAutomation.Ui
             
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
+            _menu.KeyPressed += MenuOnKeyPressed;
             
             _clock.GetTime += () => Program.Now;
             _clock.SetTime += time =>
@@ -155,6 +157,21 @@ namespace HomeAutomation.Ui
                             return pressure.ToString("F5");
                         });
                     break;
+                case MenuKeys.TuneFlowRate:
+                    _status = UiStatus.TuneFlowRate;
+
+                    _doublePicker.Value = _configuration.FlowRateSensorMultiplier;
+                    _doublePicker.Show();
+                    _doublePicker.Focus();
+
+                    _textDrum.WriteInfinite(2 * 1000,
+                        () =>
+                        {
+                            var flowRate = _hardwareManager.FlowRateSensor.FlowRate * _doublePicker.Value /
+                                           _hardwareManager.FlowRateSensor.FlowRateMultiplier;
+                            return flowRate.ToString("F5");
+                        });
+                    break;
                 case MenuKeys.ShowConfig:
                     _status = UiStatus.ShowConfig;
 
@@ -204,11 +221,19 @@ namespace HomeAutomation.Ui
             _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, " => " + ((Setting)_allSettings[key]).Value, true);
         }
 
+        private void MenuOnKeyPressed(Key key)
+        {
+            if (key == Key.Escape)
+            {
+                _status = UiStatus.None;
+                _clock.Show();
+            }
+        }
+
         private void ConfigMenuOnKeyPressed(Key key)
         {
             if (key == Key.Escape)
             {
-                _configMenu.Hide();
                 _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, "", true);
                 _status = UiStatus.None;
                 _clock.Show();
@@ -217,18 +242,28 @@ namespace HomeAutomation.Ui
 
         private void DoublePickerOnKeyPressed(Key key)
         {
-            if (key == Key.Enter)
+            switch (key)
             {
-                _configurationManager.SetPressureSensorMultiplier(_doublePicker.Value);
-                _hardwareManager.PressureSensor.PressureMultiplier = _doublePicker.Value;
-                _configurationManager.Save();
-            }
-            else if (key == Key.Escape)
-            {
-            }
-            else
-            {
-                return;
+                case Key.Enter:
+                {
+                    if(_status == UiStatus.TunePressure)
+                    {
+                        _configurationManager.SetPressureSensorMultiplier(_doublePicker.Value);
+                        _hardwareManager.PressureSensor.PressureMultiplier = _doublePicker.Value;
+                    }
+                    else if (_status == UiStatus.TuneFlowRate)
+                    {
+                        _configurationManager.SetFlowRateSensorMultiplier(_doublePicker.Value);
+                        _hardwareManager.FlowRateSensor.FlowRateMultiplier = _doublePicker.Value;
+                    }
+
+                    _configurationManager.Save();
+                    break;
+                }
+                case Key.Escape:
+                    break;
+                default:
+                    return;
             }
 
             _textDrum.Hide();

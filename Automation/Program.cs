@@ -63,7 +63,7 @@ namespace HomeAutomation
             ReloadConfig();
 
             _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
-            _hardwareManager.WaterFlowSensor.FlowRateMultiplier = _configuration.WaterFlowSensorMultiplier;
+            _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
 
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init(_configuration.PressureLogIntervalMin);

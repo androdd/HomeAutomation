@@ -20,7 +20,7 @@ namespace HomeAutomation.Tools
         private const string SunsetOffset = "SunsetOffset";
         private const string PressureLogInterval = "PressureLogInterval";
         private const string PressureSensorMultiplier = "PressureSensorMultiplier";
-        private const string WaterFlowSensorMultiplier = "WaterFlowSensorMultiplier";
+        private const string FlowRateSensorMultiplier = "FlowRateSensorMultiplier";
 
         private readonly Configuration _configuration;
         private readonly SettingsFile _settingsFile;
@@ -170,7 +170,7 @@ namespace HomeAutomation.Tools
             _configuration.SunsetOffsetMin = _settingsFile.GetInt32Value(SunsetOffset, _configuration.SunsetOffsetMin);
             _configuration.PressureLogIntervalMin = _settingsFile.GetInt32Value(PressureLogInterval, _configuration.PressureLogIntervalMin);
             _configuration.PressureSensorMultiplier = _settingsFile.GetDoubleValue(PressureSensorMultiplier, _configuration.PressureSensorMultiplier);
-            _configuration.WaterFlowSensorMultiplier = _settingsFile.GetDoubleValue(WaterFlowSensorMultiplier, _configuration.WaterFlowSensorMultiplier);
+            _configuration.FlowRateSensorMultiplier = _settingsFile.GetDoubleValue(FlowRateSensorMultiplier, _configuration.FlowRateSensorMultiplier);
 
             _configuration.AutoTurnOffPumpConfiguration.Interval =
                 _settingsFile.GetByteValue("AutoTurnOffPump-Interval", _configuration.AutoTurnOffPumpConfiguration.Interval);
@@ -188,10 +188,10 @@ namespace HomeAutomation.Tools
             _settingsFile.AddOrUpdateValue(PressureSensorMultiplier, value.ToString("F7"));
         }
 
-        public void SetWaterFlowSensorMultiplier(double value)
+        public void SetFlowRateSensorMultiplier(double value)
         {
-            _configuration.WaterFlowSensorMultiplier = value;
-            _settingsFile.AddOrUpdateValue(WaterFlowSensorMultiplier, value.ToString("F7"));
+            _configuration.FlowRateSensorMultiplier = value;
+            _settingsFile.AddOrUpdateValue(FlowRateSensorMultiplier, value.ToString("F7"));
         }
 
         private static DateTime ToTime(DateTime now, string text)

@@ -7,28 +7,40 @@ namespace AdSoft.Fez.Hardware
     using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
-    public class WaterFlowSensor
+    public class FlowRateSensor
     {
+        const int MeasurementsCount = 100;
+
         private long _lastPulseTime;
+        private int _count;
+        private double _flowRate;
+        private double _lastFlowRate;
 
         private readonly FEZ_Pin.Interrupt _portId;
         private InterruptPort _interruptPort;
 
-        public WaterFlowSensor(FEZ_Pin.Interrupt portId)
+        public FlowRateSensor(FEZ_Pin.Interrupt portId)
         {
             _portId = portId;
+
+            _lastFlowRate = 1;
         }
 
         public double FlowRateMultiplier { get; set; }
+
+        public double FlowRate
+        {
+            get
+            {
+                return _lastFlowRate * FlowRateMultiplier;
+            }
+        }
 
         public void Init()
         {
             _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
             _interruptPort.OnInterrupt += OnInterrupt;
         }
-
-        private int _count;
-        private double _flowRate;
 
         private void OnInterrupt(uint data1, uint data2, DateTime time)
         {
@@ -38,11 +50,11 @@ namespace AdSoft.Fez.Hardware
             _flowRate += frequency / 440.0;
             
             _count++;
-            var x = 100;
-            if (_count % x == 0)
+
+            if (_count % MeasurementsCount == 0)
             {
-                
-                Debug.Print((_flowRate/x).ToString("F"));
+
+                _lastFlowRate = _flowRate / MeasurementsCount;
 
                 _flowRate = 0;
             }
