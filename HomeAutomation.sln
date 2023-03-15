@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExperimentalBoard", "Experi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdSoft.Fez", "AdSoft.Fez\AdSoft.Fez.csproj", "{093798A0-2327-429B-9AD6-8B8172EBBCCA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExperimentalDesktop", "ExperimentalDesktop\ExperimentalDesktop.csproj", "{7179EAD8-895B-4A0C-BA6B-481FAC465A94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{093798A0-2327-429B-9AD6-8B8172EBBCCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{093798A0-2327-429B-9AD6-8B8172EBBCCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{093798A0-2327-429B-9AD6-8B8172EBBCCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7179EAD8-895B-4A0C-BA6B-481FAC465A94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7179EAD8-895B-4A0C-BA6B-481FAC465A94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7179EAD8-895B-4A0C-BA6B-481FAC465A94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7179EAD8-895B-4A0C-BA6B-481FAC465A94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
