@@ -279,7 +279,7 @@ namespace ExperimentalBoard
             {
                 if (key == Key.Enter)
                 {
-                    doublePicker.Hide();
+                    doublePicker.Show(false);
                 }
             };
 
@@ -307,7 +307,7 @@ namespace ExperimentalBoard
 
             menu.MenuItemEnter += key =>
             {
-                menu.Hide();
+                menu.Show(false);
                 switch (key)
                 {
                     case 10:

@@ -55,26 +55,28 @@ namespace AdSoft.Fez.Ui.Menu
             base.Setup(0, 0);
         }
 
-        public override void Show()
+        public override void Show(bool show = true)
         {
-            _firstItemIndex = 0;
+            if (show)
+            {
+                _firstItemIndex = 0;
 
-            _itemsOnScreen = MenuItemsCount;
+                _itemsOnScreen = MenuItemsCount;
 
-            ShowNext();
+                ShowNext();
 
-            base.Show();
-        }
+                base.Show(show);
+            }
+            else
+            {
+                Screen.Clear(0, 0, MaxLength - 1, _rows - 1);
 
-        public override void Hide()
-        {
-            Screen.Clear(0, 0, MaxLength - 1, _rows - 1);
-            
-            Unfocus();
+                Unfocus();
 
-            IsVisible = false;
+                IsVisible = false;
 
-            DebugEx.UiPrint(Name, "Hide");
+                DebugEx.UiPrint(Name, "Hide");       
+            }
         }
 
         public override void Focus()
@@ -167,7 +169,7 @@ namespace AdSoft.Fez.Ui.Menu
                     }
                     break;
                 case Key.Escape:
-                    Hide();
+                    Show(false);
                     break;
             }
 

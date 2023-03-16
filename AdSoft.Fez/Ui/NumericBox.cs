@@ -56,7 +56,7 @@ namespace AdSoft.Fez.Ui
             base.Setup(col, row);
         }
 
-        public override void Show()
+        public override void Show(bool show = true)
         {
             string placeHolder = Value.ToString();
             int valueLength = placeHolder.Length;
@@ -68,7 +68,7 @@ namespace AdSoft.Fez.Ui
 
             Screen.Write(Col, Row, placeHolder);
 
-            base.Show();
+            base.Show(show);
         }
 
         public override void Focus()

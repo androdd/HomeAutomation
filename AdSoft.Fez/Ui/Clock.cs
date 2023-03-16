@@ -91,25 +91,25 @@ namespace AdSoft.Fez.Ui
                     return;
             }
 
-            _timePicker.Hide();
+            _timePicker.Show(false);
             IsFocused = false;
             Start();
         }
 
-        public override void Show()
+        public override void Show(bool show = true)
         {
-            WriteTime();
+            if (show)
+            {
+                WriteTime();
 
-            base.Show();
+                Start();
+            }
+            else
+            {
+                Stop();    
+            }
 
-            Start();
-        }
-
-        public override void Hide()
-        {
-            Stop();
-
-            base.Hide();
+            base.Show(show);
         }
 
         public override void Focus()

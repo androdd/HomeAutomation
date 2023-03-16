@@ -40,27 +40,29 @@ namespace AdSoft.Fez.Ui
             MaxLength = GetLength();
         }
         
-        public virtual void Show()
+        public virtual void Show(bool show = true)
         {
-            DebugEx.UiPrint(Name, "Show");
-            
-            IsVisible = true;
-        }
-
-        public virtual void Hide()
-        {
-            DebugEx.UiPrint(Name, "Hide");
-
-            Unfocus();
-
-            IsVisible = false;
-            string placeHolder = "";
-            for (int i = 0; i < MaxLength; i++)
+            if (show)
             {
-                placeHolder += " ";
+                DebugEx.UiPrint(Name, "Show");
+            
+                IsVisible = true;
             }
+            else
+            {
+                DebugEx.UiPrint(Name, "Hide");
 
-            Screen.WriteAndReturnCursor(Col, Row, placeHolder);
+                Unfocus();
+
+                IsVisible = false;
+                string placeHolder = "";
+                for (int i = 0; i < MaxLength; i++)
+                {
+                    placeHolder += " ";
+                }
+
+                Screen.WriteAndReturnCursor(Col, Row, placeHolder);
+            }
         }
 
         public virtual void Focus()

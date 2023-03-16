@@ -130,17 +130,30 @@ namespace AdSoft.Fez.Ui
             _thread = null;
         }
 
-        public override void Hide()
+        public override void Show(bool show = true)
         {
-            StopWriteInfinite();
-
-            DebugEx.UiPrint(Name, "Hide");
-
-            Unfocus();
-
-            IsVisible = false;
-
             Screen.Clear(Col, Row, Col + _width - 1, Row + _height - 1);
+
+            if (show)
+            {
+                base.Show(show);
+            }
+            else
+            {
+                StopWriteInfinite();
+
+                DebugEx.UiPrint(Name, "Hide");
+
+                IsVisible = false;
+            }
+        }
+
+        public override void Focus()
+        {
+        }
+
+        public override void Unfocus()
+        {
         }
 
         protected override int GetLength()

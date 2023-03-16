@@ -50,7 +50,7 @@ namespace AdSoft.Fez.Ui
             base.Setup(col, row);
         }
 
-        public override void Show()
+        public override void Show(bool show = true)
         {
             _yearBox.Show();
 
@@ -62,7 +62,7 @@ namespace AdSoft.Fez.Ui
 
             _dayBox.Show();
 
-            base.Show();
+            base.Show(show);
         }
 
         public override void Focus()

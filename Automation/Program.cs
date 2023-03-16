@@ -70,9 +70,7 @@ namespace HomeAutomation
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init(_configuration.PressureLogIntervalMin);
             _autoTurnOffPumpService.Init();
-
-            _hardwareManager.SdCard.CardStatusChanged += SdCardOnCardStatusChanged;
-
+            
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService);
             _uiManager.Setup();
 
@@ -124,27 +122,6 @@ namespace HomeAutomation
             _hardwareManager.MbLed.Blink(3);
 
             Thread.Sleep(Timeout.Infinite);
-        }
-
-        private static void SdCardOnCardStatusChanged(Status status)
-        {
-            string statusText;
-            switch (status)
-            {
-                case Status.Available:
-                    statusText = "     ";
-                    break;
-                case Status.Unavailable:
-                    statusText = "S:N/A";
-                    break;
-                case Status.Error:
-                    statusText = "S:Err";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("status");
-            }
-
-            _uiManager.SdCardStatus.Text = statusText;
         }
 
         private static void SetupToolsAndServices()

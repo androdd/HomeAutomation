@@ -32,11 +32,19 @@ namespace AdSoft.Fez.Ui
             base.Setup(col, row);
         }
 
-        public override void Show()
+        public override void Show(bool show = true)
         {
             Screen.WriteAndReturnCursor(Col, Row, Text);
 
-            base.Show();
+            base.Show(show);
+        }
+
+        public override void Focus()
+        {
+        }
+
+        public override void Unfocus()
+        {
         }
         
         protected override int GetLength()
