@@ -34,7 +34,7 @@ namespace AdSoft.Fez.Hardware.NecRemote
         public void Init()
         {
             _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
-            _interruptPort.OnInterrupt += irm_OnInterrupt;
+            _interruptPort.OnInterrupt += InterruptPortOnInterrupt;
 
             _mQ = new Queue();
 
@@ -47,56 +47,72 @@ namespace AdSoft.Fez.Hardware.NecRemote
             while (true)
             {
                 Thread.Sleep(100);
-                if (_mQ.Count == 0)
-                    continue;
+                try
+                {
+                    if (_mQ.Count == 0)
+                        continue;
                 
-                Message msg = (Message)_mQ.Dequeue();
-                if (!msg.IsValid)
-                    continue;
+                    Message msg = (Message)_mQ.Dequeue();
+                    if (!msg.IsValid)
+                        continue;
                 
-                if (NecButtonPressed == null)
-                    continue;
+                    if (NecButtonPressed == null)
+                        continue;
 
-                var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
-                if (elapsedMs < 300)
-                    continue;
+                    var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
+                    if (elapsedMs < 300)
+                        continue;
 
-                _lastValidMessage = msg.Time.Ticks;
+                    _lastValidMessage = msg.Time.Ticks;
 
-                NecButtonPressed(msg);
+                    NecButtonPressed(msg);
+                }
+                catch (Exception ex)
+                {
+                    DebugEx.Print("NecRemote.MessageDispatcher", ex);
+                }
             }
         }
 
-        private void irm_OnInterrupt(uint port, uint state, DateTime time)
+        private void InterruptPortOnInterrupt(uint port, uint state, DateTime time)
         {
-            long uSeconds = (time.Ticks - _lastPulseTime) / 10;
-            byte bit = GetBit(uSeconds);
-
-            if (bit == 10)
+            try
             {
-                _messageIndex = 0;
-                _message = new Message();
-            }
+                long uSeconds = (time.Ticks - _lastPulseTime) / 10;
+                byte bit = GetBit(uSeconds);
 
-            if (bit == 40 && _message.IsValid)
-            {
-                _message.Time = time;
-                _mQ.Enqueue(_message);
-            }
+                if (bit == 10)
+                {
+                    _messageIndex = 0;
+                    _message = new Message();
+                }
 
-            if (_messageIndex < 32 && bit != 10)
-            {
-                _message[_messageIndex] = bit;
-
-                if (_messageIndex == 31)
+                if (bit == 40 && _message.IsValid)
                 {
                     _message.Time = time;
                     _mQ.Enqueue(_message);
                 }
 
-                _messageIndex++;
+                if (_messageIndex < 32 && bit != 10)
+                {
+                    _message[_messageIndex] = bit;
+
+                    if (_messageIndex == 31)
+                    {
+                        _message.Time = time;
+                        _mQ.Enqueue(_message);
+                    }
+
+                    _messageIndex++;
+                }
+                _lastPulseTime = time.Ticks;
             }
-            _lastPulseTime = time.Ticks;
+            catch (Exception ex)
+            {
+                DebugEx.Print("NecRemote.InterruptPortOnInterrupt", ex);
+
+                Thread.Sleep(1000);
+            }
         }
 
         private static byte GetBit(long pulseTime)

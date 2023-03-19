@@ -1,5 +1,6 @@
 namespace AdSoft.Fez.Hardware
 {
+    using System;
     using System.Threading;
 
     using GHIElectronics.NETMF.FEZ;
@@ -34,22 +35,29 @@ namespace AdSoft.Fez.Hardware
 
         public void Blink(int count, int period = 700, bool keepState = false)
         {
-            if (period < 100)
+            try
             {
-                period = 100;
-            }
+                if (period < 100)
+                {
+                    period = 100;
+                }
 
-            bool state = _led.Read();
+                bool state = _led.Read();
 
-            _led.Write(true);
+                _led.Write(true);
 
-            for (int i = 0; i < count * 2; i++)
-            {
-                Thread.Sleep(period);
-                _led.Write(!_led.Read());
-            }
+                for (int i = 0; i < count * 2; i++)
+                {
+                    Thread.Sleep(period);
+                    _led.Write(!_led.Read());
+                }
             
-            _led.Write(keepState && state);
+                _led.Write(keepState && state);
+            }
+            catch (Exception ex)
+            {
+                DebugEx.Print("Led blink exception: ", ex);
+            }
         }
     }
 }

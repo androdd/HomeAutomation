@@ -1,5 +1,6 @@
 namespace AdSoft.Fez.Ui
 {
+    using System;
     using System.Threading;
 
     using AdSoft.Fez.Hardware.Lcd2004;
@@ -113,7 +114,14 @@ namespace AdSoft.Fez.Ui
             {
                 while (!_resetEvent.WaitOne(millisecondsInterval, false))
                 {
-                    Write(getText());
+                    try
+                    {
+                        Write(getText());
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugEx.Print("TextDrum.WriteInfinite", ex);
+                    }
                 }
             });
             _thread.Start();

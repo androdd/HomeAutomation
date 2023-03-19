@@ -6,6 +6,7 @@ namespace AdSoft.Fez.Hardware.LegoRemote
 
     using GHIElectronics.NETMF.FEZ;
 
+    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class LegoRemote
@@ -33,7 +34,7 @@ namespace AdSoft.Fez.Hardware.LegoRemote
         public void Init()
         {
             _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
-            _interruptPort.OnInterrupt += irm_OnInterrupt;
+            _interruptPort.OnInterrupt += InterruptPortOnInterrupt;
 
             _mQ = new Queue();
 
@@ -48,62 +49,78 @@ namespace AdSoft.Fez.Hardware.LegoRemote
             while (true)
             {
                 Thread.Sleep(100);
-                if (_mQ.Count == 0)
-                    continue;
-                
-                Message msg = (Message)_mQ.Dequeue();
-                if (!msg.IsValid)
-                    continue;
-                
-                if (OnLegoButtonPress == null)
-                    continue;
-
-                var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
-                if (elapsedMs < 300)
-                    continue;
-
-                _lastValidMessage = msg.Time.Ticks;
-
-                if (msg.Mode == Mode.ComboDirect &&
-                    (msg.CommandA == Command.ComboDirectForward ||
-                    msg.CommandA == Command.ComboDirectBackward ||
-                    msg.CommandB == Command.ComboDirectForward ||
-                    msg.CommandB == Command.ComboDirectBackward))
+                try
                 {
-                    OnLegoButtonPress(msg);
-                    continue;
+                    if (_mQ.Count == 0)
+                        continue;
+                
+                    Message msg = (Message)_mQ.Dequeue();
+                    if (!msg.IsValid)
+                        continue;
+                
+                    if (OnLegoButtonPress == null)
+                        continue;
+
+                    var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
+                    if (elapsedMs < 300)
+                        continue;
+
+                    _lastValidMessage = msg.Time.Ticks;
+
+                    if (msg.Mode == Mode.ComboDirect &&
+                        (msg.CommandA == Command.ComboDirectForward ||
+                         msg.CommandA == Command.ComboDirectBackward ||
+                         msg.CommandB == Command.ComboDirectForward ||
+                         msg.CommandB == Command.ComboDirectBackward))
+                    {
+                        OnLegoButtonPress(msg);
+                        continue;
+                    }
+
+                    if (_message.Toggle != toggle)
+                        OnLegoButtonPress(msg);
+
+                    toggle = msg.Toggle;
                 }
-
-                if (_message.Toggle != toggle)
-                    OnLegoButtonPress(msg);
-
-                toggle = msg.Toggle;
+                catch (Exception ex)
+                {
+                    DebugEx.Print("LegoRemote.MessageDispatcher", ex);
+                }
             }
         }
 
-        private void irm_OnInterrupt(uint port, uint state, DateTime time)
+        private void InterruptPortOnInterrupt(uint port, uint state, DateTime time)
         {
-            long uSeconds = (time.Ticks - _lastPulseTime) / 10;
-            byte bit = GetBit(uSeconds);
-
-            if (bit == 8)
+            try
             {
-                _messageIndex = 0;
-                _message = new Message();
-            }
-            if (_messageIndex < 16 && bit != 8)
-            {
-                _message[_messageIndex] = bit;
+                long uSeconds = (time.Ticks - _lastPulseTime) / 10;
+                byte bit = GetBit(uSeconds);
 
-                if (_messageIndex == 15)
+                if (bit == 8)
                 {
-                    _message.Time = time;
-                    _mQ.Enqueue(_message);
+                    _messageIndex = 0;
+                    _message = new Message();
                 }
+                if (_messageIndex < 16 && bit != 8)
+                {
+                    _message[_messageIndex] = bit;
 
-                _messageIndex++;
+                    if (_messageIndex == 15)
+                    {
+                        _message.Time = time;
+                        _mQ.Enqueue(_message);
+                    }
+
+                    _messageIndex++;
+                }
+                _lastPulseTime = time.Ticks;
             }
-            _lastPulseTime = time.Ticks;
+            catch (Exception ex)
+            {
+                DebugEx.Print("LegoRemote.InterruptPortOnInterrupt", ex);
+
+                Thread.Sleep(1000);
+            }
         }
 
         private static byte GetBit(long pulseTime)

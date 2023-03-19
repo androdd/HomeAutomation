@@ -46,7 +46,7 @@ namespace HomeAutomation
 
         public static void Main()
         {
-            DebugEx.Targets = DebugEx.Target.Log | DebugEx.Target.PressureLog | DebugEx.Target.ScreenSaver;
+            DebugEx.Targets = DebugEx.Target.Log | DebugEx.Target.PressureLog | DebugEx.Target.ScreenSaver | DebugEx.Target.Lcd2004;
             Debug.EnableGCMessages(false);
 
             var sdCard = new SdCard();

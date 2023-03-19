@@ -46,6 +46,11 @@ namespace AdSoft.Fez
         {
             Debug.Print(text);
         }
+
+        public static void Print(string text, Exception ex)
+        {
+            Debug.Print(text + ": " + ex.Message);
+        }
         
         public static void WriteBits(byte data)
         {
