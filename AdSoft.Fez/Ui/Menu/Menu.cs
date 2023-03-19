@@ -75,7 +75,7 @@ namespace AdSoft.Fez.Ui.Menu
 
                 IsVisible = false;
 
-                DebugEx.UiPrint(Name, "Hide");       
+                DebugEx.Print(DebugEx.Target.Ui, Name + ".Hide");
             }
         }
 

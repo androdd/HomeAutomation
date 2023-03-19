@@ -5,7 +5,6 @@ namespace HomeAutomation.Ui
     using System.Collections;
 
     using AdSoft.Fez.Configuration;
-    using AdSoft.Fez.Hardware.SdCard;
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
 
@@ -24,11 +23,10 @@ namespace HomeAutomation.Ui
         private readonly ScreenSaver _screenSaver;
         private readonly Menu _menu;
         private Menu _configMenu;
-        private readonly Clock _clock;
+        private readonly StatusScreen _statusScreen;
         private readonly DatePicker _datePicker;
         private readonly TextDrum _textDrum;
         private readonly DoublePicker _doublePicker;
-        private readonly Label _sdCardStatus;
 
         private UiStatus _status;
         private ArrayList _allSettings;
@@ -50,11 +48,10 @@ namespace HomeAutomation.Ui
             _screenSaver = new ScreenSaver(hardwareManager.Screen, _keyboard);
 
             _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
-            _clock = (Clock)_controlsManager.Add(new Clock("Clock", hardwareManager.Screen, _keyboard));
+            _statusScreen = (StatusScreen)_controlsManager.Add(new StatusScreen("StatusScr", hardwareManager.Screen, _keyboard, hardwareManager));
             _datePicker = (DatePicker)_controlsManager.Add(new DatePicker("Date", hardwareManager.Screen, _keyboard));
             _textDrum = (TextDrum)_controlsManager.Add(new TextDrum("Drum", hardwareManager.Screen, _keyboard));
             _doublePicker = (DoublePicker)_controlsManager.Add(new DoublePicker("Double", hardwareManager.Screen, _keyboard));
-            _sdCardStatus = (Label)_controlsManager.Add(new Label("SdStatus", hardwareManager.Screen, _keyboard));
         }
 
         public void Setup()
@@ -77,12 +74,9 @@ namespace HomeAutomation.Ui
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
             _menu.KeyPressed += MenuOnKeyPressed;
             
-            _clock.GetTime += () => Program.Now;
-            _clock.SetTime += ClockOnSetTime;
-            _clock.Setup(15, 0);
-
-            _sdCardStatus.Setup("     ", 15, 1);
-
+            _statusScreen.Setup(2);
+            _statusScreen.SetTime += ClockOnSetTime;
+            
             _datePicker.Setup(0, 0);
             _datePicker.KeyPressed += DatePickerOnKeyPressed;
 
@@ -91,16 +85,10 @@ namespace HomeAutomation.Ui
             _doublePicker.Setup(7, 0, 2, 11, 3);
             _doublePicker.KeyPressed += DoublePickerOnKeyPressed;
 
-            ShowStatus();
+            _statusScreen.Show();
 
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
-            _hardwareManager.SdCard.CardStatusChanged += SdCardOnCardStatusChanged;
-        }
-
-        private void ShowStatus(bool show = true)
-        {
-            _clock.Show(show);
-            _sdCardStatus.Show(show);
+            _hardwareManager.SdCard.CardStatusChanged += _statusScreen.SetSdCardStatus;
         }
 
         private void ScreenPowerButtonOnStateChanged(bool isOn)
@@ -125,7 +113,8 @@ namespace HomeAutomation.Ui
                 case MenuKeys.SetTime:
                     _status = UiStatus.SetTime;
 
-                    _clock.Edit();
+                    _statusScreen.Show();
+                    _statusScreen.EditTime();
                     break;
                 case MenuKeys.SetDate:
                     _status = UiStatus.SetDate;
@@ -142,7 +131,7 @@ namespace HomeAutomation.Ui
                     _screenSaver.Enable(!_configuration.ManagementMode);
                     _menu.ChangeTitle(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On"));
 
-                    ShowStatus();
+                    _statusScreen.Show();
                     break;
                 case MenuKeys.TunePressure:
                     _status = UiStatus.TunePressure;
@@ -212,30 +201,9 @@ namespace HomeAutomation.Ui
                     _menu.ChangeTitle(MenuKeys.ToggleLights, "Lights " + (!areOn ? "Off" : "On"));
                     _lightsService.SetLights(!areOn, "Manual ");
 
-                    ShowStatus();
+                    _statusScreen.Show();
                     break;
             }
-        }
-
-        private void SdCardOnCardStatusChanged(Status status)
-        {
-            string statusText;
-            switch (status)
-            {
-                case Status.Available:
-                    statusText = "     ";
-                    break;
-                case Status.Unavailable:
-                    statusText = "S:N/A";
-                    break;
-                case Status.Error:
-                    statusText = "S:Err";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("status");
-            }
-
-            _sdCardStatus.Text = statusText;
         }
 
         private void ConfigMenuOnMenuItemSelected(byte key)
@@ -249,7 +217,7 @@ namespace HomeAutomation.Ui
             {
                 _status = UiStatus.None;
 
-                ShowStatus();
+                _statusScreen.Show();
             }
         }
 
@@ -260,7 +228,7 @@ namespace HomeAutomation.Ui
                 _status = UiStatus.None;
 
                 _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, "", true);
-                ShowStatus();
+                _statusScreen.Show();
             }
         }
 
@@ -292,7 +260,7 @@ namespace HomeAutomation.Ui
 
             _textDrum.Show(false);
             _doublePicker.Show(false);
-            ShowStatus();
+            _statusScreen.Show();
 
             _status = UiStatus.None;
         }
@@ -303,7 +271,7 @@ namespace HomeAutomation.Ui
             {
                 _status = UiStatus.Menu;
 
-                ShowStatus(false);
+                _statusScreen.Show(false);
 
                 _menu.Show();
                 _menu.Focus();
@@ -313,8 +281,6 @@ namespace HomeAutomation.Ui
         private void ClockOnSetTime(DateTime time)
         {
             Program.Now = time;
-
-            ShowStatus();
 
             _status = UiStatus.None;
         }
@@ -343,7 +309,7 @@ namespace HomeAutomation.Ui
             }
             
             _datePicker.Show(false);
-            ShowStatus();
+            _statusScreen.Show();
 
             _status = UiStatus.None;
         }

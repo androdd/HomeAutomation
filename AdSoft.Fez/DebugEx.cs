@@ -12,6 +12,32 @@ namespace AdSoft.Fez
         {
             if ((Targets & target) > 0)
             {
+                switch (target)
+                {
+                    case Target.None:
+                        break;
+                    case Target.ScreenSaver:
+                        text = "ScreenSaver - " + text;
+                        break;
+                    case Target.Ui:
+                        text = "Ui - " + text;
+                        break;
+                    case Target.Log:
+                        text = "Log - " + text;
+                        break;
+                    case Target.Keyboard:
+                        text = "Keyboard - " + text;
+                        break;
+                    case Target.PressureLog:
+                        text = "PressureLog - " + text;
+                        break;
+                    case Target.Lcd2004:
+                        text = "Lcd2004 - " + text;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("target");
+                }
+
                 Debug.Print(text);
             }
         }
@@ -19,13 +45,6 @@ namespace AdSoft.Fez
         public static void Print(string text)
         {
             Debug.Print(text);
-        }
-        
-        public static void UiPrint(string name, string method, string text = null)
-        {
-#if DEBUG_UI
-            Debug.Print(name + "." + method + (text == null ? "" : ": ") + text);
-#endif
         }
         
         public static void WriteBits(byte data)
@@ -54,7 +73,8 @@ namespace AdSoft.Fez
             Ui = 1 << 1,
             Log = 1 << 2,
             Keyboard = 1 << 3,
-            PressureLog = 1 << 4
+            PressureLog = 1 << 4,
+            Lcd2004 = 1 << 5,
         }
     }
 }

@@ -47,6 +47,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Tools\RealTimer.cs" />
     <Compile Include="Ui\MenuKeys.cs" />
+    <Compile Include="Ui\StatusScreen.cs" />
     <Compile Include="Ui\UiManager.cs" />
     <Compile Include="Ui\UiStatus.cs" />
   </ItemGroup>

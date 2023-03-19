@@ -30,7 +30,7 @@ namespace AdSoft.Fez.Ui
 
         protected void Setup(int col, int row)
         {
-            DebugEx.UiPrint(Name, "Setup");
+            DebugEx.Print(DebugEx.Target.Ui, Name + ".Setup");
 
             Col = col;
             Row = row;
@@ -44,13 +44,13 @@ namespace AdSoft.Fez.Ui
         {
             if (show)
             {
-                DebugEx.UiPrint(Name, "Show");
+                DebugEx.Print(DebugEx.Target.Ui, Name + ".Show");
             
                 IsVisible = true;
             }
             else
             {
-                DebugEx.UiPrint(Name, "Hide");
+                DebugEx.Print(DebugEx.Target.Ui, Name + ".Hide");
 
                 Unfocus();
 
@@ -67,7 +67,7 @@ namespace AdSoft.Fez.Ui
 
         public virtual void Focus()
         {
-            DebugEx.UiPrint(Name, "Focus");
+            DebugEx.Print(DebugEx.Target.Ui, Name + ".Focus");
 
             if (!IsFocused)
             {
@@ -79,7 +79,7 @@ namespace AdSoft.Fez.Ui
 
         public virtual void Unfocus()
         {
-            DebugEx.UiPrint(Name, "Unfocus");
+            DebugEx.Print(DebugEx.Target.Ui, Name + ".Unfocus");
 
             if (IsFocused)
             {
@@ -93,7 +93,7 @@ namespace AdSoft.Fez.Ui
 
         protected virtual void OnExitLeft()
         {
-            DebugEx.UiPrint(Name, "OnExitLeft");
+            DebugEx.Print(DebugEx.Target.Ui, Name + ".OnExitLeft");
 
             if (ExitLeft != null)
             {
@@ -103,7 +103,7 @@ namespace AdSoft.Fez.Ui
 
         protected virtual void OnExitRight()
         {
-            DebugEx.UiPrint(Name, "OnExitRight");
+            DebugEx.Print(DebugEx.Target.Ui, Name + ".OnExitRight");
 
             if (ExitRight != null)
             {
@@ -113,7 +113,7 @@ namespace AdSoft.Fez.Ui
 
         protected virtual void OnKeyPressed(Key key)
         {
-            DebugEx.UiPrint(Name, "OnKeyPressed", KeyEx.KeyToString(key));
+            DebugEx.Print(DebugEx.Target.Ui, Name + ".OnKeyPressed: " + KeyEx.KeyToString(key));
 
             if (KeyPressed != null)
             {
