@@ -34,6 +34,9 @@ namespace AdSoft.Fez
                     case Target.Lcd2004:
                         text = "Lcd2004 - " + text;
                         break;
+                    case Target.ScreenPowerButton:
+                        text = "ScreenPowerButton - " + text;
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException("target");
                 }
@@ -80,6 +83,7 @@ namespace AdSoft.Fez
             Keyboard = 1 << 3,
             PressureLog = 1 << 4,
             Lcd2004 = 1 << 5,
+            ScreenPowerButton = 1 << 6
         }
     }
 }
