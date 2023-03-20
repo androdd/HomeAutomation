@@ -11,7 +11,7 @@ namespace AdSoft.Fez.Hardware
     {
         const int MeasurementsCount = 100;
 
-        private long _lastPulseTime;
+        private long _lastPulseTicks;
         private int _count;
         private double _flowRate;
         private double _lastFlowRate;
@@ -32,6 +32,16 @@ namespace AdSoft.Fez.Hardware
         {
             get
             {
+                if(_lastFlowRate > 0)
+                {
+                    long milliseconds = (DateTime.Now.Ticks - _lastPulseTicks) / 10000;
+
+                    if (milliseconds > 500)
+                    {
+                        _lastFlowRate = 0;
+                    }
+                }
+
                 return _lastFlowRate * FlowRateMultiplier;
             }
         }
@@ -44,7 +54,7 @@ namespace AdSoft.Fez.Hardware
 
         private void OnInterrupt(uint data1, uint data2, DateTime time)
         {
-            long microseconds  = (time.Ticks - _lastPulseTime) / 10;
+            long microseconds  = (time.Ticks - _lastPulseTicks) / 10;
             double minutes = microseconds / 60000000.0;
             double frequency = 1 / minutes;
             _flowRate += frequency / 440.0;
@@ -59,7 +69,7 @@ namespace AdSoft.Fez.Hardware
                 _flowRate = 0;
             }
 
-            _lastPulseTime = time.Ticks;
+            _lastPulseTicks = time.Ticks;
         }
     }
 }
