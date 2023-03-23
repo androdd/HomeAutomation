@@ -37,62 +37,16 @@ namespace ExperimentalBoard
             {
                 Debug.EnableGCMessages(false);
 
-                Debug.Print("Starting");
-                
-                _lcd2004 = new Lcd2004(0x27);
+                InterruptPort interruptPort =
+                    new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.LDR,
+                        true,
+                        Port.ResistorMode.PullUp,
+                        Port.InterruptMode.InterruptEdgeHigh);
 
-                _lcd2004.Init();
-                _lcd2004.BackLightOn();
-
-                var cause = Watchdog.LastResetCause == Watchdog.ResetCause.WatchdogReset
-                    ? "WatchdogReset"
-                    : "HardReset";
-                _lcd2004.Write(0, 0, cause);
-                Debug.Print(cause);
-
-                NecRemote necRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
-                necRemote.Init();
-
-                Key lastKey = Key.NoName;
-
-                try
+                interruptPort.OnInterrupt += (data1, data2, time) =>
                 {
-                    MiniRemoteKeyboard keyboard = new MiniRemoteKeyboard(necRemote);
-                    keyboard.Init();
-                    keyboard.KeyPressed += key =>
-                    {
-                        lastKey = key;
-                        _lcd2004.Write(0, 1, KeyEx.KeyToString(key));
-                        Debug.Print(KeyEx.KeyToString(key));
-
-                        throw new ApplicationException();
-                    };
-                }
-                catch (Exception e)
-                {
-                    _lcd2004.Write(0, 3, "Ex");
-                }
-                
-                Debug.Print("Started");
-
-                //try
-                //{
-                //    while (true)
-                //    {
-                //        if (lastKey == Key.Enter)
-                //        {
-                //            throw new ApplicationException();
-                //        }
-                //        _lcd2004.Write(0, 2, KeyEx.KeyToString(lastKey));
-
-                //        Thread.Sleep(1000);
-                //    }
-                //}
-                //catch (Exception e)
-                //{
-                //    _lcd2004.Write(0, 3, "Ex");
-                //    throw;
-                //}
+                    Debug.Print(DateTime.Now.Ticks - time.Ticks + " : " + data1 + " : " + data2);
+                };
 
                 Thread.Sleep(Timeout.Infinite);
             }
@@ -100,6 +54,66 @@ namespace ExperimentalBoard
             {
                 Watchdog.Enable(100);
             }
+        }
+
+        private static void WatchdogTest()
+        {
+            Debug.Print("Starting");
+
+            _lcd2004 = new Lcd2004(0x27);
+
+            _lcd2004.Init();
+            _lcd2004.BackLightOn();
+
+            var cause = Watchdog.LastResetCause == Watchdog.ResetCause.WatchdogReset
+                ? "WatchdogReset"
+                : "HardReset";
+            _lcd2004.Write(0, 0, cause);
+            Debug.Print(cause);
+
+            NecRemote necRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
+            necRemote.Init();
+
+            Key lastKey = Key.NoName;
+
+            try
+            {
+                MiniRemoteKeyboard keyboard = new MiniRemoteKeyboard(necRemote);
+                keyboard.Init();
+                keyboard.KeyPressed += key =>
+                {
+                    lastKey = key;
+                    _lcd2004.Write(0, 1, KeyEx.KeyToString(key));
+                    Debug.Print(KeyEx.KeyToString(key));
+
+                    throw new ApplicationException();
+                };
+            }
+            catch (Exception e)
+            {
+                _lcd2004.Write(0, 3, "Ex");
+            }
+
+            Debug.Print("Started");
+
+            //try
+            //{
+            //    while (true)
+            //    {
+            //        if (lastKey == Key.Enter)
+            //        {
+            //            throw new ApplicationException();
+            //        }
+            //        _lcd2004.Write(0, 2, KeyEx.KeyToString(lastKey));
+
+            //        Thread.Sleep(1000);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    _lcd2004.Write(0, 3, "Ex");
+            //    throw;
+            //}
         }
 
         private static void SerialTest()

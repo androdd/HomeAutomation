@@ -16,7 +16,7 @@ namespace AdSoft.Fez.Ui
 
                 if (IsVisible)
                 {
-                    Show();
+                    UpdateText();
                 }
             }
         }
@@ -34,7 +34,10 @@ namespace AdSoft.Fez.Ui
 
         public override void Show(bool show = true)
         {
-            Screen.WriteAndReturnCursor(Col, Row, Text);
+            if (show)
+            {
+                UpdateText();
+            }
 
             base.Show(show);
         }
@@ -50,6 +53,11 @@ namespace AdSoft.Fez.Ui
         protected override int GetLength()
         {
             return Text.Length;
+        }
+
+        private void UpdateText()
+        {
+            Screen.WriteAndReturnCursor(Col, Row, Text);
         }
     }
 }
