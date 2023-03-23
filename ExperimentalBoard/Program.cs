@@ -33,27 +33,38 @@ namespace ExperimentalBoard
 
         public static void Main()
         {
-            try
-            {
-                Debug.EnableGCMessages(false);
+            Debug.EnableGCMessages(false);
 
-                InterruptPort interruptPort =
-                    new InterruptPort((Cpu.Pin)FEZ_Pin.Interrupt.LDR,
-                        true,
-                        Port.ResistorMode.PullUp,
-                        Port.InterruptMode.InterruptEdgeHigh);
+            _lcd2004 = new Lcd2004(0x27);
 
-                interruptPort.OnInterrupt += (data1, data2, time) =>
-                {
-                    Debug.Print(DateTime.Now.Ticks - time.Ticks + " : " + data1 + " : " + data2);
-                };
+            _lcd2004.Init();
+            _lcd2004.BackLightOn();
 
-                Thread.Sleep(Timeout.Infinite);
-            }
-            catch (Exception e)
-            {
-                Watchdog.Enable(100);
-            }
+            _lcd2004.Write(1, 1, "Hello!!!");
+
+            Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void TestExpander()
+        {
+            var config = new I2CDevice.Configuration(0x27, 100);
+            var busI2C = new I2CDevice(config);
+
+            // 1   => RS
+            // 2   => RW
+            // 4   => E
+            // 8   => None
+            // 16  => D4
+            // 32  => D5
+            // 64  => D6
+            // 128 => D7
+
+            var xActions = new I2CDevice.I2CTransaction[1];
+            byte[] registerNum = { 0x1 };
+            xActions[0] = I2CDevice.CreateWriteTransaction(registerNum);
+            var result = busI2C.Execute(xActions, 1000);
+
+            Debug.Print("Result: " + result);
         }
 
         private static void WatchdogTest()
