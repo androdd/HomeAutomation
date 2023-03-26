@@ -1,12 +1,9 @@
 namespace AdSoft.Fez.Hardware.NecRemote
 {
     using System;
-    using System.Collections;
-    using System.Threading;
 
     using GHIElectronics.NETMF.FEZ;
 
-    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class NecRemote
@@ -18,9 +15,7 @@ namespace AdSoft.Fez.Hardware.NecRemote
         private int _messageIndex = 32;
         private Message _message = new Message();
 
-        private Queue _mQ;
         private InterruptPort _interruptPort;
-        private Thread _messageDispatcherThread;
 
         public delegate void NecButtonPressEventHandler(Message msg);
 
@@ -35,43 +30,6 @@ namespace AdSoft.Fez.Hardware.NecRemote
         {
             _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
             _interruptPort.OnInterrupt += InterruptPortOnInterrupt;
-
-            _mQ = new Queue();
-
-            _messageDispatcherThread = new Thread(MessageDispatcher);
-            _messageDispatcherThread.Start();
-        }
-
-        private void MessageDispatcher()
-        {
-            while (true)
-            {
-                Thread.Sleep(100);
-                try
-                {
-                    if (_mQ.Count == 0)
-                        continue;
-                
-                    Message msg = (Message)_mQ.Dequeue();
-                    if (!msg.IsValid)
-                        continue;
-                
-                    if (NecButtonPressed == null)
-                        continue;
-
-                    var elapsedMs = (msg.Time.Ticks - _lastValidMessage) / 10000; // ms
-                    if (elapsedMs < 300)
-                        continue;
-
-                    _lastValidMessage = msg.Time.Ticks;
-
-                    NecButtonPressed(msg);
-                }
-                catch (Exception ex)
-                {
-                    DebugEx.Print("NecRemote.MessageDispatcher", ex);
-                }
-            }
         }
 
         private void InterruptPortOnInterrupt(uint port, uint state, DateTime time)
@@ -90,7 +48,7 @@ namespace AdSoft.Fez.Hardware.NecRemote
                 if (bit == 40 && _message.IsValid)
                 {
                     _message.Time = time;
-                    _mQ.Enqueue(_message);
+                    OnMessage(_message);
                 }
 
                 if (_messageIndex < 32 && bit != 10)
@@ -100,7 +58,7 @@ namespace AdSoft.Fez.Hardware.NecRemote
                     if (_messageIndex == 31)
                     {
                         _message.Time = time;
-                        _mQ.Enqueue(_message);
+                        OnMessage(_message);
                     }
 
                     _messageIndex++;
@@ -109,10 +67,25 @@ namespace AdSoft.Fez.Hardware.NecRemote
             }
             catch (Exception ex)
             {
-                DebugEx.Print("NecRemote.InterruptPortOnInterrupt", ex);
-
-                Thread.Sleep(1000);
+                DebugEx.Print("NecRemote.InterruptPortOnInterrupt Exception", ex);
             }
+        }
+
+        private void OnMessage(Message message)
+        {
+            if (!message.IsValid)
+                return;
+
+            if (NecButtonPressed == null)
+                return;
+
+            var elapsedMs = (message.Time.Ticks - _lastValidMessage) / 10000; // ms
+            if (elapsedMs < 300)
+                return;
+
+            _lastValidMessage = message.Time.Ticks;
+
+            NecButtonPressed(message);
         }
 
         private static byte GetBit(long pulseTime)
