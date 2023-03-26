@@ -26,7 +26,7 @@ namespace AdSoft.Fez.Hardware
         {
             DebugEx.Print(DebugEx.Target.ScreenPowerButton, "Init");
 
-            _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeBoth);
+            _interruptPort = new InterruptPort((Cpu.Pin)_portId, true, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeBoth);
             _interruptPort.OnInterrupt += InterruptPortOnOnInterrupt;
 
             InitScreenIfOn();
