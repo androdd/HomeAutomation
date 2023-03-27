@@ -42,6 +42,8 @@ namespace ExperimentalBoard
 
             _lcd2004.Write(1, 1, "Hello!!!");
 
+            Watchdog.MAX_TIMEOUT
+
             Thread.Sleep(Timeout.Infinite);
         }
 
