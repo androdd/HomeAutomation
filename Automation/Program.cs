@@ -1,14 +1,17 @@
 namespace HomeAutomation
 {
     using System;
+    using System.Reflection;
     using System.Threading;
 
     using AdSoft.Fez;
     using AdSoft.Fez.Configuration;
+    using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.SdCard;
 
     using GHIElectronics.NETMF.Hardware;
 
+    using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;
     using HomeAutomation.Tools;
@@ -46,6 +49,11 @@ namespace HomeAutomation
 
         public static void Main()
         {
+
+#if DEBUG_SET_RTC
+            RealTimeClock.SetTime(new DateTime(2023, 4, 30, 22, 0, 0));
+#endif
+
             DebugEx.Targets = DebugEx.Target.None;
             //DebugEx.Targets |= DebugEx.Target.ScreenSaver;
             //DebugEx.Targets |= DebugEx.Target.Ui;
@@ -127,6 +135,19 @@ namespace HomeAutomation
             _log.Write("Started");
 
             _hardwareManager.MbLed.Blink(3);
+
+#if MOCK_FLOW_RATE
+            var method = typeof(FlowRateSensor).GetMethod("OnInterrupt",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+
+            for (int i = 0; i < 5000; i++)
+            {
+                method.Invoke(_hardwareManager.FlowRateSensor, new object[] { (uint)0, (uint)0, DateTime.Now });
+                Thread.Sleep(20);
+            }
+
+            Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
+#endif
 
             Thread.Sleep(Timeout.Infinite);
         }

@@ -9,9 +9,10 @@ namespace AdSoft.Fez.Hardware
 
     public class FlowRateSensor
     {
-        const int MeasurementsCount = 100;
+        const int MeasurementsCount = 10;
 
         private long _lastPulseTicks;
+        private long _lastMeasurementTicks;
         private int _count;
         private double _flowRate;
         private double _lastFlowRate;
@@ -46,6 +47,8 @@ namespace AdSoft.Fez.Hardware
             }
         }
 
+        public double Volume { get; set; }
+
         public void Init()
         {
             _interruptPort = new InterruptPort((Cpu.Pin)_portId, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeHigh);
@@ -55,6 +58,14 @@ namespace AdSoft.Fez.Hardware
         private void OnInterrupt(uint data1, uint data2, DateTime time)
         {
             long microseconds  = (time.Ticks - _lastPulseTicks) / 10;
+
+            if (microseconds > 500000)
+            {
+                _lastMeasurementTicks = time.Ticks;
+                _lastPulseTicks = time.Ticks;
+                return;
+            }
+
             double minutes = microseconds / 60000000.0;
             double frequency = 1 / minutes;
             _flowRate += frequency / 440.0;
@@ -63,10 +74,21 @@ namespace AdSoft.Fez.Hardware
 
             if (_count % MeasurementsCount == 0)
             {
-
                 _lastFlowRate = _flowRate / MeasurementsCount;
 
                 _flowRate = 0;
+
+                if (_lastMeasurementTicks == 0)
+                {
+                    _lastMeasurementTicks = time.Ticks;
+                }
+
+                var elapsedMicroseconds = (time.Ticks - _lastMeasurementTicks) / 10;
+                var elapsedMinutes = elapsedMicroseconds / 60000000.0;
+                var flowRate = _lastFlowRate * FlowRateMultiplier;
+                Volume += flowRate * elapsedMinutes;
+
+                _lastMeasurementTicks = time.Ticks;
             }
 
             _lastPulseTicks = time.Ticks;
