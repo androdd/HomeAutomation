@@ -418,6 +418,22 @@ namespace AdSoft.Fez.Hardware.Lcd2004
             }
         }
 
+        public void CreateChar(byte address, byte[] buffer)
+        {
+            if (buffer == null || buffer.Length < 1 || buffer.Length > 10)
+            {
+                throw new ArgumentException("buffer must contain between 1 and 10 bytes");
+            }
+
+            Command(CB.LCD_SETCGRAMADDR | (address << 3));
+
+            int len = buffer.Length;
+            for (int i = 0; i < len; i++)
+            {
+                WriteChar(buffer[i]);
+            }
+        }
+
         private void Command(int data)
         {
             Send(data, 0);

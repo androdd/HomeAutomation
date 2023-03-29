@@ -40,10 +40,38 @@ namespace ExperimentalBoard
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
+            //_lcd2004.CreateChar(0, new byte[] { 04, 12, 04, 04, 04, 04, 14, 31 });
+            //_lcd2004.CreateChar(1, new byte[] { 14, 17, 01, 02, 04, 08, 31, 31 });
+            //_lcd2004.CreateChar(2, new byte[] { 31, 02, 04, 02, 01, 17, 14, 31 });
+            //_lcd2004.CreateChar(3, new byte[] { 02, 06, 10, 18, 31, 02, 02, 31 });
+            //_lcd2004.CreateChar(4, new byte[] { 31, 16, 30, 01, 01, 17, 14, 31 });
+            //_lcd2004.CreateChar(5, new byte[] { 06, 08, 16, 30, 17, 17, 14, 31 });
+            //_lcd2004.CreateChar(6, new byte[] { 31, 17, 01, 02, 04, 04, 04, 31 });
+            //_lcd2004.CreateChar(7, new byte[] { 14, 17, 17, 14, 17, 17, 14, 31 });
+
+            _lcd2004.CreateChar(0, new byte[] { 04, 12, 04, 20, 04, 04, 14, 31 });
+            _lcd2004.CreateChar(1, new byte[] { 14, 17, 01, 18, 04, 08, 31, 31 });
+            _lcd2004.CreateChar(2, new byte[] { 31, 02, 20, 02, 01, 17, 14, 31 });
+            _lcd2004.CreateChar(3, new byte[] { 18, 06, 10, 18, 31, 02, 02, 31 });
+            _lcd2004.CreateChar(4, new byte[] { 31, 16, 30, 01, 05, 17, 14, 31 });
+            _lcd2004.CreateChar(5, new byte[] { 06, 08, 17, 30, 17, 17, 14, 31 });
+            _lcd2004.CreateChar(6, new byte[] { 31, 17, 01, 18, 04, 04, 04, 31 });
+            _lcd2004.CreateChar(7, new byte[] { 14, 17, 21, 14, 21, 17, 14, 31 });
+
+            _lcd2004.Home();
+
             _lcd2004.Write(1, 1, "Hello!!!");
 
-            Watchdog.MAX_TIMEOUT
-
+            _lcd2004.SetCursor(1, 2);
+            _lcd2004.WriteChar(0);
+            _lcd2004.WriteChar(1);
+            _lcd2004.WriteChar(2);
+            _lcd2004.WriteChar(3);
+            _lcd2004.WriteChar(4);
+            _lcd2004.WriteChar(5);
+            _lcd2004.WriteChar(6);
+            _lcd2004.WriteChar(7);
+            
             Thread.Sleep(Timeout.Infinite);
         }
 

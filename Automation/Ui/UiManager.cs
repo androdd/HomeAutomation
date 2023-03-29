@@ -95,6 +95,17 @@ namespace HomeAutomation.Ui
         {
             if (isOn)
             {
+                _hardwareManager.Screen.CreateChar(0, new byte[] { 04, 12, 04, 20, 04, 04, 14, 31 });
+                _hardwareManager.Screen.CreateChar(1, new byte[] { 14, 17, 01, 18, 04, 08, 31, 31 });
+                _hardwareManager.Screen.CreateChar(2, new byte[] { 31, 02, 20, 02, 01, 17, 14, 31 });
+                _hardwareManager.Screen.CreateChar(3, new byte[] { 18, 06, 10, 18, 31, 02, 02, 31 });
+                _hardwareManager.Screen.CreateChar(4, new byte[] { 31, 16, 30, 01, 05, 17, 14, 31 });
+                _hardwareManager.Screen.CreateChar(5, new byte[] { 06, 08, 17, 30, 17, 17, 14, 31 });
+                _hardwareManager.Screen.CreateChar(6, new byte[] { 31, 17, 01, 18, 04, 04, 04, 31 });
+                _hardwareManager.Screen.CreateChar(7, new byte[] { 14, 17, 21, 14, 21, 17, 14, 31 });
+                
+                _hardwareManager.Screen.Home();
+
                 _controlsManager.Show();
                 _controlsManager.Start();
             }
