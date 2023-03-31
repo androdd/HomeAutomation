@@ -58,6 +58,7 @@ namespace HomeAutomation.Ui
         {
             _keyboard.Init();
             _screenSaver.Init(3 * 60, !_configuration.ManagementMode);
+            _hardwareManager.ScreenPowerButton.AddScreenSaver(_screenSaver);
 
             _menu.Setup(new[]
             {
@@ -104,7 +105,7 @@ namespace HomeAutomation.Ui
                 _hardwareManager.Screen.CreateChar(6, new byte[] { 31, 17, 01, 18, 04, 04, 04, 31 });
                 _hardwareManager.Screen.CreateChar(7, new byte[] { 14, 17, 21, 14, 21, 17, 14, 31 });
                 
-                _hardwareManager.Screen.Home();
+                _hardwareManager.Screen.Clear();
 
                 _controlsManager.Show();
                 _controlsManager.Start();

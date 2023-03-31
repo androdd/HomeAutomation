@@ -1,6 +1,9 @@
 namespace AdSoft.Fez.Hardware
 {
     using System;
+    using System.Threading;
+
+    using AdSoft.Fez.Ui;
 
     using GHIElectronics.NETMF.FEZ;
 
@@ -10,6 +13,7 @@ namespace AdSoft.Fez.Hardware
     {
         private readonly FEZ_Pin.Digital _portId;
         private readonly Lcd2004.Lcd2004 _screen;
+        private ScreenSaver _screenSaver;
         private InputPort _interruptPort;
 
         public delegate void StateChangedEventHandler(bool isOn);
@@ -32,6 +36,11 @@ namespace AdSoft.Fez.Hardware
             InitScreenIfOn();
         }
 
+        public void AddScreenSaver(ScreenSaver screenSaver)
+        {
+            _screenSaver = screenSaver;
+        }
+
         private void InterruptPortOnOnInterrupt(uint data1, uint data2, DateTime time)
         {
             InitScreenIfOn();
@@ -47,11 +56,24 @@ namespace AdSoft.Fez.Hardware
             {
                 _screen.Init();
                 _screen.BackLightOn();
+                EnableScreenSaver();
+            }
+            else
+            {
+                EnableScreenSaver(false);
             }
 
             if (StateChanged != null)
             {
                 StateChanged(isTurnedOn);
+            }
+        }
+
+        private void EnableScreenSaver(bool isEnabled = true)
+        {
+            if (_screenSaver != null)
+            {
+                _screenSaver.Enable(isEnabled);
             }
         }
     }

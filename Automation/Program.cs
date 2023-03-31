@@ -137,8 +137,7 @@ namespace HomeAutomation
             _hardwareManager.MbLed.Blink(3);
 
 #if MOCK_FLOW_RATE
-            var method = typeof(FlowRateSensor).GetMethod("OnInterrupt",
-                BindingFlags.NonPublic | BindingFlags.Instance);
+            var method = typeof(FlowRateSensor).GetMethod("OnInterrupt", BindingFlags.NonPublic | BindingFlags.Instance);
 
             for (int i = 0; i < 5000; i++)
             {

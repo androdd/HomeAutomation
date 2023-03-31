@@ -6,6 +6,8 @@ namespace AdSoft.Fez.Ui
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
+    using Microsoft.SPOT;
+
     public class ScreenSaver : IDisposable
     {
         private readonly Lcd2004 _screen;
@@ -83,6 +85,7 @@ namespace AdSoft.Fez.Ui
             {
                 DebugEx.Print(DebugEx.Target.ScreenSaver, "Off");
                 _isOn = false;
+                _screen.DisplayOn();
                 _screen.BackLightOn();
             }
 
@@ -98,6 +101,7 @@ namespace AdSoft.Fez.Ui
             DebugEx.Print(DebugEx.Target.ScreenSaver, "On");
             _isOn = true;
             _screen.BackLightOff();
+            _screen.DisplayOff();
         }
     }
 }
