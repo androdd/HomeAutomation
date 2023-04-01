@@ -22,7 +22,7 @@ namespace AdSoft.Fez.Hardware.SdCard
         
         public bool TryReadAllLines(string filename, out ArrayList result)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -55,7 +55,7 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryIsExists(string filename, out bool result)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -71,7 +71,7 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryDelete(string filename)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -86,7 +86,7 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryRename(string filename, string newName)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -102,7 +102,7 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryCopy(string filename, string newName)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -118,7 +118,7 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryGetFiles(string path, out string[] files)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -133,7 +133,7 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryReadFixedLengthLine(string filename, int lineLength, int lineNumber, out string result)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -186,7 +186,7 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryAppend(string filename, FileOpenedCallback fileOpenedCallback)
         {
-            InitCard();
+            Init();
 
             if (!_isLoaded)
             {
@@ -237,7 +237,7 @@ namespace AdSoft.Fez.Hardware.SdCard
             stream.Write(bytes, 0, bytes.Length);
         }
 
-        private void InitCard()
+        public void Init()
         {
             if (!PersistentStorage.DetectSDCard())
             {
@@ -280,7 +280,7 @@ namespace AdSoft.Fez.Hardware.SdCard
             }
         }
 
-        private static string GetPath(string filename)
+        public static string GetPath(string filename)
         {
             if (filename[0] == '\\')
             {

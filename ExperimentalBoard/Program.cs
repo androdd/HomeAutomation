@@ -2,7 +2,9 @@ namespace ExperimentalBoard
 {
     using System;
     using System.Collections;
+    using System.IO;
     using System.IO.Ports;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
 
@@ -35,6 +37,26 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
+            SdCard sdCard = new SdCard();
+            sdCard.Init();
+
+            var path = SdCard.GetPath("ExperimentalBoardProgram.pe");
+
+            var assembly = Assembly.Load(File.ReadAllBytes(path));
+
+            var mainProgramType = assembly.GetType("ExperimentalBoardProgram.MainProgram");
+
+            var method = mainProgramType.GetMethod("Start", BindingFlags.Public | BindingFlags.Static);
+
+            method.Invoke(null, null);
+
+            Debug.Print("Done");
+            
+            Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void TestCreateChar()
+        {
             _lcd2004 = new Lcd2004(0x27);
 
             _lcd2004.Init();
@@ -71,8 +93,6 @@ namespace ExperimentalBoard
             _lcd2004.WriteChar(5);
             _lcd2004.WriteChar(6);
             _lcd2004.WriteChar(7);
-            
-            Thread.Sleep(Timeout.Infinite);
         }
 
         private static void TestExpander()
