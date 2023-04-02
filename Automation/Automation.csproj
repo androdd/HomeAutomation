@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MF_FRAMEWORK_VERSION_V4_1;DEBUG_SET_RTC;MOCK_FLOW_RATE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DEBUG_SET_RTC,MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -40,6 +40,7 @@
     <Compile Include="Services\Interfaces\IRemoteCommandsService.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />
+    <Compile Include="Services\WateringService.cs" />
     <Compile Include="Tools\Configuration.cs" />
     <Compile Include="Tools\ConfigurationManager.cs" />
     <Compile Include="Tools\Log.cs" />

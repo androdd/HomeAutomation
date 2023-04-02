@@ -2,12 +2,14 @@ namespace AdSoft.Fez.Hardware
 {
     using System;
 
+    using AdSoft.Fez.Hardware.Interfaces;
+
     using GHIElectronics.NETMF.FEZ;
 
     using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
-    public class FlowRateSensor
+    public class FlowRateSensor : IFlowRateSensor
     {
         const int MeasurementsCount = 10;
 

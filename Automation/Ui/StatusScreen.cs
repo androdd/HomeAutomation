@@ -107,6 +107,15 @@ namespace HomeAutomation.Ui
 
         private void Update(object state)
         {
+            var flowRateText = "FR:" + _hardwareManager.FlowRateSensor.FlowRate.ToString("F1") + "        ";
+
+            if (flowRateText.Length == 14)
+            {
+                flowRateText += " ";
+            }
+
+
+
             lock (_sdCardStatusLock)
             {
                 Screen.Sync(() =>
@@ -114,14 +123,10 @@ namespace HomeAutomation.Ui
                     _pressureRow.Text = "Pr:" + _hardwareManager.PressureSensor.Pressure.ToString("F2");
                     
                     var sdCardStatusText = _flowRateRow.Text.Substring(15, 5);
-                    var flowRateText = "FR:" + _hardwareManager.FlowRateSensor.FlowRate.ToString("F1") + "        ";
-
-                    if (flowRateText.Length == 14)
-                    {
-                        flowRateText += " ";
-                    }
-
+                    
                     _flowRateRow.Text = flowRateText + sdCardStatusText;
+
+
                 });
             }
         }
