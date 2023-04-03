@@ -37,18 +37,7 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
-            SdCard sdCard = new SdCard();
-            sdCard.Init();
-
-            var path = SdCard.GetPath("ExperimentalBoardProgram.pe");
-
-            var assembly = Assembly.Load(File.ReadAllBytes(path));
-
-            var mainProgramType = assembly.GetType("ExperimentalBoardProgram.MainProgram");
-
-            var method = mainProgramType.GetMethod("Start", BindingFlags.Public | BindingFlags.Static);
-
-            method.Invoke(null, null);
+            
 
             Debug.Print("Done");
             
