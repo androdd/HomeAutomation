@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		Documents\dst.cfg = Documents\dst.cfg
 		Documents\dstEnd.cfg = Documents\dstEnd.cfg
 		Documents\dstStart.cfg = Documents\dstStart.cfg
+		Documents\Implementation.xlsx = Documents\Implementation.xlsx
 		Documents\Lego Small Remote Label.lbx = Documents\Lego Small Remote Label.lbx
 		Documents\Schedules.xlsx = Documents\Schedules.xlsx
 		Documents\Sun01.txt = Documents\Sun01.txt
@@ -24,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		Documents\Sun10.txt = Documents\Sun10.txt
 		Documents\Sun11.txt = Documents\Sun11.txt
 		Documents\Sun12.txt = Documents\Sun12.txt
+		Documents\WateringAlgorithms.vsdx = Documents\WateringAlgorithms.vsdx
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automation", "Automation\Automation.csproj", "{837BA826-91F1-42CC-96E4-B20259B862CF}"

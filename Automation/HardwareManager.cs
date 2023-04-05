@@ -27,6 +27,11 @@ namespace HomeAutomation
 
         public int LightsRelayId { get; private set; }
         public int AutoTurnOffPumpRelayId { get; private set; }
+        public int SouthValveRelayId { get; private set; }
+        public int FlowersDripRelayId { get; private set; }
+        public int VegetablesDripRelayId { get; private set; }
+        public int GrassDripRelayId { get; private set; }
+        public int NorthValveRelayId { get; private set; }
 
         public HardwareManager(Log log, SdCard sdCard)
         {
@@ -51,9 +56,11 @@ namespace HomeAutomation
             Screen = new Lcd2004(0x27);
             ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, Screen);
             MbLed = new Led(FEZ_Pin.Digital.LED);
-
-            LightsRelayId = 7;
+            
+            SouthValveRelayId = 4;
+            NorthValveRelayId = 6;
             AutoTurnOffPumpRelayId = 5;
+            LightsRelayId = 7;
             
 #if TEST_AUTO_TURN_OFF_SERVICE
             _log.Write("TEST_AUTO_TURN_OFF_SERVICE enabled. PumpStateSensor and PressureSensor are controlled manually through mocks and remote.");

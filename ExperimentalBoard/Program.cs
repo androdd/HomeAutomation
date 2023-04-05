@@ -22,9 +22,11 @@ namespace ExperimentalBoard
     using GHIElectronics.NETMF.Hardware;
     using GHIElectronics.NETMF.IO;
     using GHIElectronics.NETMF.USBClient;
+    using GHIElectronics.NETMF.USBHost;
 
     using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
+    using Microsoft.SPOT.IO;
 
     using Watchdog = GHIElectronics.NETMF.Hardware.LowLevel.Watchdog;
 
@@ -37,12 +39,37 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
-            
+            RemovableMedia.Insert += RemovableMedia_Insert;
+            RemovableMedia.Eject += RemovableMedia_Eject;
+            // Subscribe to USB events
+            USBHostController.DeviceConnectedEvent += DeviceConnectedEvent;
 
             Debug.Print("Done");
             
             Thread.Sleep(Timeout.Infinite);
         }
+
+
+        static void DeviceConnectedEvent(USBH_Device device)
+        {
+            //if (device.TYPE == USBH_DeviceType.MassStorage)
+            {
+                Debug.Print("USB Mass Storage detected..." + device.TYPE);
+            }
+        }
+
+        static void RemovableMedia_Insert(object sender, MediaEventArgs e)
+        {
+            Debug.Print("RemovableMedia_Insert");
+        }
+
+        static void RemovableMedia_Eject(object sender, MediaEventArgs e)
+        {
+            Debug.Print("Storage \"" + e.Volume.RootDirectory + "\" is ejected.");
+        }
+        
+
+
 
         private static void TestCreateChar()
         {

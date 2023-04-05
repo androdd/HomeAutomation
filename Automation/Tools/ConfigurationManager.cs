@@ -172,6 +172,8 @@ namespace HomeAutomation.Tools
             _configuration.PressureSensorMultiplier = _settingsFile.GetDoubleValue(PressureSensorMultiplier, _configuration.PressureSensorMultiplier);
             _configuration.FlowRateSensorMultiplier = _settingsFile.GetDoubleValue(FlowRateSensorMultiplier, _configuration.FlowRateSensorMultiplier);
 
+            var south0 = _settingsFile.GetValue("Watering-South0");
+
             _configuration.AutoTurnOffPumpConfiguration.Interval =
                 _settingsFile.GetByteValue("AutoTurnOffPump-Interval", _configuration.AutoTurnOffPumpConfiguration.Interval);
             _configuration.AutoTurnOffPumpConfiguration.MinPressure = 
@@ -193,7 +195,7 @@ namespace HomeAutomation.Tools
             _configuration.FlowRateSensorMultiplier = value;
             _settingsFile.AddOrUpdateValue(FlowRateSensorMultiplier, value.ToString("F7"));
         }
-
+        
         private static DateTime ToTime(DateTime now, string text)
         {
             var parts = text.Split(':');

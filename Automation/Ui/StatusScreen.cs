@@ -9,11 +9,14 @@ namespace HomeAutomation.Ui
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Interfaces;
 
+    using HomeAutomation.Services.Watering;
+
     using Microsoft.SPOT;
 
     public class StatusScreen : Control
     {
         private readonly HardwareManager _hardwareManager;
+        private readonly WateringService _wateringService;
 
         private readonly Clock _clock;
         private readonly Label _pressureRow;
@@ -27,10 +30,11 @@ namespace HomeAutomation.Ui
 
         public event Clock.SetTimeEventHandler SetTime;
 
-        public StatusScreen(string name, Lcd2004 screen, IKeyboard keyboard, HardwareManager hardwareManager) 
+        public StatusScreen(string name, Lcd2004 screen, IKeyboard keyboard, HardwareManager hardwareManager, WateringService wateringService) 
             : base(name, screen, keyboard)
         {
             _hardwareManager = hardwareManager;
+            _wateringService = wateringService;
 
             _clock = new Clock(name + "_Clock", screen, keyboard);
             _pressureRow = new Label(name + "_PR", screen, keyboard);
@@ -56,8 +60,8 @@ namespace HomeAutomation.Ui
 
             _pressureRow.Setup("               ", 0, 0);
             _flowRateRow.Setup("                    ", 0, 1);
-            _waterRow.Setup("                    ", 0, 1);
-            _waterSwitchRow.Setup("                    ", 0, 1);
+            _waterRow.Setup("                    ", 0, 2);
+            _waterSwitchRow.Setup("                    ", 0, 3);
 
             _updateSeconds = updateSeconds;
 
@@ -114,7 +118,11 @@ namespace HomeAutomation.Ui
                 flowRateText += " ";
             }
 
-
+            var wateringText = "North:" + (char)(_wateringService.GetValve(Valve.NorthMain) ? 200 : 219) + _wateringService.NorthSwitchState +
+                               " South:" + (char)(_wateringService.GetValve(Valve.SouthMain) ? 200 : 219) +
+                               (_wateringService.GetValve(Valve.VegetablesDrip) ? (char)0 : '1') +
+                               (_wateringService.GetValve(Valve.GrassDrip) ? (char)1 : '2') +
+                               (_wateringService.GetValve(Valve.FlowersDrip) ? (char)2 : '3');
 
             lock (_sdCardStatusLock)
             {
@@ -126,7 +134,7 @@ namespace HomeAutomation.Ui
                     
                     _flowRateRow.Text = flowRateText + sdCardStatusText;
 
-
+                    _waterSwitchRow.Text = wateringText;
                 });
             }
         }

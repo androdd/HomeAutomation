@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DEBUG_SET_RTC,MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DEBUG_SET_RTC,MOCK_FLOW_RATE,MF_FRAMEWORK_VERSION_V4_</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -40,7 +40,10 @@
     <Compile Include="Services\Interfaces\IRemoteCommandsService.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />
-    <Compile Include="Services\WateringService.cs" />
+    <Compile Include="Services\Watering\DaysOfWeek.cs" />
+    <Compile Include="Services\Watering\Valve.cs" />
+    <Compile Include="Services\Watering\ValveConfiguration.cs" />
+    <Compile Include="Services\Watering\WateringService.cs" />
     <Compile Include="Tools\Configuration.cs" />
     <Compile Include="Tools\ConfigurationManager.cs" />
     <Compile Include="Tools\Log.cs" />
@@ -68,6 +71,10 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AdSoft.Automation\AdSoft.Automation.csproj">
+      <Project>{0935DADC-B81A-4F9D-99F0-73845981F821}</Project>
+      <Name>AdSoft.Automation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AdSoft.Fez\AdSoft.Fez.csproj">
       <Project>{093798A0-2327-429B-9AD6-8B8172EBBCCA}</Project>
       <Name>AdSoft.Fez</Name>

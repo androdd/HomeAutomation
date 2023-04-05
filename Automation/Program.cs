@@ -14,6 +14,7 @@ namespace HomeAutomation
     using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;
+    using HomeAutomation.Services.Watering;
     using HomeAutomation.Tools;
     using HomeAutomation.Ui;
 
@@ -30,6 +31,7 @@ namespace HomeAutomation
         private static LightsService _lightsService;
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
         private static PressureLoggingService _pressureLoggingService;
+        private static WateringService _wateringService;
         
         private static HardwareManager _hardwareManager;
         private static UiManager _uiManager;
@@ -86,7 +88,7 @@ namespace HomeAutomation
             _pressureLoggingService.Init(_configuration.PressureLogIntervalMin);
             _autoTurnOffPumpService.Init();
             
-            _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService);
+            _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _wateringService);
             _uiManager.Setup();
 
             #region Manual DST Adjustment
@@ -170,6 +172,7 @@ namespace HomeAutomation
 #endif
 
             _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.SdCard, _hardwareManager.PressureSensor);
+            _wateringService = new WateringService(_log, _realTimer, _hardwareManager);
         }
 
         private static void ScheduleConfigReload()

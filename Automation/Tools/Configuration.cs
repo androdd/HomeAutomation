@@ -2,6 +2,8 @@ namespace HomeAutomation.Tools
 {
     using System;
 
+    using HomeAutomation.Services.Watering;
+
     public class Configuration
     {
         public bool ManagementMode { get; set; }
@@ -16,6 +18,8 @@ namespace HomeAutomation.Tools
         public double FlowRateSensorMultiplier { get; set; }
 
         public Services.AutoTurnOffPump.Configuration AutoTurnOffPumpConfiguration { get; private set; }
+
+        public ValveConfiguration[] SouthValveConfigurations { get; private set; }
 
         public bool IsDst { get; set; }
         public bool ManualStartDst { get; set; }
@@ -42,6 +46,8 @@ namespace HomeAutomation.Tools
             AutoTurnOffPumpConfiguration.MinPressure = 0.5;
             AutoTurnOffPumpConfiguration.MaxEventsCount = 2;
             AutoTurnOffPumpConfiguration.SignalLength = 500;
+
+            SouthValveConfigurations = new ValveConfiguration[4];
         }
     }
 }

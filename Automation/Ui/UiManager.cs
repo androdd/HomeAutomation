@@ -9,6 +9,7 @@ namespace HomeAutomation.Ui
     using AdSoft.Fez.Ui.Menu;
 
     using HomeAutomation.Services;
+    using HomeAutomation.Services.Watering;
     using HomeAutomation.Tools;
 
     public class UiManager
@@ -17,6 +18,7 @@ namespace HomeAutomation.Ui
         private readonly ConfigurationManager _configurationManager;
         private readonly HardwareManager _hardwareManager;
         private readonly LightsService _lightsService;
+        private readonly WateringService _wateringService;
 
         private readonly ControlsManager _controlsManager;
         private readonly MiniRemoteKeyboard _keyboard;
@@ -35,12 +37,14 @@ namespace HomeAutomation.Ui
             Configuration configuration,
             ConfigurationManager configurationManager,
             HardwareManager hardwareManager,
-            LightsService lightsService)
+            LightsService lightsService,
+            WateringService wateringService)
         {
             _configuration = configuration;
             _configurationManager = configurationManager;
             _hardwareManager = hardwareManager;
             _lightsService = lightsService;
+            _wateringService = wateringService;
 
             _controlsManager = new ControlsManager();
 
@@ -48,7 +52,7 @@ namespace HomeAutomation.Ui
             _screenSaver = new ScreenSaver(hardwareManager.Screen, _keyboard);
 
             _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
-            _statusScreen = (StatusScreen)_controlsManager.Add(new StatusScreen("StatusScr", hardwareManager.Screen, _keyboard, hardwareManager));
+            _statusScreen = (StatusScreen)_controlsManager.Add(new StatusScreen("StatusScr", hardwareManager.Screen, _keyboard, hardwareManager, _wateringService));
             _datePicker = (DatePicker)_controlsManager.Add(new DatePicker("Date", hardwareManager.Screen, _keyboard));
             _textDrum = (TextDrum)_controlsManager.Add(new TextDrum("Drum", hardwareManager.Screen, _keyboard));
             _doublePicker = (DoublePicker)_controlsManager.Add(new DoublePicker("Double", hardwareManager.Screen, _keyboard));
@@ -56,17 +60,20 @@ namespace HomeAutomation.Ui
 
         public void Setup()
         {
+            CreateWateringChars();
+
             _keyboard.Init();
             _screenSaver.Init(3 * 60, !_configuration.ManagementMode);
             _hardwareManager.ScreenPowerButton.AddScreenSaver(_screenSaver);
 
             _menu.Setup(new[]
             {
+                new MenuItem(MenuKeys.StartWatering, "Start watering"),
+                new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
                 new MenuItem(MenuKeys.ShowConfig, "Show Config"),
-                new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date")
             });
@@ -96,15 +103,8 @@ namespace HomeAutomation.Ui
         {
             if (isOn)
             {
-                _hardwareManager.Screen.CreateChar(0, new byte[] { 04, 12, 04, 20, 04, 04, 14, 31 });
-                _hardwareManager.Screen.CreateChar(1, new byte[] { 14, 17, 01, 18, 04, 08, 31, 31 });
-                _hardwareManager.Screen.CreateChar(2, new byte[] { 31, 02, 20, 02, 01, 17, 14, 31 });
-                _hardwareManager.Screen.CreateChar(3, new byte[] { 18, 06, 10, 18, 31, 02, 02, 31 });
-                _hardwareManager.Screen.CreateChar(4, new byte[] { 31, 16, 30, 01, 05, 17, 14, 31 });
-                _hardwareManager.Screen.CreateChar(5, new byte[] { 06, 08, 17, 30, 17, 17, 14, 31 });
-                _hardwareManager.Screen.CreateChar(6, new byte[] { 31, 17, 01, 18, 04, 04, 04, 31 });
-                _hardwareManager.Screen.CreateChar(7, new byte[] { 14, 17, 21, 14, 21, 17, 14, 31 });
-                
+                CreateWateringChars();
+
                 _hardwareManager.Screen.Clear();
 
                 _controlsManager.Show();
@@ -114,6 +114,18 @@ namespace HomeAutomation.Ui
             {
                 _controlsManager.Stop();
             }
+        }
+
+        private void CreateWateringChars()
+        {
+            _hardwareManager.Screen.CreateChar(0, new byte[] { 04, 12, 04, 20, 04, 04, 14, 31 });
+            _hardwareManager.Screen.CreateChar(1, new byte[] { 14, 17, 01, 18, 04, 08, 31, 31 });
+            _hardwareManager.Screen.CreateChar(2, new byte[] { 31, 02, 20, 02, 01, 17, 14, 31 });
+            _hardwareManager.Screen.CreateChar(3, new byte[] { 18, 06, 10, 18, 31, 02, 02, 31 });
+            _hardwareManager.Screen.CreateChar(4, new byte[] { 31, 16, 30, 01, 05, 17, 14, 31 });
+            _hardwareManager.Screen.CreateChar(5, new byte[] { 06, 08, 17, 30, 17, 17, 14, 31 });
+            _hardwareManager.Screen.CreateChar(6, new byte[] { 31, 17, 01, 18, 04, 04, 04, 31 });
+            _hardwareManager.Screen.CreateChar(7, new byte[] { 14, 17, 21, 14, 21, 17, 14, 31 });
         }
 
         private void MenuOnMenuItemEnter(byte key)
@@ -212,6 +224,13 @@ namespace HomeAutomation.Ui
                     var areOn = _lightsService.GetLightsState();
                     _menu.ChangeTitle(MenuKeys.ToggleLights, "Lights " + (!areOn ? "Off" : "On"));
                     _lightsService.SetLights(!areOn, "Manual ");
+
+                    _statusScreen.Show();
+                    break;
+                case MenuKeys.StartWatering:
+                    _status = UiStatus.None;
+
+                    _wateringService.Start();
 
                     _statusScreen.Show();
                     break;
