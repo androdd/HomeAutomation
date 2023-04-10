@@ -27,11 +27,12 @@ namespace HomeAutomation
 
         public int LightsRelayId { get; private set; }
         public int AutoTurnOffPumpRelayId { get; private set; }
-        public int SouthValveRelayId { get; private set; }
-        public int FlowersDripRelayId { get; private set; }
-        public int VegetablesDripRelayId { get; private set; }
-        public int GrassDripRelayId { get; private set; }
-        public int NorthValveRelayId { get; private set; }
+        public int SouthValve1RelayId { get; private set; }
+        public int SouthValve2RelayId { get; private set; }
+        public int SouthValve3RelayId { get; private set; }
+        public int SouthValve4RelayId { get; private set; }
+        public int SouthMainValveRelayId { get; private set; }
+        public int NorthMainValveRelayId { get; private set; }
 
         public HardwareManager(Log log, SdCard sdCard)
         {
@@ -56,9 +57,13 @@ namespace HomeAutomation
             Screen = new Lcd2004(0x27);
             ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, Screen);
             MbLed = new Led(FEZ_Pin.Digital.LED);
-            
-            SouthValveRelayId = 4;
-            NorthValveRelayId = 6;
+
+            SouthValve1RelayId = 0;
+            SouthValve2RelayId = 1;
+            SouthValve3RelayId = 2;
+            SouthValve4RelayId = 3;
+            SouthMainValveRelayId = 4;
+            NorthMainValveRelayId = 6;
             AutoTurnOffPumpRelayId = 5;
             LightsRelayId = 7;
             

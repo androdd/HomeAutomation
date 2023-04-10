@@ -5,6 +5,7 @@ namespace HomeAutomation.Services.Watering
     [Flags]
     public enum DaysOfWeek
     {
+        None = 0,
         Sunday = 1 << 0,
         Monday = 1 << 1,
         Tuesday = 1 << 2,

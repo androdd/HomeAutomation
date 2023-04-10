@@ -37,6 +37,9 @@ namespace AdSoft.Fez
                     case Target.ScreenPowerButton:
                         text = "ScreenPowerButton - " + text;
                         break;
+                    case Target.WateringService:
+                        text = "WateringService - " + text;
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException("target");
                 }
@@ -83,7 +86,8 @@ namespace AdSoft.Fez
             Keyboard = 1 << 3,
             PressureLog = 1 << 4,
             Lcd2004 = 1 << 5,
-            ScreenPowerButton = 1 << 6
+            ScreenPowerButton = 1 << 6,
+            WateringService = 1 << 7
         }
     }
 }

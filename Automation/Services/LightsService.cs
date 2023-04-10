@@ -65,17 +65,17 @@ namespace HomeAutomation.Services
             _log.Write(logPrefix + "Lights " + (lightsOn ? "ON" : "OFF"));
         }
 
-        private void SunriseAction(object state)
+        private void SunriseAction(TimerState state)
         {
             ScheduleLights(false);
             SetLights(false, "Sunrise ");
-            _realTimer.TryDispose((Guid)state);
+            _realTimer.TryDispose(state.TimerKey);
         }
 
-        private void SunsetAction(object state)
+        private void SunsetAction(TimerState state)
         {
             SetLights(true, "Sunset ");
-            _realTimer.TryDispose((Guid)state);
+            _realTimer.TryDispose(state.TimerKey);
         }
     }
 }

@@ -1,17 +1,15 @@
 namespace HomeAutomation.Services.Watering
 {
     using System;
-    using System.Threading;
 
-    using AdSoft.Fez.Hardware;
+    using AdSoft.Fez;
 
     using HomeAutomation.Tools;
-
-    using Microsoft.SPOT;
 
     public class WateringService
     {
         private readonly Log _log;
+        private readonly Configuration _configuration;
         private readonly RealTimer _realTimer;
         private readonly HardwareManager _hardwareManager;
 
@@ -21,118 +19,111 @@ namespace HomeAutomation.Services.Watering
 
         public int NorthSwitchState { get; private set; }
         
-        public WateringService(Log log, RealTimer realTimer, HardwareManager hardwareManager)
+        public WateringService(Log log, Configuration configuration,  RealTimer realTimer, HardwareManager hardwareManager)
         {
             _log = log;
+            _configuration = configuration;
             _realTimer = realTimer;
             _hardwareManager = hardwareManager;
         }
 
         public void Start()
         {
-            _realTimer.TryScheduleRunAt(Program.Now.AddSeconds(5), TimerCallback, "Watering");
+            DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
+
+            DateTime firstStarTime = DateTime.MaxValue;
+            DateTime lastEndTime = DateTime.MinValue;
+
+            for (var i = 0; i < _configuration.SouthValveConfigurations.Length; i++)
+            {
+                var configuration = _configuration.SouthValveConfigurations[i];
+
+                DebugEx.Print(DebugEx.Target.WateringService,
+                    "Configuration " + (i + 1) + ": IsValid:" + configuration.IsValid + " IsEnabled:" + configuration.IsEnabled +
+                    " ContainsToday:" + configuration.ContainsDay(DateTime.Now.DayOfWeek) + " IsDue:" + (configuration.StartTime > DateTime.Now));
+                
+                if (!configuration.IsValid || !configuration.IsEnabled || !configuration.ContainsDay(DateTime.Now.DayOfWeek) ||
+                    configuration.StartTime <= DateTime.Now)
+                {
+                    continue;
+                }
+
+                if (configuration.StartTime < firstStarTime)
+                {
+                    firstStarTime = configuration.StartTime;
+                }
+
+                DateTime endTime = configuration.StartTime.AddMinutes(configuration.Duration);
+
+                if (endTime > lastEndTime)
+                {
+                    lastEndTime = endTime;
+                }
+
+                var name = "Valve " + (i + 1) + " South ";
+
+                _realTimer.TryScheduleRunAt(configuration.StartTime,
+                    TimerCallback,
+                    new WateringTimerState { Start = true, RelayId = configuration.RelayId },
+                    name);
+
+                _realTimer.TryScheduleRunAt(endTime,
+                    TimerCallback,
+                    new WateringTimerState { Start = false, RelayId = configuration.RelayId },
+                    name);
+
+                DebugEx.Print(DebugEx.Target.WateringService,
+                    "Index " + (i + 1) + " set. First start: " + firstStarTime.ToString("s") + ". Last end: " + lastEndTime.ToString("s"));
+            }
+
+            var mainStart = firstStarTime.Subtract(new TimeSpan(0, 0, 2));
+            var mainEnd = lastEndTime.Subtract(new TimeSpan(0, 0, 5));
+
+            DebugEx.Print(DebugEx.Target.WateringService, "Main start: " + mainStart.ToString("s") + ". Main end: " + mainEnd.ToString("s"));
+
+            var valveMainSouth = "Valve Main South ";
+            _realTimer.TryScheduleRunAt(mainStart,
+                TimerCallback,
+                new WateringTimerState { Start = true, RelayId = _hardwareManager.SouthMainValveRelayId },
+                valveMainSouth);
+
+            _realTimer.TryScheduleRunAt(mainEnd,
+                TimerCallback,
+                new WateringTimerState { Start = false, RelayId = _hardwareManager.SouthMainValveRelayId },
+                valveMainSouth);
         }
 
-        private void TimerCallback(object state)
+        private void TimerCallback(TimerState state)
         {
-            var _wateringThread = new Thread(StartWatering);
-            _wateringThread.Start();
+            var wateringTimerState = (WateringTimerState)state;
+
+            _hardwareManager.RelaysArray.Set(wateringTimerState.RelayId, wateringTimerState.Start);
+
+            _log.Write(wateringTimerState.Name + "valve is " + (wateringTimerState.Start ? "opened" : "closed") + ".");
         }
         
-        private void StartWatering()
+        public bool GetValveSouth(int index)
         {
-            SetValve(Valve.SouthMain, true);
-            Thread.Sleep(100);
+            var configuration = _configuration.SouthValveConfigurations[index - 1];
             
-            Thread.Sleep(30 * 1000);
-            
-            Thread.Sleep(3 * 1000);
-            SetValve(Valve.FlowersDrip, false);
-
-            int flowerCycles = 0, flowersMaxCycles = 5;
-
-
-            while (true)
-            {
-                if (flowerCycles == 0)
-                {
-                    SetValve(Valve.FlowersDrip, true);
-                }
-                
-                if (flowerCycles == flowersMaxCycles)
-                {
-                    SetValve(Valve.FlowersDrip, false);
-                }
-
-                flowerCycles++;
-                
-                Thread.Sleep(10 * 1000);
-            }
-
-            SetValve(Valve.SouthMain, false);
+            return configuration.IsValid &&  _hardwareManager.RelaysArray.Get(configuration.RelayId);
         }
-
-        public bool GetValve(Valve valve)
+        
+        public bool GetValveMainSouth()
         {
-            var relayId = GetRelayId(valve);
-            var state = _hardwareManager.RelaysArray.Get(relayId);
-
-            return state;
+            return _hardwareManager.RelaysArray.Get(_hardwareManager.SouthMainValveRelayId);
         }
-
-        private void SetValve(Valve valve, bool isOpen)
+        
+        public bool GetValveMainNorth()
         {
-            var relayId = GetRelayId(valve);
-
-            _hardwareManager.RelaysArray.Set(relayId, isOpen);
-
-            _log.Write(ValveToString(valve) + " valve is " + (isOpen ? "opened" : "closed") + ".");
+            return _hardwareManager.RelaysArray.Get(_hardwareManager.NorthMainValveRelayId);
         }
+    }
 
-        private int GetRelayId(Valve valve)
-        {
-            int relayId;
-            switch (valve)
-            {
-                case Valve.SouthMain:
-                    relayId = _hardwareManager.SouthValveRelayId;
-                    break;
-                case Valve.FlowersDrip:
-                    relayId = _hardwareManager.FlowersDripRelayId;
-                    break;
-                case Valve.VegetablesDrip:
-                    relayId = _hardwareManager.VegetablesDripRelayId;
-                    break;
-                case Valve.GrassDrip:
-                    relayId = _hardwareManager.GrassDripRelayId;
-                    break;
-                case Valve.NorthMain:
-                    relayId = _hardwareManager.NorthValveRelayId;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("valve");
-            }
+    public class WateringTimerState : TimerState
+    {
+        public int RelayId { get; set; }
 
-            return relayId;
-        }
-
-        private string ValveToString(Valve valve)
-        {
-            switch (valve)
-            {
-                case Valve.SouthMain:
-                    return "South Main";
-                case Valve.FlowersDrip:
-                    return "Flowers";
-                case Valve.VegetablesDrip:
-                    return "Vegetables";
-                case Valve.GrassDrip:
-                    return "Grass";
-                case Valve.NorthMain:
-                    return "North Main";
-                default:
-                    throw new ArgumentOutOfRangeException("valve");
-            }
-        }
+        public bool Start { get; set; }
     }
 }

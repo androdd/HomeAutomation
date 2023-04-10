@@ -41,7 +41,6 @@
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />
     <Compile Include="Services\Watering\DaysOfWeek.cs" />
-    <Compile Include="Services\Watering\Valve.cs" />
     <Compile Include="Services\Watering\ValveConfiguration.cs" />
     <Compile Include="Services\Watering\WateringService.cs" />
     <Compile Include="Tools\Configuration.cs" />
@@ -50,6 +49,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tools\RealTimer.cs" />
+    <Compile Include="Tools\TimerState.cs" />
     <Compile Include="Ui\MenuKeys.cs" />
     <Compile Include="Ui\StatusScreen.cs" />
     <Compile Include="Ui\UiManager.cs" />
@@ -71,10 +71,6 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AdSoft.Automation\AdSoft.Automation.csproj">
-      <Project>{0935DADC-B81A-4F9D-99F0-73845981F821}</Project>
-      <Name>AdSoft.Automation</Name>
-    </ProjectReference>
     <ProjectReference Include="..\AdSoft.Fez\AdSoft.Fez.csproj">
       <Project>{093798A0-2327-429B-9AD6-8B8172EBBCCA}</Project>
       <Name>AdSoft.Fez</Name>

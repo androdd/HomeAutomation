@@ -10,6 +10,7 @@ namespace HomeAutomation
     using AdSoft.Fez.Hardware.SdCard;
 
     using GHIElectronics.NETMF.Hardware;
+    using GHIElectronics.NETMF.System;
 
     using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
@@ -19,6 +20,7 @@ namespace HomeAutomation
     using HomeAutomation.Ui;
 
     using Microsoft.SPOT;
+    using Microsoft.SPOT.Hardware;
 
     using Configuration = HomeAutomation.Tools.Configuration;
 
@@ -55,16 +57,19 @@ namespace HomeAutomation
 #if DEBUG_SET_RTC
             RealTimeClock.SetTime(new DateTime(2023, 4, 30, 22, 0, 0));
 #endif
+            Utility.SetLocalTime(RealTimeClock.GetTime());
+
 
             DebugEx.Targets = DebugEx.Target.None;
             //DebugEx.Targets |= DebugEx.Target.ScreenSaver;
             //DebugEx.Targets |= DebugEx.Target.Ui;
             DebugEx.Targets |= DebugEx.Target.Log;
-            DebugEx.Targets |= DebugEx.Target.Keyboard;
-            DebugEx.Targets |= DebugEx.Target.PressureLog;
+            //DebugEx.Targets |= DebugEx.Target.Keyboard;
+            //DebugEx.Targets |= DebugEx.Target.PressureLog;
             //DebugEx.Targets |= DebugEx.Target.Lcd2004;
             //DebugEx.Targets |= DebugEx.Target.ScreenPowerButton;
-            Debug.EnableGCMessages(false);
+            DebugEx.Targets |= DebugEx.Target.WateringService;
+            //Debug.EnableGCMessages(false);
 
             var sdCard = new SdCard();
             _configuration = new Configuration();
@@ -172,7 +177,7 @@ namespace HomeAutomation
 #endif
 
             _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.SdCard, _hardwareManager.PressureSensor);
-            _wateringService = new WateringService(_log, _realTimer, _hardwareManager);
+            _wateringService = new WateringService(_log, _configuration, _realTimer, _hardwareManager);
         }
 
         private static void ScheduleConfigReload()
@@ -216,14 +221,14 @@ namespace HomeAutomation
             _lightsService.ScheduleLights(true);
         }
 
-        private static void DstStart(object state)
+        private static void DstStart(TimerState state)
         {
             _configurationManager.SaveDst();
 
             AdjustTimeAndRestart(1);
         }
 
-        private static void DstEnd(object state)
+        private static void DstEnd(TimerState state)
         {
             _configurationManager.DeleteDst();
 

@@ -118,20 +118,21 @@ namespace HomeAutomation.Ui
                 flowRateText += " ";
             }
 
-            var wateringText = "North:" + (char)(_wateringService.GetValve(Valve.NorthMain) ? 200 : 219) + _wateringService.NorthSwitchState +
-                               " South:" + (char)(_wateringService.GetValve(Valve.SouthMain) ? 200 : 219) +
-                               (_wateringService.GetValve(Valve.VegetablesDrip) ? (char)0 : '1') +
-                               (_wateringService.GetValve(Valve.GrassDrip) ? (char)1 : '2') +
-                               (_wateringService.GetValve(Valve.FlowersDrip) ? (char)2 : '3');
+            var wateringText = "North:" + (_wateringService.GetValveMainNorth() ? '*' : (char)219) + _wateringService.NorthSwitchState +
+                               " South:" + (_wateringService.GetValveMainSouth() ? '*' : (char)219) +
+                               (_wateringService.GetValveSouth(1) ? (char)0 : '1') +
+                               (_wateringService.GetValveSouth(2) ? (char)1 : '2') +
+                               (_wateringService.GetValveSouth(3) ? (char)2 : '3') +
+                               (_wateringService.GetValveSouth(4) ? (char)3 : '4');
 
             lock (_sdCardStatusLock)
             {
                 Screen.Sync(() =>
                 {
                     _pressureRow.Text = "Pr:" + _hardwareManager.PressureSensor.Pressure.ToString("F2");
-                    
+
                     var sdCardStatusText = _flowRateRow.Text.Substring(15, 5);
-                    
+
                     _flowRateRow.Text = flowRateText + sdCardStatusText;
 
                     _waterSwitchRow.Text = wateringText;

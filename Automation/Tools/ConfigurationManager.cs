@@ -9,6 +9,8 @@ namespace HomeAutomation.Tools
 
     using GHIElectronics.NETMF.Hardware;
 
+    using HomeAutomation.Services.Watering;
+
     public class ConfigurationManager
     {
         private const string DstCfg = "dst.cfg";
@@ -172,7 +174,10 @@ namespace HomeAutomation.Tools
             _configuration.PressureSensorMultiplier = _settingsFile.GetDoubleValue(PressureSensorMultiplier, _configuration.PressureSensorMultiplier);
             _configuration.FlowRateSensorMultiplier = _settingsFile.GetDoubleValue(FlowRateSensorMultiplier, _configuration.FlowRateSensorMultiplier);
 
-            var south0 = _settingsFile.GetValue("Watering-South0");
+            _configuration.SouthValveConfigurations[0] = new ValveConfiguration(_settingsFile.GetValue("Watering-South1"));
+            _configuration.SouthValveConfigurations[1] = new ValveConfiguration(_settingsFile.GetValue("Watering-South2"));
+            _configuration.SouthValveConfigurations[2] = new ValveConfiguration(_settingsFile.GetValue("Watering-South3"));
+            _configuration.SouthValveConfigurations[3] = new ValveConfiguration(_settingsFile.GetValue("Watering-South4"));
 
             _configuration.AutoTurnOffPumpConfiguration.Interval =
                 _settingsFile.GetByteValue("AutoTurnOffPump-Interval", _configuration.AutoTurnOffPumpConfiguration.Interval);

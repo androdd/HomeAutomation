@@ -239,7 +239,7 @@ namespace HomeAutomation.Ui
 
         private void ConfigMenuOnMenuItemSelected(byte key)
         {
-            _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, " => " + ((Setting)_allSettings[key]).Value, true);
+            _hardwareManager.Screen.WriteLine(_hardwareManager.Screen.Rows - 1, "=" + ((Setting)_allSettings[key]).Value, true);
         }
 
         private void MenuOnKeyPressed(Key key)

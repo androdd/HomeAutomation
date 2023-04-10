@@ -2,17 +2,13 @@ namespace ExperimentalBoard
 {
     using System;
     using System.Collections;
-    using System.IO;
     using System.IO.Ports;
-    using System.Reflection;
     using System.Text;
     using System.Threading;
 
-    using AdSoft.Fez;
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Lcd2004;
-    using AdSoft.Fez.Hardware.LegoRemote;
     using AdSoft.Fez.Hardware.NecRemote;
     using AdSoft.Fez.Hardware.SdCard;
     using AdSoft.Fez.Ui;
@@ -39,14 +35,38 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
+            int maxId = 1;
+            
+            for (int i = 0; i < 50; i++)
+            {
+                new Timer(state =>
+                    {
+                        Interlocked.CompareExchange(ref maxId, (int)state + 1, (int)state);
+                    },
+                    i,
+                    i * 1000,
+                    2 * i * 1000);
+            }
+            
+
+            Debug.Print("Done");
+
+            while (true)
+            {
+                Thread.Sleep(3000);
+
+                Debug.Print("Max: " + maxId);
+            }
+            
+            Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void TestUsb()
+        {
             RemovableMedia.Insert += RemovableMedia_Insert;
             RemovableMedia.Eject += RemovableMedia_Eject;
             // Subscribe to USB events
             USBHostController.DeviceConnectedEvent += DeviceConnectedEvent;
-
-            Debug.Print("Done");
-            
-            Thread.Sleep(Timeout.Infinite);
         }
 
 

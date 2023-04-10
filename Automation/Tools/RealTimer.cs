@@ -8,6 +8,8 @@ namespace HomeAutomation.Tools
 
     public class RealTimer : Base
     {
+        public delegate void Callback(TimerState state);
+
         private readonly Log _log;
         private readonly Hashtable _hashtable;
 
@@ -19,12 +21,22 @@ namespace HomeAutomation.Tools
             _hashtable = new Hashtable();
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, TimerCallback timerCallback, string name = "")
+        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, string name = "")
         {
-            return TryScheduleRunAt(dueDateTime, timerCallback, InfiniteTimeSpan, name);
+            return TryScheduleRunAt(dueDateTime, timerCallback, null, InfiniteTimeSpan, name);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, TimerCallback timerCallback, TimeSpan period, string name = "")
+        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimeSpan period, string name = "")
+        {
+            return TryScheduleRunAt(dueDateTime, timerCallback, null, period);
+        }
+
+        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState timerState, string name = "")
+        {
+            return TryScheduleRunAt(dueDateTime, timerCallback, timerState, InfiniteTimeSpan, name);
+        }
+
+        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState state, TimeSpan period, string name = "")
         {
             var now = RealTimeClock.GetTime();
 
@@ -36,7 +48,21 @@ namespace HomeAutomation.Tools
             var interval = dueDateTime - now;
 
             Guid key = Guid.NewGuid();
-            var timer = new Timer(timerCallback, key, interval, period);
+            TimerState timerState;
+
+            if (state == null)
+            {
+                timerState = new TimerState { TimerKey = key, Name = name };
+            }
+            else
+            {
+                state.TimerKey = key;
+                state.Name = name;
+
+                timerState = state;
+            }
+
+            var timer = new Timer(s => { timerCallback((TimerState)s); }, timerState, interval, period);
             _hashtable.Add(key, timer);
 
             if (period == InfiniteTimeSpan)
