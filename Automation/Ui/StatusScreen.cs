@@ -3,7 +3,6 @@ namespace HomeAutomation.Ui
     using System;
     using System.Threading;
 
-    using AdSoft.Fez;
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.SdCard;
     using AdSoft.Fez.Ui;
@@ -11,24 +10,24 @@ namespace HomeAutomation.Ui
 
     using HomeAutomation.Services.Watering;
 
-    using Microsoft.SPOT;
-
     public class StatusScreen : Control
     {
         private readonly HardwareManager _hardwareManager;
         private readonly WateringService _wateringService;
-
-        private readonly Clock _clock;
-        private readonly Label _pressureRow;
-        private readonly Label _flowRateRow;
-        private readonly Label _waterRow;
-        private readonly Label _waterSwitchRow;
+        
         private readonly Timer _timer;
-        private readonly object _sdCardStatusLock;
-
-        private int _updateSeconds;
-
-        public event Clock.SetTimeEventHandler SetTime;
+        
+        
+        private double _oldPressure;
+        private string _oldTime;
+        private double _oldFlowRate;
+        private bool _oldValveMainNorth;
+        private char _oldNorthSwitchState;
+        private bool _oldValveMainSouth;
+        private bool _oldValveSouth1;
+        private bool _oldValveSouth2;
+        private bool _oldValveSouth3;
+        private bool _oldValveSouth4;
 
         public StatusScreen(string name, Lcd2004 screen, IKeyboard keyboard, HardwareManager hardwareManager, WateringService wateringService) 
             : base(name, screen, keyboard)
@@ -36,35 +35,11 @@ namespace HomeAutomation.Ui
             _hardwareManager = hardwareManager;
             _wateringService = wateringService;
 
-            _clock = new Clock(name + "_Clock", screen, keyboard);
-            _pressureRow = new Label(name + "_PR", screen, keyboard);
-            _flowRateRow = new Label(name + "_FR", screen, keyboard);
-            _waterRow = new Label(name + "_WR", screen, keyboard);
-            _waterSwitchRow = new Label(name + "_SR", screen, keyboard);
-
             _timer = new Timer(Update, null, Timeout.Infinite, Timeout.Infinite);
-            _sdCardStatusLock = new object();
-            _updateSeconds = 1;
         }
 
-        public void Setup(int updateSeconds)
+        public void Setup()
         {
-            if (updateSeconds < 1)
-            {
-                updateSeconds = 1;
-            }
-
-            _clock.Setup(15, 0);
-            _clock.GetTime += () => Program.Now;
-            _clock.SetTime += time => { if (SetTime != null) SetTime(time); };
-
-            _pressureRow.Setup("               ", 0, 0);
-            _flowRateRow.Setup("                    ", 0, 1);
-            _waterRow.Setup("                    ", 0, 2);
-            _waterSwitchRow.Setup("                    ", 0, 3);
-
-            _updateSeconds = updateSeconds;
-
             base.Setup(0, 0);
         }
 
@@ -78,24 +53,41 @@ namespace HomeAutomation.Ui
 
         public override void Show(bool show = true)
         {
-            Screen.Sync(() =>
-            {
-                _clock.Show(show);
-                _pressureRow.Show(show);
-                _flowRateRow.Show(show);
-                _waterRow.Show(show);
-                _waterSwitchRow.Show(show);
-            });
-
             if (show)
             {
-                _timer.Change(0, _updateSeconds * 1000);
+                Screen.Sync(() =>
+                {
+                    Screen.Clear();
+
+                    Screen.Write(0, 0, "Pr:");
+                    Screen.Write(0, 1, "FR:");
+                    Screen.Write(15, 1, "S:");
+                    Screen.Write(0, 3, "North:");
+                    Screen.Write(9, 3, "South:");
+
+                    Screen.Write(3, 0, _hardwareManager.PressureSensor.Pressure.ToString("F2"));
+                    Screen.Write(15, 0, DateTime.Now.ToString("HH:mm"));
+                    Screen.Write(3, 1, _hardwareManager.FlowRateSensor.FlowRate.ToString("F1"));
+                    Screen.SetCursor(6, 3);
+                    Screen.WriteChar(_wateringService.GetValveMainNorth() ? '*' : (char)219);
+                    Screen.WriteChar(_wateringService.NorthSwitchState.ToString()[0]);
+                    Screen.SetCursor(15, 3);
+                    Screen.WriteChar(_wateringService.GetValveMainSouth() ? '*' : (char)219);
+                    Screen.WriteChar(_wateringService.GetValveSouth(1) ? (char)0 : '1');
+                    Screen.WriteChar(_wateringService.GetValveSouth(2) ? (char)1 : '2');
+                    Screen.WriteChar(_wateringService.GetValveSouth(3) ? (char)2 : '3');
+                    Screen.WriteChar(_wateringService.GetValveSouth(4) ? (char)3 : '4');
+                });
+
+                _timer.Change(0, 10 * 1000);
 
                 // ReSharper disable once RedundantArgumentDefaultValue
                 base.Show(true);
             }
             else
             {
+                Screen.Clear();
+
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
 
 #if DEBUG_UI
@@ -106,39 +98,57 @@ namespace HomeAutomation.Ui
             }
         }
 
-        public void EditTime()
-        {
-            _clock.Edit();
-        }
-
         private void Update(object state)
         {
-            var flowRateText = "FR:" + _hardwareManager.FlowRateSensor.FlowRate.ToString("F1") + "        ";
-
-            if (flowRateText.Length == 14)
+            Screen.Sync(() =>
             {
-                flowRateText += " ";
+                WriteIfChanged(3, 0, ref _oldPressure, _hardwareManager.PressureSensor.Pressure, "F2");
+                WriteIfChanged(15, 0, ref _oldTime, DateTime.Now.ToString("HH:mm"));
+                WriteIfChanged(3, 1, ref _oldFlowRate, _hardwareManager.FlowRateSensor.FlowRate, "F1");
+                WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
+                WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);
+                WriteIfChanged(15, 3, ref _oldValveMainSouth, _wateringService.GetValveMainSouth(), '*', (char)219);
+                WriteIfChanged(16, 3, ref _oldValveSouth1, _wateringService.GetValveSouth(1), (char)0, '1');
+                WriteIfChanged(17, 3, ref _oldValveSouth2, _wateringService.GetValveSouth(2), (char)1, '2');
+                WriteIfChanged(18, 3, ref _oldValveSouth3, _wateringService.GetValveSouth(3), (char)2, '3');
+                WriteIfChanged(19, 3, ref _oldValveSouth4, _wateringService.GetValveSouth(4), (char)3, '4');
+            });
+        }
+
+        private void WriteIfChanged(int col, int row, ref double oldValue, double newValue, string format)
+        {
+            var diff = newValue - oldValue;
+            if (diff > 0.01 || diff < -0.01)
+            {
+                oldValue = newValue;
+                Screen.Write(col, row, newValue.ToString(format));
             }
+        }
 
-            var wateringText = "North:" + (_wateringService.GetValveMainNorth() ? '*' : (char)219) + _wateringService.NorthSwitchState +
-                               " South:" + (_wateringService.GetValveMainSouth() ? '*' : (char)219) +
-                               (_wateringService.GetValveSouth(1) ? (char)0 : '1') +
-                               (_wateringService.GetValveSouth(2) ? (char)1 : '2') +
-                               (_wateringService.GetValveSouth(3) ? (char)2 : '3') +
-                               (_wateringService.GetValveSouth(4) ? (char)3 : '4');
-
-            lock (_sdCardStatusLock)
+        private void WriteIfChanged(int col, int row, ref string oldValue, string newValue)
+        {
+            if (oldValue != newValue)
             {
-                Screen.Sync(() =>
-                {
-                    _pressureRow.Text = "Pr:" + _hardwareManager.PressureSensor.Pressure.ToString("F2");
+                oldValue = newValue;
+                Screen.Write(col, row, newValue);
+            }
+        }
 
-                    var sdCardStatusText = _flowRateRow.Text.Substring(15, 5);
+        private void WriteIfChanged(int col, int row, ref bool oldValue, bool newValue, char trueChar, char falseChar)
+        {
+            if (oldValue != newValue)
+            {
+                oldValue = newValue;
+                Screen.WriteChar(col, row, newValue ? trueChar : falseChar);
+            }
+        }
 
-                    _flowRateRow.Text = flowRateText + sdCardStatusText;
-
-                    _waterSwitchRow.Text = wateringText;
-                });
+        private void WriteIfChanged(int col, int row, ref char oldValue, char newValue)
+        {
+            if (oldValue != newValue)
+            {
+                oldValue = newValue;
+                Screen.WriteChar(col, row, newValue);
             }
         }
 
@@ -148,24 +158,19 @@ namespace HomeAutomation.Ui
             switch (status)
             {
                 case Status.Available:
-                    statusText = "     ";
+                    statusText = "   ";
                     break;
                 case Status.Unavailable:
-                    statusText = "S:N/A";
+                    statusText = "N/A";
                     break;
                 case Status.Error:
-                    statusText = "S:Err";
+                    statusText = "Err";
                     break;
                 default:
                     return;
             }
 
-            lock (_sdCardStatusLock)
-            {
-                var flowRateText = _flowRateRow.Text.Substring(0, 15);
-
-                _flowRateRow.Text = flowRateText + statusText;
-            }
+            Screen.Write(17, 1, statusText);
         }
 
         protected override int GetLength()

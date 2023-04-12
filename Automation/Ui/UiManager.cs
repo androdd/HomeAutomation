@@ -27,6 +27,7 @@ namespace HomeAutomation.Ui
         private Menu _configMenu;
         private readonly StatusScreen _statusScreen;
         private readonly DatePicker _datePicker;
+        private readonly TimePicker _timePicker;
         private readonly TextDrum _textDrum;
         private readonly DoublePicker _doublePicker;
 
@@ -54,6 +55,7 @@ namespace HomeAutomation.Ui
             _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
             _statusScreen = (StatusScreen)_controlsManager.Add(new StatusScreen("StatusScr", hardwareManager.Screen, _keyboard, hardwareManager, _wateringService));
             _datePicker = (DatePicker)_controlsManager.Add(new DatePicker("Date", hardwareManager.Screen, _keyboard));
+            _timePicker = new TimePicker("Time", hardwareManager.Screen, _keyboard);
             _textDrum = (TextDrum)_controlsManager.Add(new TextDrum("Drum", hardwareManager.Screen, _keyboard));
             _doublePicker = (DoublePicker)_controlsManager.Add(new DoublePicker("Double", hardwareManager.Screen, _keyboard));
         }
@@ -82,11 +84,13 @@ namespace HomeAutomation.Ui
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
             _menu.KeyPressed += MenuOnKeyPressed;
             
-            _statusScreen.Setup(20);
-            _statusScreen.SetTime += ClockOnSetTime;
+            _statusScreen.Setup();
             
             _datePicker.Setup(0, 0);
             _datePicker.KeyPressed += DatePickerOnKeyPressed;
+
+            _timePicker.Setup(15, 0);
+            _timePicker.KeyPressed += TimePickerOnKeyPressed;
 
             _textDrum.Setup(0, 0, 10, 4);
 
@@ -137,8 +141,9 @@ namespace HomeAutomation.Ui
                 case MenuKeys.SetTime:
                     _status = UiStatus.SetTime;
 
-                    _statusScreen.Show();
-                    _statusScreen.EditTime();
+                    _timePicker.Value = DateTime.Now;
+                    _timePicker.Show();
+                    _timePicker.Focus();
                     break;
                 case MenuKeys.SetDate:
                     _status = UiStatus.SetDate;
@@ -309,37 +314,44 @@ namespace HomeAutomation.Ui
             }
         }
 
-        private void ClockOnSetTime(DateTime time)
+        private void DatePickerOnKeyPressed(Key key)
         {
-            Program.Now = time;
+            switch (key)
+            {
+                case Key.Enter:
+                    var now = Program.Now;
+                    var newDateTime = new DateTime(_datePicker.Value.Year, _datePicker.Value.Month, _datePicker.Value.Day, now.Hour, now.Minute, now.Second);
+                    Program.Now = newDateTime;
+                    break;
+                case Key.Escape:
+                    break;
+                default:
+                    return;
+            }
+            
+            _datePicker.Show(false);
+            _statusScreen.Show();
 
             _status = UiStatus.None;
         }
 
-        private void DatePickerOnKeyPressed(Key key)
+
+        private void TimePickerOnKeyPressed(Key key)
         {
-            if (key == Key.Enter)
+            switch (key)
             {
-                var now = Program.Now;
+                case Key.Enter:
+                    var now = DateTime.Now;
+                    var newDateTime = new DateTime(now.Year, now.Month, now.Day, _timePicker.Value.Hour, _timePicker.Value.Minute, 0);
+                    Program.Now = newDateTime;
+                    break;
+                case Key.Escape:
+                    break;
+                default:
+                    return;
+            }
 
-                var newDateTime = new DateTime(_datePicker.Value.Year,
-                    _datePicker.Value.Month,
-                    _datePicker.Value.Day,
-                    now.Hour,
-                    now.Minute,
-                    now.Second);
-
-                Program.Now = newDateTime;
-            }
-            else if (key == Key.Escape)
-            {
-            }
-            else
-            {
-                return;
-            }
-            
-            _datePicker.Show(false);
+            _timePicker.Show(false);
             _statusScreen.Show();
 
             _status = UiStatus.None;

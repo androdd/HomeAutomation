@@ -48,6 +48,7 @@ namespace HomeAutomation
             set
             {
                 RealTimeClock.SetTime(value);
+                Utility.SetLocalTime(value);
             }
         }
 
@@ -79,6 +80,8 @@ namespace HomeAutomation
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init();
             _autoTurnOffPumpService.Init();
+
+            Debug.Print(Debug.GC(true).ToString());
             
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _wateringService);
             _uiManager.Setup();

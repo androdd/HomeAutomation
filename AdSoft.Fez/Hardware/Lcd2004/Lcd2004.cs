@@ -145,6 +145,15 @@ namespace AdSoft.Fez.Hardware.Lcd2004
             }
         }
 
+        public void WriteChar(int col, int row, char @char)
+        {
+            lock (_screenLock)
+            {
+                SetCursor(col, row);
+                WriteChar((byte)@char);
+            }
+        }
+
         public void WriteChar(char @char)
         {
             lock (_screenLock)
