@@ -4,6 +4,8 @@ namespace AdSoft.Fez.Ui.Menu
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
+    using Microsoft.SPOT;
+
     public class Menu : Control
     {
         private MenuItem[] _menuItems;
@@ -75,7 +77,9 @@ namespace AdSoft.Fez.Ui.Menu
 
                 IsVisible = false;
 
-                DebugEx.Print(DebugEx.Target.Ui, Name + ".Hide");
+#if DEBUG_UI
+                Debug.Print("UI - " + Name + ".Hide");
+#endif
             }
         }
 

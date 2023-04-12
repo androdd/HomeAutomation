@@ -13,29 +13,29 @@ namespace HomeAutomation.Services
 
     using Configuration = HomeAutomation.Tools.Configuration;
 
-    internal class PressureLoggingService : Base, IDisposable
+    internal class PressureLoggingService : Base
     {
         private readonly Log _log;
         private readonly SdCard _sdCard;
         private readonly IPressureSensor _pressureSensor;
+        private readonly RealTimer _realTimer;
         private readonly Configuration _configuration;
-        private Timer _timer;
 
-        public PressureLoggingService(Configuration configuration, Log log, SdCard sdCard, IPressureSensor pressureSensor)
+        public PressureLoggingService(Configuration configuration, Log log, SdCard sdCard, IPressureSensor pressureSensor, RealTimer realTimer)
         {
             _log = log;
             _sdCard = sdCard;
             _pressureSensor = pressureSensor;
+            _realTimer = realTimer;
             _configuration = configuration;
         }
 
-        public void Init(int minutes)
+        public void Init()
         {
-            var startDelay = new TimeSpan(0, 0, 3);
-
-            _timer = new Timer(Log, null, startDelay, new TimeSpan(0, minutes, 0));
-
-            _log.Write("Pressure Logging Timer set for: " + Format(RealTimeClock.GetTime().Add(startDelay)) + " with period: " + minutes + " m");
+            _realTimer.TryScheduleRunAt(DateTime.Now.AddMinutes(1),
+                Log,
+                new TimeSpan(0, _configuration.PressureLogIntervalMin, 0),
+                "PressureLoggingService ");
         }
 
         private void Log(object state)
@@ -64,7 +64,6 @@ namespace HomeAutomation.Services
             }
 
             var pressureLogText = Format(now) + "," + _pressureSensor.Pressure.ToString("F2");
-            DebugEx.Print(DebugEx.Target.PressureLog, pressureLogText);
             
             if (!_configuration.ManagementMode)
             {
@@ -72,19 +71,6 @@ namespace HomeAutomation.Services
                 _sdCard.TryAppend(pressureLog, pressureLogText);
             }
             
-        }
-
-        public void Dispose()
-        {
-            if (_sdCard != null)
-            {
-                _sdCard.Dispose();
-            }
-
-            if (_timer != null)
-            {
-                _timer.Dispose();
-            }
         }
     }
 }

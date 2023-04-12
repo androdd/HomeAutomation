@@ -98,7 +98,9 @@ namespace HomeAutomation.Ui
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
 
-                DebugEx.Print(DebugEx.Target.Ui, Name + ".Hide");
+#if DEBUG_UI
+                Debug.Print("UI - " + Name + ".Hide");
+#endif
 
                 IsVisible = false;
             }

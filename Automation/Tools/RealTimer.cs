@@ -4,8 +4,6 @@ namespace HomeAutomation.Tools
     using System.Collections;
     using System.Threading;
 
-    using GHIElectronics.NETMF.Hardware;
-
     public class RealTimer : Base
     {
         public delegate void Callback(TimerState state);
@@ -38,7 +36,7 @@ namespace HomeAutomation.Tools
 
         public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState state, TimeSpan period, string name = "")
         {
-            var now = RealTimeClock.GetTime();
+            var now = DateTime.Now;
 
             if (now > dueDateTime)
             {

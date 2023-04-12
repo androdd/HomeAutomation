@@ -3,6 +3,8 @@ namespace AdSoft.Fez.Ui
     using AdSoft.Fez.Hardware.NecRemote;
     using AdSoft.Fez.Ui.Interfaces;
 
+    using Microsoft.SPOT;
+
     using Message = AdSoft.Fez.Hardware.NecRemote.Message;
 
     public class MiniRemoteKeyboard : IKeyboard
@@ -85,7 +87,9 @@ namespace AdSoft.Fez.Ui
                     break;
             }
 
-            DebugEx.Print(DebugEx.Target.Keyboard, "KeyPressed: " + KeyEx.KeyToString(key));
+#if DEBUG_UI
+            Debug.Print("UI - KeyPressed: " + KeyEx.KeyToString(key));
+#endif
 
             KeyPressed(key);
         }

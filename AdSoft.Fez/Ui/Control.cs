@@ -4,6 +4,8 @@ namespace AdSoft.Fez.Ui
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
+    using Microsoft.SPOT;
+
     public abstract class Control
     {
         protected readonly Lcd2004 Screen;
@@ -30,7 +32,9 @@ namespace AdSoft.Fez.Ui
 
         protected void Setup(int col, int row)
         {
-            DebugEx.Print(DebugEx.Target.Ui, Name + ".Setup");
+#if DEBUG_UI
+            Debug.Print("UI - " + Name + ".Setup");
+#endif
 
             Col = col;
             Row = row;
@@ -44,13 +48,17 @@ namespace AdSoft.Fez.Ui
         {
             if (show)
             {
-                DebugEx.Print(DebugEx.Target.Ui, Name + ".Show");
+#if DEBUG_UI
+                Debug.Print("UI - " + Name + ".Show");
+#endif
             
                 IsVisible = true;
             }
             else
             {
-                DebugEx.Print(DebugEx.Target.Ui, Name + ".Hide");
+#if DEBUG_UI
+                Debug.Print("UI - " + Name + ".Hide");
+#endif
 
                 Unfocus();
 
@@ -67,7 +75,9 @@ namespace AdSoft.Fez.Ui
 
         public virtual void Focus()
         {
-            DebugEx.Print(DebugEx.Target.Ui, Name + ".Focus");
+#if DEBUG_UI
+            Debug.Print("UI - " + Name + ".Focus");
+#endif
 
             if (!IsFocused)
             {
@@ -79,7 +89,9 @@ namespace AdSoft.Fez.Ui
 
         public virtual void Unfocus()
         {
-            DebugEx.Print(DebugEx.Target.Ui, Name + ".Unfocus");
+#if DEBUG_UI
+            Debug.Print("UI - " + Name + ".Unfocus");
+#endif
 
             if (IsFocused)
             {
@@ -93,7 +105,9 @@ namespace AdSoft.Fez.Ui
 
         protected virtual void OnExitLeft()
         {
-            DebugEx.Print(DebugEx.Target.Ui, Name + ".OnExitLeft");
+#if DEBUG_UI
+            Debug.Print("UI - " + Name + ".OnExitLeft");
+#endif
 
             if (ExitLeft != null)
             {
@@ -103,7 +117,9 @@ namespace AdSoft.Fez.Ui
 
         protected virtual void OnExitRight()
         {
-            DebugEx.Print(DebugEx.Target.Ui, Name + ".OnExitRight");
+#if DEBUG_UI
+            Debug.Print("UI - " + Name + ".OnExitRight");
+#endif
 
             if (ExitRight != null)
             {
@@ -113,7 +129,9 @@ namespace AdSoft.Fez.Ui
 
         protected virtual void OnKeyPressed(Key key)
         {
-            DebugEx.Print(DebugEx.Target.Ui, Name + ".OnKeyPressed: " + KeyEx.KeyToString(key));
+#if DEBUG_UI
+            Debug.Print("UI - " + Name + ".OnKeyPressed: " + KeyEx.KeyToString(key));
+#endif
 
             if (KeyPressed != null)
             {

@@ -29,7 +29,7 @@ namespace HomeAutomation.Services.Watering
 
         public void Start()
         {
-            DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
+            //DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
 
             DateTime firstStarTime = DateTime.MaxValue;
             DateTime lastEndTime = DateTime.MinValue;
@@ -38,9 +38,9 @@ namespace HomeAutomation.Services.Watering
             {
                 var configuration = _configuration.SouthValveConfigurations[i];
 
-                DebugEx.Print(DebugEx.Target.WateringService,
-                    "Configuration " + (i + 1) + ": IsValid:" + configuration.IsValid + " IsEnabled:" + configuration.IsEnabled +
-                    " ContainsToday:" + configuration.ContainsDay(DateTime.Now.DayOfWeek) + " IsDue:" + (configuration.StartTime > DateTime.Now));
+                //DebugEx.Print(DebugEx.Target.WateringService,
+                //    "Configuration " + (i + 1) + ": IsValid:" + configuration.IsValid + " IsEnabled:" + configuration.IsEnabled +
+                //    " ContainsToday:" + configuration.ContainsDay(DateTime.Now.DayOfWeek) + " IsDue:" + (configuration.StartTime > DateTime.Now));
                 
                 if (!configuration.IsValid || !configuration.IsEnabled || !configuration.ContainsDay(DateTime.Now.DayOfWeek) ||
                     configuration.StartTime <= DateTime.Now)
@@ -72,14 +72,14 @@ namespace HomeAutomation.Services.Watering
                     new WateringTimerState { Start = false, RelayId = configuration.RelayId },
                     name);
 
-                DebugEx.Print(DebugEx.Target.WateringService,
-                    "Index " + (i + 1) + " set. First start: " + firstStarTime.ToString("s") + ". Last end: " + lastEndTime.ToString("s"));
+                //DebugEx.Print(DebugEx.Target.WateringService,
+                //    "Index " + (i + 1) + " set. First start: " + firstStarTime.ToString("s") + ". Last end: " + lastEndTime.ToString("s"));
             }
 
             var mainStart = firstStarTime.Subtract(new TimeSpan(0, 0, 2));
             var mainEnd = lastEndTime.Subtract(new TimeSpan(0, 0, 5));
 
-            DebugEx.Print(DebugEx.Target.WateringService, "Main start: " + mainStart.ToString("s") + ". Main end: " + mainEnd.ToString("s"));
+            //DebugEx.Print(DebugEx.Target.WateringService, "Main start: " + mainStart.ToString("s") + ". Main end: " + mainEnd.ToString("s"));
 
             var valveMainSouth = "Valve Main South ";
             _realTimer.TryScheduleRunAt(mainStart,

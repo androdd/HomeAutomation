@@ -6,26 +6,26 @@ namespace HomeAutomation.Services.AutoTurnOffPump
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Interfaces;
 
-    using HomeAutomation.Hardware;
     using HomeAutomation.Tools;
 
-    internal class AutoTurnOffPumpService : IDisposable
+    internal class AutoTurnOffPumpService
     {
         private readonly int _relayId;
 
         private readonly Log _log;
         private readonly Tools.Configuration _configuration;
+        private readonly RealTimer _realTimer;
         private readonly IPressureSensor _pressureSensor;
         private readonly IPumpStateSensor _pumpStateSensor;
         private readonly RelaysArray _relaysArray;
 
-        private Timer _checkPressureTimer;
         private int _eventCount;
         private bool _lowPressureReacted;
 
         public AutoTurnOffPumpService(
             Log log,
             Tools.Configuration configuration,
+            RealTimer realTimer,
             IPressureSensor pressureSensor,
             IPumpStateSensor pumpStateSensor,
             RelaysArray relaysArray,
@@ -33,6 +33,7 @@ namespace HomeAutomation.Services.AutoTurnOffPump
         {
             _log = log;
             _configuration = configuration;
+            _realTimer = realTimer;
             _pressureSensor = pressureSensor;
             _pumpStateSensor = pumpStateSensor;
             _relaysArray = relaysArray;
@@ -44,7 +45,10 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
         public void Init()
         {
-            _checkPressureTimer = new Timer(CheckPressure, null, 3 * 1000, _configuration.AutoTurnOffPumpConfiguration.Interval * 60 * 1000);
+            _realTimer.TryScheduleRunAt(DateTime.Now.AddMinutes(2),
+                CheckPressure,
+                new TimeSpan(0, _configuration.AutoTurnOffPumpConfiguration.Interval, 0),
+                "AutoTurnOffPumpService ");
         }
 
         private void CheckPressure(object state)
@@ -81,14 +85,6 @@ namespace HomeAutomation.Services.AutoTurnOffPump
             _relaysArray.Set(_relayId, false);
 
             _log.Write("Pump turned off due to low pressure.");
-        }
-
-        public void Dispose()
-        {
-            if (_checkPressureTimer != null)
-            {
-                _checkPressureTimer.Dispose();
-            }
         }
     }
 }

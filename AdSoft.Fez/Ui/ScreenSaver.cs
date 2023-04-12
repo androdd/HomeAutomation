@@ -36,7 +36,9 @@ namespace AdSoft.Fez.Ui
         {
             if (_timer != null)
             {
-                DebugEx.Print(DebugEx.Target.ScreenSaver, "Disable");
+#if DEBUG_SS
+                Debug.Print("ScreenSaver -  Disable");
+#endif
 
                 _keyboard.KeyPressed -= KeyboardOnKeyPressed;
 
@@ -49,7 +51,9 @@ namespace AdSoft.Fez.Ui
         {
             if (isEnabled)
             {
-                DebugEx.Print(DebugEx.Target.ScreenSaver, "Enable");
+#if DEBUG_SS
+                Debug.Print("ScreenSaver -  Enable");
+#endif
                 CreateTimer();
             }
             else
@@ -62,7 +66,9 @@ namespace AdSoft.Fez.Ui
         {
             if (_timer != null)
             {
-                DebugEx.Print(DebugEx.Target.ScreenSaver, "Dispose");
+#if DEBUG_SS
+                Debug.Print("ScreenSaver -  Dispose");
+#endif
                 _timer.Dispose();
                 _timer = null;
             }
@@ -72,7 +78,9 @@ namespace AdSoft.Fez.Ui
         {
             if (_timer == null)
             {
-                DebugEx.Print(DebugEx.Target.ScreenSaver, "New timer");
+#if DEBUG_SS
+                Debug.Print("ScreenSaver -  New timer");
+#endif
                 _timer = new Timer(TimeElapsed, null, _seconds * 1000, Timeout.Infinite);
 
                 _keyboard.KeyPressed += KeyboardOnKeyPressed;
@@ -83,7 +91,9 @@ namespace AdSoft.Fez.Ui
         {
             if (_isOn)
             {
-                DebugEx.Print(DebugEx.Target.ScreenSaver, "Off");
+#if DEBUG_SS
+                Debug.Print("ScreenSaver -  Off");
+#endif
                 _isOn = false;
                 _screen.DisplayOn();
                 _screen.BackLightOn();
@@ -91,14 +101,18 @@ namespace AdSoft.Fez.Ui
 
             if (_timer != null)
             {
-                DebugEx.Print(DebugEx.Target.ScreenSaver, "Timer reset");
+#if DEBUG_SS
+                Debug.Print("ScreenSaver -  Timer reset");
+#endif
                 _timer.Change(_seconds * 1000, Timeout.Infinite);
             }
         }
 
         private void TimeElapsed(object state)
         {
-            DebugEx.Print(DebugEx.Target.ScreenSaver, "On");
+#if DEBUG_SS
+            Debug.Print("ScreenSaver -  On");
+#endif
             _isOn = true;
             _screen.BackLightOff();
             _screen.DisplayOff();

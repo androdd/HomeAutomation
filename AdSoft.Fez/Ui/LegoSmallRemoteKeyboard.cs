@@ -3,6 +3,8 @@ namespace AdSoft.Fez.Ui
     using AdSoft.Fez.Hardware.LegoRemote;
     using AdSoft.Fez.Ui.Interfaces;
 
+    using Microsoft.SPOT;
+
     public class LegoSmallRemoteKeyboard : IKeyboard
     {
         private readonly LegoRemote _legoRemote;
@@ -104,7 +106,9 @@ namespace AdSoft.Fez.Ui
                     break;
             }
 
-            DebugEx.Print(DebugEx.Target.Ui, "LegoSmallRemoteKeyboard.KeyPressed: " + KeyEx.KeyToString(key));
+#if DEBUG_UI
+            Debug.Print("UI - LegoSmallRemoteKeyboard.KeyPressed: " + KeyEx.KeyToString(key));
+#endif
 
             KeyPressed(key);
         }

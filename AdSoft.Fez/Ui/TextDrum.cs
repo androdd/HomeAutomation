@@ -150,7 +150,9 @@ namespace AdSoft.Fez.Ui
             {
                 StopWriteInfinite();
 
-                DebugEx.Print(DebugEx.Target.Ui, Name + ".Hide");
+#if DEBUG_SS
+                Debug.Print("UI - " + Name + ".Hide");
+#endif
 
                 IsVisible = false;
             }

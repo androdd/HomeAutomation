@@ -11,6 +11,8 @@ namespace HomeAutomation.Tools
 
     using HomeAutomation.Services.Watering;
 
+    using Microsoft.SPOT;
+
     public class ConfigurationManager
     {
         private const string DstCfg = "dst.cfg";
@@ -51,7 +53,7 @@ namespace HomeAutomation.Tools
         {
             if (_settingsFile.TrySaveSettings())
             {
-                DebugEx.Print("Configuration saved to file.");
+                Debug.Print("Configuration saved to file.");
             }
         }
 

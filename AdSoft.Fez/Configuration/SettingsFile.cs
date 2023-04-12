@@ -26,7 +26,7 @@ namespace AdSoft.Fez.Configuration
             ArrayList lines;
             if (!_sdCard.TryReadAllLines(_filename, out lines))
             {
-                DebugEx.Print(_filename + " can not be read.");
+                Debug.Print("SD - " + _filename + " can not be read.");
                 return false;
             }
 

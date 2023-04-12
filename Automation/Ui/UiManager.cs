@@ -82,7 +82,7 @@ namespace HomeAutomation.Ui
             _menu.MenuItemEnter += MenuOnMenuItemEnter;
             _menu.KeyPressed += MenuOnKeyPressed;
             
-            _statusScreen.Setup(2);
+            _statusScreen.Setup(20);
             _statusScreen.SetTime += ClockOnSetTime;
             
             _datePicker.Setup(0, 0);

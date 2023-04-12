@@ -255,8 +255,6 @@ namespace AdSoft.Fez.Hardware.Lcd2004
 
         public void DisplayOff()
         {
-            DebugEx.Print(DebugEx.Target.Lcd2004, "DisplayOff");
-
             lock (_screenLock)
             {
                 unchecked
@@ -269,8 +267,6 @@ namespace AdSoft.Fez.Hardware.Lcd2004
 
         public void DisplayOn()
         {
-            DebugEx.Print(DebugEx.Target.Lcd2004, "DisplayOn");
-
             lock (_screenLock)
             {
                 _displayControl |= CB.LCD_DISPLAYON;

@@ -53,23 +53,10 @@ namespace HomeAutomation
 
         public static void Main()
         {
-
 #if DEBUG_SET_RTC
             RealTimeClock.SetTime(new DateTime(2023, 4, 30, 22, 0, 0));
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
-
-
-            DebugEx.Targets = DebugEx.Target.None;
-            //DebugEx.Targets |= DebugEx.Target.ScreenSaver;
-            //DebugEx.Targets |= DebugEx.Target.Ui;
-            DebugEx.Targets |= DebugEx.Target.Log;
-            //DebugEx.Targets |= DebugEx.Target.Keyboard;
-            //DebugEx.Targets |= DebugEx.Target.PressureLog;
-            //DebugEx.Targets |= DebugEx.Target.Lcd2004;
-            //DebugEx.Targets |= DebugEx.Target.ScreenPowerButton;
-            DebugEx.Targets |= DebugEx.Target.WateringService;
-            //Debug.EnableGCMessages(false);
 
             var sdCard = new SdCard();
             _configuration = new Configuration();
@@ -79,23 +66,23 @@ namespace HomeAutomation
             
             _hardwareManager = new HardwareManager(_log, sdCard);
             _hardwareManager.Setup();
-
+            
             _log.Write("Starting...");
 
             SetupToolsAndServices();
-            
+
             ReloadConfig();
 
             _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
             _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
 
             //_remoteCommandsService.Init();
-            _pressureLoggingService.Init(_configuration.PressureLogIntervalMin);
+            _pressureLoggingService.Init();
             _autoTurnOffPumpService.Init();
             
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _wateringService);
             _uiManager.Setup();
-
+            
             #region Manual DST Adjustment
 
             if (_configuration.ManualStartDst)
@@ -154,7 +141,7 @@ namespace HomeAutomation
 
             Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
 #endif
-
+            Debug.Print(Debug.GC(true).ToString());
             Thread.Sleep(Timeout.Infinite);
         }
 
@@ -166,7 +153,13 @@ namespace HomeAutomation
 
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _configuration, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);
-            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log, _configuration, _hardwareManager.PressureSensor, _hardwareManager.PumpStateSensor, _hardwareManager.RelaysArray, _hardwareManager.AutoTurnOffPumpRelayId);
+            _autoTurnOffPumpService = new AutoTurnOffPumpService(_log,
+                _configuration,
+                _realTimer,
+                _hardwareManager.PressureSensor,
+                _hardwareManager.PumpStateSensor,
+                _hardwareManager.RelaysArray,
+                _hardwareManager.AutoTurnOffPumpRelayId);
             
 #if TEST_AUTO_TURN_OFF_SERVICE
             _remoteCommandsService = new AutoTurnOffPumpServiceTestRemoteCommandService(_log,
@@ -176,7 +169,7 @@ namespace HomeAutomation
             _remoteCommandsService.Init;
 #endif
 
-            _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.SdCard, _hardwareManager.PressureSensor);
+            _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.SdCard, _hardwareManager.PressureSensor, _realTimer);
             _wateringService = new WateringService(_log, _configuration, _realTimer, _hardwareManager);
         }
 

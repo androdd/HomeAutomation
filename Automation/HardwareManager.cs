@@ -57,11 +57,7 @@ namespace HomeAutomation
             Screen = new Lcd2004(0x27);
             ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, Screen);
             MbLed = new Led(FEZ_Pin.Digital.LED);
-
-            SouthValve1RelayId = 0;
-            SouthValve2RelayId = 1;
-            SouthValve3RelayId = 2;
-            SouthValve4RelayId = 3;
+            
             SouthMainValveRelayId = 4;
             NorthMainValveRelayId = 6;
             AutoTurnOffPumpRelayId = 5;
