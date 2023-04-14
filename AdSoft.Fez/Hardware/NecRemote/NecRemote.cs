@@ -74,15 +74,22 @@ namespace AdSoft.Fez.Hardware.NecRemote
         private void OnMessage(Message message)
         {
             if (!message.IsValid)
+            {
                 return;
+            }
 
             if (NecButtonPressed == null)
+            {
                 return;
+            }
 
             var elapsedMs = (message.Time.Ticks - _lastValidMessage) / 10000; // ms
-            if (elapsedMs < 300)
-                return;
 
+            if (elapsedMs > 0 && elapsedMs < 300) // When time is adjusted negative values appear
+            {
+                return;
+            }
+            
             _lastValidMessage = message.Time.Ticks;
 
             NecButtonPressed(message);
