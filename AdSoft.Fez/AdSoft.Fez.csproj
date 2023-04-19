@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;MF_FRAMEWORK_VERSION_V4_1,MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -56,12 +56,10 @@
     <Compile Include="StringEx.cs" />
     <Compile Include="Ui\Clock.cs" />
     <Compile Include="Ui\Control.cs" />
-    <Compile Include="Ui\ControlsManager.cs" />
     <Compile Include="Ui\DatePicker.cs" />
     <Compile Include="Ui\DoublePicker.cs" />
     <Compile Include="Ui\EventHandlers.cs" />
     <Compile Include="Ui\Interfaces\IKeyboard.cs" />
-    <Compile Include="Ui\Interfaces\IUiWorker.cs" />
     <Compile Include="Ui\Key.cs" />
     <Compile Include="Ui\KeyEx.cs" />
     <Compile Include="Ui\Label.cs" />

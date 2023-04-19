@@ -42,7 +42,9 @@
     <Compile Include="Services\PressureLoggingService.cs" />
     <Compile Include="Services\Watering\DaysOfWeek.cs" />
     <Compile Include="Services\Watering\ValveConfiguration.cs" />
+    <Compile Include="Services\Watering\ValveState.cs" />
     <Compile Include="Services\Watering\WateringService.cs" />
+    <Compile Include="Services\Watering\WateringTimerState.cs" />
     <Compile Include="Tools\Configuration.cs" />
     <Compile Include="Tools\ConfigurationManager.cs" />
     <Compile Include="Tools\Log.cs" />

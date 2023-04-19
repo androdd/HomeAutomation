@@ -48,10 +48,11 @@ namespace HomeAutomation.Services.AutoTurnOffPump
             _realTimer.TryScheduleRunAt(DateTime.Now.AddMinutes(2),
                 CheckPressure,
                 new TimeSpan(0, _configuration.AutoTurnOffPumpConfiguration.Interval, 0),
-                "AutoTurnOffPumpService ");
+                "AutoTurnOffPumpService ",
+                false);
         }
 
-        private void CheckPressure(object state)
+        private bool CheckPressure(object state)
         {
             var pumpTurnedOff = !_pumpStateSensor.IsWorking;
             var normalPressure = _pressureSensor.Pressure > _configuration.AutoTurnOffPumpConfiguration.MinPressure;
@@ -65,7 +66,7 @@ namespace HomeAutomation.Services.AutoTurnOffPump
                 }
 
                 _eventCount = 0;
-                return;
+                return true;
             }
 
             _eventCount++;
@@ -76,6 +77,8 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
                 SendTurnOffSignal();
             }
+
+            return true;
         }
 
         private void SendTurnOffSignal()

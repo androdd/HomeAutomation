@@ -20,14 +20,18 @@ namespace HomeAutomation.Ui
         
         private double _oldPressure;
         private string _oldTime;
+
         private double _oldFlowRate;
+
+        private double _oldVolume;
+        
         private bool _oldValveMainNorth;
         private char _oldNorthSwitchState;
         private bool _oldValveMainSouth;
-        private bool _oldValveSouth1;
-        private bool _oldValveSouth2;
-        private bool _oldValveSouth3;
-        private bool _oldValveSouth4;
+        private char _oldValveSouth1;
+        private char _oldValveSouth2;
+        private char _oldValveSouth3;
+        private char _oldValveSouth4;
 
         public StatusScreen(string name, Lcd2004 screen, IKeyboard keyboard, HardwareManager hardwareManager, WateringService wateringService) 
             : base(name, screen, keyboard)
@@ -60,23 +64,33 @@ namespace HomeAutomation.Ui
                     Screen.Clear();
 
                     Screen.Write(0, 0, "Pr:");
+                    
                     Screen.Write(0, 1, "FR:");
                     Screen.Write(15, 1, "S:");
+
+                    Screen.Write(0, 2, "VN:");
+                    Screen.Write(8, 2, "VS:");
+                    Screen.Write(15, 2, "P:");
+
                     Screen.Write(0, 3, "North:");
                     Screen.Write(9, 3, "South:");
 
-                    Screen.Write(3, 0, _hardwareManager.PressureSensor.Pressure.ToString("F2"));
+                    Screen.Write(3, 0, GetPressure().ToString("F2"));
                     Screen.Write(15, 0, DateTime.Now.ToString("HH:mm"));
+
                     Screen.Write(3, 1, _hardwareManager.FlowRateSensor.FlowRate.ToString("F1"));
+                    
+                    Screen.Write(3, 2, ((int)_hardwareManager.FlowRateSensor.Volume).ToString());
+                    
                     Screen.SetCursor(6, 3);
                     Screen.WriteChar(_wateringService.GetValveMainNorth() ? '*' : (char)219);
                     Screen.WriteChar(_wateringService.NorthSwitchState.ToString()[0]);
                     Screen.SetCursor(15, 3);
                     Screen.WriteChar(_wateringService.GetValveMainSouth() ? '*' : (char)219);
-                    Screen.WriteChar(_wateringService.GetValveSouth(1) ? (char)0 : '1');
-                    Screen.WriteChar(_wateringService.GetValveSouth(2) ? (char)1 : '2');
-                    Screen.WriteChar(_wateringService.GetValveSouth(3) ? (char)2 : '3');
-                    Screen.WriteChar(_wateringService.GetValveSouth(4) ? (char)3 : '4');
+                    Screen.WriteChar(GetValveChar(1));
+                    Screen.WriteChar(GetValveChar(2));
+                    Screen.WriteChar(GetValveChar(3));
+                    Screen.WriteChar(GetValveChar(4));
                 });
 
                 _timer.Change(0, 10 * 1000);
@@ -98,30 +112,74 @@ namespace HomeAutomation.Ui
             }
         }
 
+        private char GetValveChar(int valveId)
+        {
+            switch (_wateringService.GetValveSouth(valveId))
+            {
+                case ValveState.On:
+                    return (char)(valveId - 1);
+                case ValveState.Off:
+                    return valveId.ToString()[0];
+                case ValveState.Disabled:
+                    return 'D';
+                case ValveState.Invalid:
+                    return 'I';
+                default:
+                    return 'E';
+            }
+        }
+
         private void Update(object state)
         {
             Screen.Sync(() =>
             {
-                WriteIfChanged(3, 0, ref _oldPressure, _hardwareManager.PressureSensor.Pressure, "F2");
+                WriteIfChanged(3, 0, ref _oldPressure, GetPressure(), "F2", 5);
                 WriteIfChanged(15, 0, ref _oldTime, DateTime.Now.ToString("HH:mm"));
-                WriteIfChanged(3, 1, ref _oldFlowRate, _hardwareManager.FlowRateSensor.FlowRate, "F1");
+
+                WriteIfChanged(3, 1, ref _oldFlowRate, _hardwareManager.FlowRateSensor.FlowRate, "F1", 5);
+
+                WriteIfChanged(3, 2, ref _oldVolume, _hardwareManager.FlowRateSensor.Volume, "F0", 5);
+
                 WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
                 WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);
                 WriteIfChanged(15, 3, ref _oldValveMainSouth, _wateringService.GetValveMainSouth(), '*', (char)219);
-                WriteIfChanged(16, 3, ref _oldValveSouth1, _wateringService.GetValveSouth(1), (char)0, '1');
-                WriteIfChanged(17, 3, ref _oldValveSouth2, _wateringService.GetValveSouth(2), (char)1, '2');
-                WriteIfChanged(18, 3, ref _oldValveSouth3, _wateringService.GetValveSouth(3), (char)2, '3');
-                WriteIfChanged(19, 3, ref _oldValveSouth4, _wateringService.GetValveSouth(4), (char)3, '4');
+                WriteIfChanged(16, 3, ref _oldValveSouth1, GetValveChar(1));
+                WriteIfChanged(17, 3, ref _oldValveSouth2, GetValveChar(2));
+                WriteIfChanged(18, 3, ref _oldValveSouth3, GetValveChar(3));
+                WriteIfChanged(19, 3, ref _oldValveSouth4, GetValveChar(4));
             });
         }
 
-        private void WriteIfChanged(int col, int row, ref double oldValue, double newValue, string format)
+        private double GetPressure()
+        {
+            var pressure = _hardwareManager.PressureSensor.Pressure;
+            return pressure < 0 ? 0 : pressure;
+        }
+
+        private void WriteIfChanged(int col, int row, ref double oldValue, double newValue, string format, int maxLength = 0)
         {
             var diff = newValue - oldValue;
             if (diff > 0.01 || diff < -0.01)
             {
                 oldValue = newValue;
-                Screen.Write(col, row, newValue.ToString(format));
+
+                Screen.Sync(() =>
+                {
+                    Screen.Write(col, row, newValue.ToString(format));
+
+                    if (maxLength > 0)
+                    {
+                        int newCol;
+                        int newRow;
+                        Screen.GetCursor(out newCol, out newRow);
+
+                        var spaces = maxLength - (newCol - col);
+                        for (int i = 0; i < spaces; i++)
+                        {
+                            Screen.WriteChar(' ');
+                        }
+                    }
+                });
             }
         }
 

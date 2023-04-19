@@ -35,10 +35,11 @@ namespace HomeAutomation.Services
             _realTimer.TryScheduleRunAt(DateTime.Now.AddMinutes(1),
                 Log,
                 new TimeSpan(0, _configuration.PressureLogIntervalMin, 0),
-                "PressureLoggingService ");
+                "PressureLoggingService ",
+                false);
         }
 
-        private void Log(object state)
+        private bool Log(object state)
         {
             var now = RealTimeClock.GetTime();
 
@@ -53,7 +54,7 @@ namespace HomeAutomation.Services
             bool logExists;
             if (!_sdCard.TryIsExists(pressureLog, out logExists))
             {
-                return;
+                return true;
             }
 
             if (!logExists)
@@ -70,7 +71,8 @@ namespace HomeAutomation.Services
                 pressureLogText += "\r\n";
                 _sdCard.TryAppend(pressureLog, pressureLogText);
             }
-            
+
+            return true;
         }
     }
 }

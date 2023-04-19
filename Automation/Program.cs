@@ -59,6 +59,8 @@ namespace HomeAutomation
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 
+            Debug.EnableGCMessages(true);
+
             var sdCard = new SdCard();
             _configuration = new Configuration();
             _log = new Log(_configuration, sdCard);
@@ -80,7 +82,7 @@ namespace HomeAutomation
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init();
             _autoTurnOffPumpService.Init();
-
+            
             Debug.Print(Debug.GC(true).ToString());
             
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _wateringService);
@@ -133,13 +135,11 @@ namespace HomeAutomation
 
             _hardwareManager.MbLed.Blink(3);
 
-#if MOCK_FLOW_RATE
-            var method = typeof(FlowRateSensor).GetMethod("OnInterrupt", BindingFlags.NonPublic | BindingFlags.Instance);
-
+#if DEBUG_FLOW_RATE
             for (int i = 0; i < 5000; i++)
             {
-                method.Invoke(_hardwareManager.FlowRateSensor, new object[] { (uint)0, (uint)0, DateTime.Now });
-                Thread.Sleep(20);
+                _hardwareManager.FlowRateSensor.OnInterrupt(0, 0, DateTime.Now);
+                Thread.Sleep(10);
             }
 
             Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
@@ -184,9 +184,11 @@ namespace HomeAutomation
             _realTimer.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0), "Config Reload ");
         }
 
-        private static void ReloadConfigCallback(object state)
+        private static bool ReloadConfigCallback(object state)
         {
             ReloadConfig();
+
+            return true;
         }
 
         private static void ReloadConfig()
@@ -215,6 +217,7 @@ namespace HomeAutomation
             #endregion
 
             _lightsService.ScheduleLights(true);
+            _wateringService.ScheduleWatering();
         }
 
         private static void DstStart(TimerState state)

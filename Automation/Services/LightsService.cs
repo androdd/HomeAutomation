@@ -69,13 +69,11 @@ namespace HomeAutomation.Services
         {
             ScheduleLights(false);
             SetLights(false, "Sunrise ");
-            _realTimer.TryDispose(state.TimerKey);
         }
 
         private void SunsetAction(TimerState state)
         {
             SetLights(true, "Sunset ");
-            _realTimer.TryDispose(state.TimerKey);
         }
     }
 }

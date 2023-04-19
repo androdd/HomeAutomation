@@ -8,6 +8,7 @@ namespace HomeAutomation.Ui
         SetDate,
         TunePressure,
         TuneFlowRate,
-        ShowConfig
+        ShowConfig,
+        ScheduleNextWatering
     }
 }

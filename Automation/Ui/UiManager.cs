@@ -20,7 +20,6 @@ namespace HomeAutomation.Ui
         private readonly LightsService _lightsService;
         private readonly WateringService _wateringService;
 
-        private readonly ControlsManager _controlsManager;
         private readonly MiniRemoteKeyboard _keyboard;
         private readonly ScreenSaver _screenSaver;
         private readonly Menu _menu;
@@ -30,6 +29,8 @@ namespace HomeAutomation.Ui
         private readonly TimePicker _timePicker;
         private readonly TextDrum _textDrum;
         private readonly DoublePicker _doublePicker;
+        private readonly NumericBox _numericBox1;
+        private readonly NumericBox _numericBox2;
 
         private UiStatus _status;
         private ArrayList _allSettings;
@@ -46,18 +47,18 @@ namespace HomeAutomation.Ui
             _hardwareManager = hardwareManager;
             _lightsService = lightsService;
             _wateringService = wateringService;
-
-            _controlsManager = new ControlsManager();
-
+            
             _keyboard = new MiniRemoteKeyboard(hardwareManager.NecRemote);
             _screenSaver = new ScreenSaver(hardwareManager.Screen, _keyboard);
 
-            _menu = (Menu)_controlsManager.Add(new Menu("Menu", hardwareManager.Screen, _keyboard));
-            _statusScreen = (StatusScreen)_controlsManager.Add(new StatusScreen("StatusScr", hardwareManager.Screen, _keyboard, hardwareManager, _wateringService));
-            _datePicker = (DatePicker)_controlsManager.Add(new DatePicker("Date", hardwareManager.Screen, _keyboard));
+            _menu = new Menu("Menu", hardwareManager.Screen, _keyboard);
+            _statusScreen = new StatusScreen("StatusScr", hardwareManager.Screen, _keyboard, hardwareManager, _wateringService);
+            _datePicker = new DatePicker("Date", hardwareManager.Screen, _keyboard);
             _timePicker = new TimePicker("Time", hardwareManager.Screen, _keyboard);
-            _textDrum = (TextDrum)_controlsManager.Add(new TextDrum("Drum", hardwareManager.Screen, _keyboard));
-            _doublePicker = (DoublePicker)_controlsManager.Add(new DoublePicker("Double", hardwareManager.Screen, _keyboard));
+            _textDrum = new TextDrum("Drum", hardwareManager.Screen, _keyboard);
+            _doublePicker = new DoublePicker("Double", hardwareManager.Screen, _keyboard);
+            _numericBox1 = new NumericBox("Num1", hardwareManager.Screen, _keyboard);
+            _numericBox2 = new NumericBox("Num2", hardwareManager.Screen, _keyboard);
         }
 
         public void Setup()
@@ -70,14 +71,15 @@ namespace HomeAutomation.Ui
 
             _menu.Setup(new[]
             {
-                new MenuItem(MenuKeys.StartWatering, "Start watering"),
+                new MenuItem(MenuKeys.ScheduleNextWatering, "Start watering"),
+                new MenuItem(MenuKeys.ResetVolume, "Reset Volume"),
                 new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
-                new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On")),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
                 new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
-                new MenuItem(MenuKeys.SetDate, "Set Date")
+                new MenuItem(MenuKeys.SetDate, "Set Date"),
+                new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On"))
             });
             
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
@@ -97,6 +99,12 @@ namespace HomeAutomation.Ui
             _doublePicker.Setup(7, 0, 2, 11, 3);
             _doublePicker.KeyPressed += DoublePickerOnKeyPressed;
 
+            _numericBox1.Setup(0, 1, 1, 4);
+            _numericBox1.KeyPressed += NumericBoxOnKeyPressed;
+
+            _numericBox2.Setup(0, 3, 1, 120);
+            _numericBox2.KeyPressed += NumericBoxOnKeyPressed;
+
             _statusScreen.Show();
 
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
@@ -111,12 +119,7 @@ namespace HomeAutomation.Ui
 
                 _hardwareManager.Screen.Clear();
 
-                _controlsManager.Show();
-                _controlsManager.Start();
-            }
-            else
-            {
-                _controlsManager.Stop();
+                _statusScreen.Show();
             }
         }
 
@@ -199,7 +202,7 @@ namespace HomeAutomation.Ui
 
                     if (_configMenu == null)
                     {
-                        _configMenu = (Menu)_controlsManager.Add(new Menu("ConfigMenu", _hardwareManager.Screen, _keyboard));
+                        _configMenu = new Menu("ConfigMenu", _hardwareManager.Screen, _keyboard);
 
                         var menuItems = new MenuItem[_allSettings.Count];
 
@@ -232,10 +235,27 @@ namespace HomeAutomation.Ui
 
                     _statusScreen.Show();
                     break;
-                case MenuKeys.StartWatering:
+                case MenuKeys.ScheduleNextWatering:
+                    _status = UiStatus.ScheduleNextWatering;
+
+                    _hardwareManager.Screen.Write(0, 0, "Valve (1..4)");
+                    _hardwareManager.Screen.Write(0, 2, "Minutes (max 120)");
+
+                    _numericBox2.MinValue = 1;
+                    _numericBox2.MaxValue = 120;
+                    _numericBox2.Value = 10;
+                    _numericBox2.Show();
+
+                    _numericBox1.MinValue = 1;
+                    _numericBox1.MaxValue = 4;
+                    _numericBox1.Value = 1;
+                    _numericBox1.Show();
+                    _numericBox1.Focus();
+                    break;
+                case MenuKeys.ResetVolume:
                     _status = UiStatus.None;
 
-                    _wateringService.Start();
+                    _wateringService.ResetVolume();
 
                     _statusScreen.Show();
                     break;
@@ -296,6 +316,46 @@ namespace HomeAutomation.Ui
 
             _textDrum.Show(false);
             _doublePicker.Show(false);
+            _statusScreen.Show();
+
+            _status = UiStatus.None;
+        }
+
+        private void NumericBoxOnKeyPressed(Key key)
+        {
+            if (_status != UiStatus.ScheduleNextWatering)
+            {
+                return;
+            }
+
+            switch (key)
+            {
+                case Key.Enter:
+                {
+                    if (_numericBox1.IsFocused)
+                    {
+                        _numericBox1.Unfocus();
+                        _numericBox2.Focus();
+                        return;
+                    }
+
+                    _wateringService.TryStart(_numericBox1.Value, _numericBox2.Value);
+                    break;
+                }
+                case Key.Escape:
+                    if (_numericBox2.IsFocused)
+                    {
+                        _numericBox2.Unfocus();
+                        _numericBox1.Focus();
+                        return;
+                    }
+                    break;
+                default:
+                    return;
+            }
+
+            _numericBox1.Show(false);
+            _numericBox2.Show(false);
             _statusScreen.Show();
 
             _status = UiStatus.None;

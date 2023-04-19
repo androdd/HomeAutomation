@@ -1,6 +1,7 @@
 namespace AdSoft.Fez.Hardware
 {
     using System;
+    using System.Runtime.CompilerServices;
 
     using AdSoft.Fez.Hardware.Interfaces;
 
@@ -48,7 +49,7 @@ namespace AdSoft.Fez.Hardware
                 return _lastFlowRate * FlowRateMultiplier;
             }
         }
-
+        
         public double Volume { get; set; }
 
         public void Init()
@@ -57,7 +58,11 @@ namespace AdSoft.Fez.Hardware
             _interruptPort.OnInterrupt += OnInterrupt;
         }
 
+#if DEBUG_FLOW_RATE
+        public void OnInterrupt(uint data1, uint data2, DateTime time)
+#else
         private void OnInterrupt(uint data1, uint data2, DateTime time)
+#endif
         {
             long microseconds  = (time.Ticks - _lastPulseTicks) / 10;
 

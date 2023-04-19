@@ -9,6 +9,7 @@ namespace HomeAutomation.Ui
         internal const byte ShowConfig = 5;
         internal const byte ToggleLights = 6;
         internal const byte TuneFlowRate = 7;
-        internal const byte StartWatering = 8;
+        internal const byte ScheduleNextWatering = 8;
+        internal const byte ResetVolume = 9;
     }
 }

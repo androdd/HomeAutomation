@@ -4,9 +4,13 @@ namespace HomeAutomation.Tools
     using System.Collections;
     using System.Threading;
 
+    using Microsoft.SPOT;
+
     public class RealTimer : Base
     {
-        public delegate void Callback(TimerState state);
+        public delegate void SingleCallback(TimerState state);
+
+        public delegate bool Callback(TimerState state);
 
         private readonly Log _log;
         private readonly Hashtable _hashtable;
@@ -19,22 +23,40 @@ namespace HomeAutomation.Tools
             _hashtable = new Hashtable();
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, string name = "")
+        public bool TryScheduleRunAt(DateTime dueDateTime, SingleCallback timerCallback, string name = "", bool isDisposable = true)
         {
-            return TryScheduleRunAt(dueDateTime, timerCallback, null, InfiniteTimeSpan, name);
+            return TryScheduleRunAt(dueDateTime,
+                state =>
+                {
+                    timerCallback(state);
+                    return false;
+                },
+                null,
+                InfiniteTimeSpan,
+                name,
+                isDisposable);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimeSpan period, string name = "")
+        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimeSpan period, string name = "", bool isDisposable = true)
         {
-            return TryScheduleRunAt(dueDateTime, timerCallback, null, period);
+            return TryScheduleRunAt(dueDateTime, timerCallback, null, period, name, isDisposable);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState timerState, string name = "")
+        public bool TryScheduleRunAt(DateTime dueDateTime, SingleCallback timerCallback, TimerState timerState, string name = "", bool isDisposable = true)
         {
-            return TryScheduleRunAt(dueDateTime, timerCallback, timerState, InfiniteTimeSpan, name);
+            return TryScheduleRunAt(dueDateTime,
+                state =>
+                {
+                    timerCallback(state);
+                    return false;
+                },
+                timerState,
+                InfiniteTimeSpan,
+                name,
+                isDisposable);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState state, TimeSpan period, string name = "")
+        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState state, TimeSpan period, string name = "", bool isDisposable = true)
         {
             var now = DateTime.Now;
 
@@ -60,8 +82,22 @@ namespace HomeAutomation.Tools
                 timerState = state;
             }
 
-            var timer = new Timer(s => { timerCallback((TimerState)s); }, timerState, interval, period);
-            _hashtable.Add(key, timer);
+            var timer = new Timer(s =>
+                {
+                    if (!timerCallback((TimerState)s))
+                    {
+                        var isDisposed = TryDispose(key);
+                        Debug.Print(name + " auto disposed: " + isDisposed);
+                    }
+                },
+                timerState,
+                interval,
+                period);
+
+            if (isDisposable)
+            {
+                _hashtable.Add(key, timer);
+            }
 
             if (period == InfiniteTimeSpan)
             {

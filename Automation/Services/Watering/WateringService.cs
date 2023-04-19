@@ -1,10 +1,13 @@
 namespace HomeAutomation.Services.Watering
 {
     using System;
+    using System.Threading;
 
     using AdSoft.Fez;
 
     using HomeAutomation.Tools;
+
+    using Microsoft.SPOT;
 
     public class WateringService
     {
@@ -12,6 +15,8 @@ namespace HomeAutomation.Services.Watering
         private readonly Configuration _configuration;
         private readonly RealTimer _realTimer;
         private readonly HardwareManager _hardwareManager;
+
+        private DateTime _lastManualWateringEnd;
 
         public int NorthVolume { get; private set; }
 
@@ -25,9 +30,84 @@ namespace HomeAutomation.Services.Watering
             _configuration = configuration;
             _realTimer = realTimer;
             _hardwareManager = hardwareManager;
+
+            _lastManualWateringEnd = DateTime.Now;
+        }
+        
+        /// <summary>
+        /// Gets current state of valve on the south side
+        /// </summary>
+        /// <param name="valveId">From 1 to 4</param>
+        /// <returns></returns>
+        public ValveState GetValveSouth(int valveId)
+        {
+            if (valveId < 1)
+            {
+                return ValveState.Invalid;
+            }
+
+            var configuration = _configuration.SouthValveConfigurations[valveId - 1];
+
+            if (!configuration.IsValid)
+            {
+                return ValveState.Invalid;
+            }
+            
+            return _hardwareManager.RelaysArray.Get(configuration.RelayId) ? ValveState.On : (configuration.IsEnabled ? ValveState.Off : ValveState.Disabled);
+        }
+        
+        public bool GetValveMainSouth()
+        {
+            return _hardwareManager.RelaysArray.Get(_hardwareManager.SouthMainValveRelayId);
+        }
+        
+        public bool GetValveMainNorth()
+        {
+            return _hardwareManager.RelaysArray.Get(_hardwareManager.NorthMainValveRelayId);
         }
 
-        public void Start()
+        public bool TryStart(int valveId, int minutes)
+        {
+            var configuration = _configuration.SouthValveConfigurations[valveId - 1];
+
+            if (!configuration.IsValid)
+            {
+                return false;
+            }
+
+            var next = _lastManualWateringEnd < DateTime.Now
+                ? DateTime.Now.AddSeconds(3)
+                : _lastManualWateringEnd.AddMinutes(1);
+
+            _lastManualWateringEnd = next.AddMinutes(minutes);
+
+            _realTimer.TryScheduleRunAt(next,
+                state =>
+                {
+                    var watering = (WateringTimerState)state;
+
+                    var isOn = _hardwareManager.RelaysArray.Get(watering.RelayId);
+                    Debug.Print(watering.Name + isOn);
+
+                    _hardwareManager.RelaysArray.Set(_hardwareManager.SouthMainValveRelayId, !isOn);
+                    Thread.Sleep(2000);
+                    _hardwareManager.RelaysArray.Set(watering.RelayId, !isOn);
+
+                    return !isOn;
+                },
+                new WateringTimerState { RelayId = configuration.RelayId },
+                new TimeSpan(0, minutes, 0),
+                "Valve " + valveId + " South ");
+            
+            return true;
+        }
+
+        public void ResetVolume()
+        {
+            _hardwareManager.FlowRateSensor.Volume = 0;
+        }
+
+        public void ScheduleWatering()
         {
             //DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
 
@@ -41,7 +121,7 @@ namespace HomeAutomation.Services.Watering
                 //DebugEx.Print(DebugEx.Target.WateringService,
                 //    "Configuration " + (i + 1) + ": IsValid:" + configuration.IsValid + " IsEnabled:" + configuration.IsEnabled +
                 //    " ContainsToday:" + configuration.ContainsDay(DateTime.Now.DayOfWeek) + " IsDue:" + (configuration.StartTime > DateTime.Now));
-                
+
                 if (!configuration.IsValid || !configuration.IsEnabled || !configuration.ContainsDay(DateTime.Now.DayOfWeek) ||
                     configuration.StartTime <= DateTime.Now)
                 {
@@ -101,29 +181,5 @@ namespace HomeAutomation.Services.Watering
 
             _log.Write(wateringTimerState.Name + "valve is " + (wateringTimerState.Start ? "opened" : "closed") + ".");
         }
-        
-        public bool GetValveSouth(int index)
-        {
-            var configuration = _configuration.SouthValveConfigurations[index - 1];
-            
-            return configuration.IsValid &&  _hardwareManager.RelaysArray.Get(configuration.RelayId);
-        }
-        
-        public bool GetValveMainSouth()
-        {
-            return _hardwareManager.RelaysArray.Get(_hardwareManager.SouthMainValveRelayId);
-        }
-        
-        public bool GetValveMainNorth()
-        {
-            return _hardwareManager.RelaysArray.Get(_hardwareManager.NorthMainValveRelayId);
-        }
-    }
-
-    public class WateringTimerState : TimerState
-    {
-        public int RelayId { get; set; }
-
-        public bool Start { get; set; }
     }
 }
