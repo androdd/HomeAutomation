@@ -3,6 +3,7 @@ namespace HomeAutomation.Ui
     using System;
     using System.Threading;
 
+    using AdSoft.Fez.Hardware.Interfaces;
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.SdCard;
     using AdSoft.Fez.Ui;
@@ -12,9 +13,11 @@ namespace HomeAutomation.Ui
 
     public class StatusScreen : Control
     {
-        private readonly HardwareManager _hardwareManager;
+        private readonly IPumpStateSensor _pumpStateSensor;
+        private readonly IPressureSensor _pressureSensor;
+        private readonly IFlowRateSensor _flowRateSensor;
         private readonly WateringService _wateringService;
-        
+
         private readonly Timer _timer;
         
         
@@ -24,6 +27,7 @@ namespace HomeAutomation.Ui
         private double _oldFlowRate;
 
         private double _oldVolume;
+        private string _oldPumpState;
         
         private bool _oldValveMainNorth;
         private char _oldNorthSwitchState;
@@ -33,11 +37,20 @@ namespace HomeAutomation.Ui
         private char _oldValveSouth3;
         private char _oldValveSouth4;
 
-        public StatusScreen(string name, Lcd2004 screen, IKeyboard keyboard, HardwareManager hardwareManager, WateringService wateringService) 
+        public StatusScreen(
+            string name,
+            Lcd2004 screen,
+            IKeyboard keyboard,
+            IPumpStateSensor pumpStateSensor,
+            IPressureSensor pressureSensor,
+            IFlowRateSensor flowRateSensor,
+            WateringService wateringService) 
             : base(name, screen, keyboard)
         {
-            _hardwareManager = hardwareManager;
             _wateringService = wateringService;
+            _pumpStateSensor = pumpStateSensor;
+            _pressureSensor = pressureSensor;
+            _flowRateSensor = flowRateSensor;
 
             _timer = new Timer(Update, null, Timeout.Infinite, Timeout.Infinite);
         }
@@ -78,9 +91,10 @@ namespace HomeAutomation.Ui
                     Screen.Write(3, 0, GetPressure().ToString("F2"));
                     Screen.Write(15, 0, DateTime.Now.ToString("HH:mm"));
 
-                    Screen.Write(3, 1, _hardwareManager.FlowRateSensor.FlowRate.ToString("F1"));
-                    
-                    Screen.Write(3, 2, ((int)_hardwareManager.FlowRateSensor.Volume).ToString());
+                    Screen.Write(3, 1, _flowRateSensor.FlowRate.ToString("F1"));
+
+                    Screen.Write(3, 2, ((int)_flowRateSensor.Volume).ToString());
+                    Screen.Write(17, 2, _pumpStateSensor.IsWorking ? "On" : "Off");
                     
                     Screen.SetCursor(6, 3);
                     Screen.WriteChar(_wateringService.GetValveMainNorth() ? '*' : (char)219);
@@ -136,9 +150,10 @@ namespace HomeAutomation.Ui
                 WriteIfChanged(3, 0, ref _oldPressure, GetPressure(), "F2", 5);
                 WriteIfChanged(15, 0, ref _oldTime, DateTime.Now.ToString("HH:mm"));
 
-                WriteIfChanged(3, 1, ref _oldFlowRate, _hardwareManager.FlowRateSensor.FlowRate, "F1", 5);
+                WriteIfChanged(3, 1, ref _oldFlowRate, _flowRateSensor.FlowRate, "F1", 5);
 
-                WriteIfChanged(3, 2, ref _oldVolume, _hardwareManager.FlowRateSensor.Volume, "F0", 5);
+                WriteIfChanged(3, 2, ref _oldVolume, _flowRateSensor.Volume, "F0", 5);
+                WriteIfChanged(17, 2, ref _oldPumpState, _pumpStateSensor.IsWorking ? "On" : "Off");
 
                 WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
                 WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);
@@ -152,7 +167,7 @@ namespace HomeAutomation.Ui
 
         private double GetPressure()
         {
-            var pressure = _hardwareManager.PressureSensor.Pressure;
+            var pressure = _pressureSensor.Pressure;
             return pressure < 0 ? 0 : pressure;
         }
 

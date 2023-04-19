@@ -52,7 +52,13 @@ namespace HomeAutomation.Ui
             _screenSaver = new ScreenSaver(hardwareManager.Screen, _keyboard);
 
             _menu = new Menu("Menu", hardwareManager.Screen, _keyboard);
-            _statusScreen = new StatusScreen("StatusScr", hardwareManager.Screen, _keyboard, hardwareManager, _wateringService);
+            _statusScreen = new StatusScreen("StatusScr",
+                hardwareManager.Screen,
+                _keyboard,
+                _hardwareManager.PumpStateSensor,
+                _hardwareManager.PressureSensor,
+                _hardwareManager.FlowRateSensor,
+                _wateringService);
             _datePicker = new DatePicker("Date", hardwareManager.Screen, _keyboard);
             _timePicker = new TimePicker("Time", hardwareManager.Screen, _keyboard);
             _textDrum = new TextDrum("Drum", hardwareManager.Screen, _keyboard);
