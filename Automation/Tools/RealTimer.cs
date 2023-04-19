@@ -13,14 +13,16 @@ namespace HomeAutomation.Tools
         public delegate bool Callback(TimerState state);
 
         private readonly Log _log;
-        private readonly Hashtable _hashtable;
+        private readonly Hashtable _disposable;
+        private readonly Hashtable _nonDisposable;
 
         private static readonly TimeSpan InfiniteTimeSpan = new TimeSpan(0, 0, 0, 0, -1);
 
         public RealTimer(Log log)
         {
             _log = log;
-            _hashtable = new Hashtable();
+            _disposable = new Hashtable();
+            _nonDisposable = new Hashtable();
         }
 
         public bool TryScheduleRunAt(DateTime dueDateTime, SingleCallback timerCallback, string name = "", bool isDisposable = true)
@@ -96,7 +98,11 @@ namespace HomeAutomation.Tools
 
             if (isDisposable)
             {
-                _hashtable.Add(key, timer);
+                _disposable.Add(key, timer);
+            }
+            else
+            {
+                _nonDisposable.Add(key, timer);
             }
 
             if (period == InfiniteTimeSpan)
@@ -113,7 +119,7 @@ namespace HomeAutomation.Tools
 
         public bool TryDispose(Guid key)
         {
-            var timer = _hashtable[key] as Timer;
+            var timer = _disposable[key] as Timer;
 
             if (timer == null)
             {
@@ -121,19 +127,19 @@ namespace HomeAutomation.Tools
             }
 
             timer.Dispose();
-            _hashtable.Remove(key);
+            _disposable.Remove(key);
 
             return true;
         }
 
         public void DisposeAll()
         {
-            foreach (var timer in _hashtable.Values)
+            foreach (var timer in _disposable.Values)
             {
                 ((Timer)timer).Dispose();
             }
 
-            _hashtable.Clear();
+            _disposable.Clear();
         }
     }
 }
