@@ -88,8 +88,7 @@ namespace HomeAutomation.Tools
                 {
                     if (!timerCallback((TimerState)s))
                     {
-                        var isDisposed = TryDispose(key);
-                        Debug.Print(name + " auto disposed: " + isDisposed);
+                        TryDispose(key);
                     }
                 },
                 timerState,

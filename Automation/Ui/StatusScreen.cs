@@ -26,7 +26,8 @@ namespace HomeAutomation.Ui
 
         private double _oldFlowRate;
 
-        private double _oldVolume;
+        private double _oldVolumeNorth;
+        private double _oldVolumeSouth;
         private string _oldPumpState;
         
         private bool _oldValveMainNorth;
@@ -93,8 +94,9 @@ namespace HomeAutomation.Ui
 
                     Screen.Write(3, 1, _flowRateSensor.FlowRate.ToString("F1"));
 
-                    Screen.Write(3, 2, ((int)_flowRateSensor.Volume).ToString());
-                    Screen.Write(17, 2, _pumpStateSensor.IsWorking ? "On" : "Off");
+                    Screen.Write(3, 2, _wateringService.NorthVolume.ToString("F0"));
+                    Screen.Write(11, 2, _wateringService.SouthVolume.ToString("F0"));
+                    Screen.Write(17, 2, _pumpStateSensor.IsWorking ? "On " : "Off");
                     
                     Screen.SetCursor(6, 3);
                     Screen.WriteChar(_wateringService.GetValveMainNorth() ? '*' : (char)219);
@@ -152,8 +154,9 @@ namespace HomeAutomation.Ui
 
                 WriteIfChanged(3, 1, ref _oldFlowRate, _flowRateSensor.FlowRate, "F1", 5);
 
-                WriteIfChanged(3, 2, ref _oldVolume, _flowRateSensor.Volume, "F0", 5);
-                WriteIfChanged(17, 2, ref _oldPumpState, _pumpStateSensor.IsWorking ? "On" : "Off");
+                WriteIfChanged(3, 2, ref _oldVolumeNorth, _wateringService.NorthVolume, "F0", 5);
+                WriteIfChanged(11, 2, ref _oldVolumeSouth, _wateringService.SouthVolume, "F0", 4);
+                WriteIfChanged(17, 2, ref _oldPumpState, _pumpStateSensor.IsWorking ? "On " : "Off");
 
                 WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
                 WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);

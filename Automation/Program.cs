@@ -59,7 +59,7 @@ namespace HomeAutomation
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 
-            Debug.EnableGCMessages(true);
+            Debug.EnableGCMessages(false);
 
             var sdCard = new SdCard();
             _configuration = new Configuration();
@@ -173,7 +173,13 @@ namespace HomeAutomation
 #endif
 
             _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.SdCard, _hardwareManager.PressureSensor, _realTimer);
-            _wateringService = new WateringService(_log, _configuration, _realTimer, _hardwareManager);
+            _wateringService = new WateringService(_log,
+                _configuration,
+                _realTimer,
+                _hardwareManager.NorthMainValveRelayId,
+                _hardwareManager.SouthMainValveRelayId,
+                _hardwareManager.RelaysArray,
+                _hardwareManager.FlowRateSensor);
         }
 
         private static void ScheduleConfigReload()

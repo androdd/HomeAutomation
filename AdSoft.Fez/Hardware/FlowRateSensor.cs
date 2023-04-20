@@ -58,7 +58,7 @@ namespace AdSoft.Fez.Hardware
             _interruptPort.OnInterrupt += OnInterrupt;
         }
 
-#if DEBUG_FLOW_RATE
+#if DEBUG_FLOW_RATE || DEBUG_WATERING
         public void OnInterrupt(uint data1, uint data2, DateTime time)
 #else
         private void OnInterrupt(uint data1, uint data2, DateTime time)
