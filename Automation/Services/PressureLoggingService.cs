@@ -16,15 +16,15 @@ namespace HomeAutomation.Services
     internal class PressureLoggingService : Base
     {
         private readonly Log _log;
-        private readonly SdCard _sdCard;
+        private readonly IStorage _storage;
         private readonly IPressureSensor _pressureSensor;
         private readonly RealTimer _realTimer;
         private readonly Configuration _configuration;
 
-        public PressureLoggingService(Configuration configuration, Log log, SdCard sdCard, IPressureSensor pressureSensor, RealTimer realTimer)
+        public PressureLoggingService(Configuration configuration, Log log, IStorage storage, IPressureSensor pressureSensor, RealTimer realTimer)
         {
             _log = log;
-            _sdCard = sdCard;
+            _storage = storage;
             _pressureSensor = pressureSensor;
             _realTimer = realTimer;
             _configuration = configuration;
@@ -52,7 +52,7 @@ namespace HomeAutomation.Services
             string pressureLog = "Pressure_" + now.Year + "_" + month + ".csv";
 
             bool logExists;
-            if (!_sdCard.TryIsExists(pressureLog, out logExists))
+            if (!_storage.TryIsExists(pressureLog, out logExists))
             {
                 return true;
             }
@@ -60,7 +60,7 @@ namespace HomeAutomation.Services
             if (!logExists)
             {
                 const string PressureLogHeader = "Time,Pressure (bar)\r\n";
-                _sdCard.TryAppend(pressureLog, PressureLogHeader);
+                _storage.TryAppend(pressureLog, PressureLogHeader);
                 _log.Write("Created " + pressureLog + " file.");
             }
 
@@ -69,7 +69,7 @@ namespace HomeAutomation.Services
             if (!_configuration.ManagementMode)
             {
                 pressureLogText += "\r\n";
-                _sdCard.TryAppend(pressureLog, pressureLogText);
+                _storage.TryAppend(pressureLog, pressureLogText);
             }
 
             return true;

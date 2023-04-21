@@ -61,13 +61,13 @@ namespace HomeAutomation
 
             Debug.EnableGCMessages(false);
 
-            var sdCard = new SdCard();
+            var usbStick = new UsbStick();
             _configuration = new Configuration();
-            _log = new Log(_configuration, sdCard);
+            _log = new Log(_configuration, usbStick);
 
             _log.Write("Starting hardware...");
-            
-            _hardwareManager = new HardwareManager(_log, sdCard);
+
+            _hardwareManager = new HardwareManager(_log, usbStick);
             _hardwareManager.Setup();
             
             _log.Write("Starting...");
@@ -87,24 +87,6 @@ namespace HomeAutomation
             
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _wateringService);
             _uiManager.Setup();
-            
-            #region Manual DST Adjustment
-
-            if (_configuration.ManualStartDst)
-            {
-                _configurationManager.SaveDst();
-                Now = Now.AddHours(1);
-                _log.Write("Time manually adjusted with 1 hour.");
-            }
-
-            if (_configuration.ManualEndDst)
-            {
-                _configurationManager.DeleteDst();
-                Now = Now.AddHours(-1);
-                _log.Write("Time manually adjusted with -1 hour.");
-            }
-
-            #endregion
 
             ScheduleConfigReload();
 
@@ -151,8 +133,8 @@ namespace HomeAutomation
         private static void SetupToolsAndServices()
         {
             _configuration = new Configuration();
-            _settingsFile = new SettingsFile(_hardwareManager.SdCard, "config.txt");
-            _configurationManager = new ConfigurationManager(_configuration, _settingsFile, _hardwareManager.SdCard, _log);
+            _settingsFile = new SettingsFile(_hardwareManager.ExternalStorage, "config.txt");
+            _configurationManager = new ConfigurationManager(_configuration, _settingsFile, _hardwareManager.InternalStorage, _log);
 
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _configuration, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);
@@ -172,7 +154,7 @@ namespace HomeAutomation
             _remoteCommandsService.Init;
 #endif
 
-            _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.SdCard, _hardwareManager.PressureSensor, _realTimer);
+            _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.ExternalStorage, _hardwareManager.PressureSensor, _realTimer);
             _wateringService = new WateringService(_log,
                 _configuration,
                 _realTimer,
@@ -228,15 +210,11 @@ namespace HomeAutomation
 
         private static void DstStart(TimerState state)
         {
-            _configurationManager.SaveDst();
-
             AdjustTimeAndRestart(1);
         }
 
         private static void DstEnd(TimerState state)
         {
-            _configurationManager.DeleteDst();
-
             AdjustTimeAndRestart(-1);
         }
 

@@ -15,9 +15,6 @@ namespace HomeAutomation.Tools
 
     public class ConfigurationManager
     {
-        private const string DstCfg = "dst.cfg";
-        private const string DstStartCfg = "dstStart.cfg";
-        private const string DstEndCfg = "dstEnd.cfg";
         private const string ManagementModeCfg = "MgmtMode.cfg";
 
         private const string SunriseOffset = "SunriseOffset";
@@ -28,25 +25,29 @@ namespace HomeAutomation.Tools
 
         private readonly Configuration _configuration;
         private readonly SettingsFile _settingsFile;
-        private readonly SdCard _sdCard;
+        private readonly IStorage _internalStorage;
         private readonly Log _log;
 
-        public ConfigurationManager(Configuration configuration, SettingsFile settingsFile, SdCard sdCard, Log log)
+        public ConfigurationManager(Configuration configuration, SettingsFile settingsFile, IStorage internalStorage, Log log)
         {
             _configuration = configuration;
             _settingsFile = settingsFile;
-            _sdCard = sdCard;
+            _internalStorage = internalStorage;
             _log = log;
         }
 
         public void Load()
         {
+            var now = Program.Now;
+            var dstStart = GetDstStart();
+            var dstEnd = GetDstEnd();
+            _configuration.IsDst = dstStart < now && now < dstEnd;
+
             ReadSun();
-            ReadDst();
             Read();
 
             bool managementModeCfgExists;
-            _configuration.ManagementMode = _sdCard.TryIsExists(ManagementModeCfg, out managementModeCfgExists) && managementModeCfgExists;
+            _configuration.ManagementMode = _internalStorage.TryIsExists(ManagementModeCfg, out managementModeCfgExists) && managementModeCfgExists;
         }
 
         public void Save()
@@ -57,27 +58,15 @@ namespace HomeAutomation.Tools
             }
         }
 
-        public void SaveDst()
-        {
-            _sdCard.TryAppend(DstCfg, "");
-            _sdCard.TryDelete(DstStartCfg);
-        }
-
-        public void DeleteDst()
-        {
-            _sdCard.TryDelete(DstCfg);
-            _sdCard.TryDelete(DstEndCfg);
-        }
-
         public void SetManagementMode(bool on)
         {
             if (on)
             {
-                _sdCard.TryAppend(ManagementModeCfg, "");
+                _internalStorage.TryAppend(ManagementModeCfg, "");
             }
             else
             {
-                _sdCard.TryDelete(ManagementModeCfg);
+                _internalStorage.TryDelete(ManagementModeCfg);
             }
         }
         
@@ -93,8 +82,6 @@ namespace HomeAutomation.Tools
             result.Add(new Setting { Key = "Sunrise", Value = _configuration.Sunrise.ToString("T"), TypeCode = TypeCode.Empty });
             result.Add(new Setting { Key = "Sunset", Value = _configuration.Sunset.ToString("T"), TypeCode = TypeCode.Empty });
             result.Add(new Setting { Key = "IsDst", Value = _configuration.IsDst.ToString(), TypeCode = TypeCode.Empty });
-            result.Add(new Setting { Key = "ManualStartDst", Value = _configuration.ManualStartDst.ToString(), TypeCode = TypeCode.Empty });
-            result.Add(new Setting { Key = "ManualEndDst", Value = _configuration.ManualEndDst.ToString(), TypeCode = TypeCode.Empty });
             result.Add(new Setting { Key = "ManagementMode", Value = _configuration.ManagementMode.ToString(), TypeCode = TypeCode.Empty });
 
             return result;
@@ -112,7 +99,7 @@ namespace HomeAutomation.Tools
 
             string sunToday;
 
-            if (_sdCard.TryReadFixedLengthLine("Sun" + month + ".txt", 19, now.Day, out sunToday))
+            if (_internalStorage.TryReadFixedLengthLine("Sun" + month + ".txt", 19, now.Day, out sunToday))
             {
                 _log.Write("Config Sun: " + sunToday);
             }
@@ -135,31 +122,16 @@ namespace HomeAutomation.Tools
 
                 _configuration.Sunrise = ToTime(now, sunParts[1]);
                 _configuration.Sunset = ToTime(now, sunParts[2]);
+
+                if (_configuration.IsDst)
+                {
+                    _configuration.Sunrise = _configuration.Sunrise.AddHours(1);
+                    _configuration.Sunset = _configuration.Sunset.AddHours(1);
+                }
             }
             catch (Exception ex)
             {
                 _log.Write("Config Sun Err: " + ex.Message);
-            }
-        }
-
-        private void ReadDst()
-        {
-            bool dstExists;
-            if (_sdCard.TryIsExists(DstCfg, out dstExists))
-            {
-                _configuration.IsDst = dstExists;
-            }
-
-            bool dstStartExists;
-            if (_sdCard.TryIsExists(DstStartCfg, out dstStartExists))
-            {
-                _configuration.ManualStartDst = dstStartExists;
-            }
-
-            bool dstEndExists;
-            if (_sdCard.TryIsExists(DstEndCfg, out dstEndExists))
-            {
-                _configuration.ManualEndDst = dstEndExists;
             }
         }
 
@@ -212,6 +184,24 @@ namespace HomeAutomation.Tools
             var second = int.Parse(parts[2]);
 
             return new DateTime(now.Year, now.Month, now.Day, hour, minute, second);
+        }
+
+        private static DateTime GetDstStart()
+        {
+            return GetPrevMonthLastSunday(4);
+        }
+
+        private static DateTime GetDstEnd()
+        {
+            return GetPrevMonthLastSunday(11);
+        }
+
+        private static DateTime GetPrevMonthLastSunday(int month)
+        {
+            var now = DateTime.Now;
+            var date = new DateTime(now.Year, month, 1).Subtract(new TimeSpan(7, 0, 0, 0));
+            var add = (7 - (int)date.DayOfWeek) % 7;
+            return date.AddDays(add);
         }
     }
 }

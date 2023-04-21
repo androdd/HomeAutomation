@@ -1,6 +1,8 @@
 SunriseOffset:      -10 ;Minutes
 SunsetOffset:        10 ;Minutes
 PressureLogInterval: 5  ;Minutes
+PressureSensorMultiplier : 1
+FlowRateSensorMultiplier : 1.0000000
 
 ;;AutoTurnOffPumpService
 AutoTurnOffPump-Interval:		1	; Minute
@@ -8,4 +10,7 @@ AutoTurnOffPump-MinPressure:	0.5	; bar
 AutoTurnOffPump-MaxEventsCount:	2	; Sends turn off signal after specified number of times with low pressure
 AutoTurnOffPump-SignalLength:	500	; millisecods
 
-;;End of file is important!!
+Watering-South1 : 1 0 22|01 5 1111111 ; Enabled
+Watering-South2 : 1 1 22|03 2 1110101 ; Enabled
+Watering-South3 : 1 2 22|05 7 1000101 ; Enabled
+Watering-South4 : 0 3 22|08 8 0011100 ; Disabled

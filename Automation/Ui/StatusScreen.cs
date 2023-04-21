@@ -16,6 +16,7 @@ namespace HomeAutomation.Ui
         private readonly IPumpStateSensor _pumpStateSensor;
         private readonly IPressureSensor _pressureSensor;
         private readonly IFlowRateSensor _flowRateSensor;
+        private readonly IStorage _externalStorage;
         private readonly WateringService _wateringService;
 
         private readonly Timer _timer;
@@ -42,12 +43,14 @@ namespace HomeAutomation.Ui
             string name,
             Lcd2004 screen,
             IKeyboard keyboard,
+            IStorage externalStorage,
             IPumpStateSensor pumpStateSensor,
             IPressureSensor pressureSensor,
             IFlowRateSensor flowRateSensor,
             WateringService wateringService) 
             : base(name, screen, keyboard)
         {
+            _externalStorage = externalStorage;
             _wateringService = wateringService;
             _pumpStateSensor = pumpStateSensor;
             _pressureSensor = pressureSensor;
@@ -93,6 +96,7 @@ namespace HomeAutomation.Ui
                     Screen.Write(15, 0, DateTime.Now.ToString("HH:mm"));
 
                     Screen.Write(3, 1, _flowRateSensor.FlowRate.ToString("F1"));
+                    SetExternalStorageStatus(_externalStorage.IsLoaded ? Status.Available : Status.Unavailable);
 
                     Screen.Write(3, 2, _wateringService.NorthVolume.ToString("F0"));
                     Screen.Write(11, 2, _wateringService.SouthVolume.ToString("F0"));
@@ -228,7 +232,7 @@ namespace HomeAutomation.Ui
             }
         }
 
-        public void SetSdStatus(Status status)
+        public void SetExternalStorageStatus(Status status)
         {
             string statusText;
             switch (status)

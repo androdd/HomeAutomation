@@ -10,13 +10,13 @@ namespace AdSoft.Fez.Configuration
 
     public class SettingsFile
     {
-        private readonly SdCard _sdCard;
+        private readonly IStorage _storage;
         private readonly string _filename;
         public ArrayList Settings { get; private set; }
 
-        public SettingsFile(SdCard sdCard, string filename)
+        public SettingsFile(IStorage storage, string filename)
         {
-            _sdCard = sdCard;
+            _storage = storage;
             _filename = filename;
             Settings = new ArrayList();
         }
@@ -24,9 +24,9 @@ namespace AdSoft.Fez.Configuration
         public bool TryLoadSettings()
         {
             ArrayList lines;
-            if (!_sdCard.TryReadAllLines(_filename, out lines))
+            if (!_storage.TryReadAllLines(_filename, out lines))
             {
-                Debug.Print("SD - " + _filename + " can not be read.");
+                Debug.Print("Settings=>" + _filename + " can not be read.");
                 return false;
             }
 
@@ -223,25 +223,25 @@ namespace AdSoft.Fez.Configuration
         public bool TrySaveSettings()
         {
             bool exists;
-            if (!_sdCard.TryIsExists(_filename, out exists))
+            if (!_storage.TryIsExists(_filename, out exists))
             {
                 return false;
             }
 
             ArrayList lines = new ArrayList();
-            if (exists && !_sdCard.TryReadAllLines(_filename, out lines))
+            if (exists && !_storage.TryReadAllLines(_filename, out lines))
             {
                 return false;
             }
 
             string newFile = _filename + ".new";
 
-            if (_sdCard.TryIsExists(newFile, out exists) && exists && !_sdCard.TryDelete(newFile))
+            if (_storage.TryIsExists(newFile, out exists) && exists && !_storage.TryDelete(newFile))
             {
                 return false;
             }
 
-            var appendResult = _sdCard.TryAppend(newFile,
+            var appendResult = _storage.TryAppend(newFile,
                 stream =>
                 {
                     var writtenKeys = new ArrayList();
@@ -321,7 +321,7 @@ namespace AdSoft.Fez.Configuration
                 return false;
             }
 
-            return _sdCard.TryDelete(_filename) && _sdCard.TryRename(newFile, _filename);
+            return _storage.TryDelete(_filename) && _storage.TryRename(newFile, _filename);
         }
 
         private bool StringExists(ArrayList strings, string value)

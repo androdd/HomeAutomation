@@ -9,12 +9,12 @@ namespace HomeAutomation.Tools
     public class Log : Base
     {
         private readonly Configuration _configuration;
-        private readonly SdCard _sdCard;
+        private readonly IStorage _storage;
 
-        public Log(Configuration configuration, SdCard sdCard)
+        public Log(Configuration configuration, IStorage storage)
         {
             _configuration = configuration;
-            _sdCard = sdCard;
+            _storage = storage;
         }
 
         public void Write(string message)
@@ -22,9 +22,9 @@ namespace HomeAutomation.Tools
             var text = Format(RealTimeClock.GetTime()) + " - " + message;
             Debug.Print(text);
 
-            if (_sdCard != null && !_configuration.ManagementMode)
+            if (_storage != null && !_configuration.ManagementMode)
             {
-                _sdCard.TryAppend("Log.txt", text + "\r\n");
+                _storage.TryAppend("Log.txt", text + "\r\n");
             }
         }
     }

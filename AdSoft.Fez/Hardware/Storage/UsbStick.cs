@@ -58,10 +58,14 @@ namespace AdSoft.Fez.Hardware.Storage
 
         private void RemovableMediaInsert(object sender, MediaEventArgs e)
         {
-            _volume = e.Volume;
-            _root = _volume.RootDirectory;
-            IsLoaded = true;
-            RaiseStatusChanged(Status.Available);
+            if(Storage != null)
+            {
+                _volume = e.Volume;
+                _root = _volume.RootDirectory;
+                IsLoaded = true;
+            }
+
+            RaiseStatusChanged(IsLoaded ? Status.Available : Status.Unavailable);
         }
 
         private void RemovableMediaEject(object sender, MediaEventArgs e)

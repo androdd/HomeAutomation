@@ -55,6 +55,7 @@ namespace HomeAutomation.Ui
             _statusScreen = new StatusScreen("StatusScr",
                 hardwareManager.Screen,
                 _keyboard,
+                _hardwareManager.ExternalStorage,
                 _hardwareManager.PumpStateSensor,
                 _hardwareManager.PressureSensor,
                 _hardwareManager.FlowRateSensor,
@@ -114,7 +115,7 @@ namespace HomeAutomation.Ui
             _statusScreen.Show();
 
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
-            _hardwareManager.SdCard.StatusChanged += _statusScreen.SetSdStatus;
+            _hardwareManager.ExternalStorage.StatusChanged += _statusScreen.SetExternalStorageStatus;
         }
 
         private void ScreenPowerButtonOnStateChanged(bool isOn)

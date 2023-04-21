@@ -14,8 +14,9 @@ namespace HomeAutomation
     public class HardwareManager
     {
         private readonly Log _log;
-        
-        public SdCard SdCard { get; private set; }
+
+        public IStorage InternalStorage { get; private set; }
+        public IStorage ExternalStorage { get; private set; }
         public RelaysArray RelaysArray { get; private set; }
         public IPressureSensor PressureSensor { get; private set; }
         public IPumpStateSensor PumpStateSensor { get; private set; }
@@ -34,11 +35,12 @@ namespace HomeAutomation
         public int SouthMainValveRelayId { get; private set; }
         public int NorthMainValveRelayId { get; private set; }
 
-        public HardwareManager(Log log, SdCard sdCard)
+        public HardwareManager(Log log, IStorage externalStorage)
         {
             _log = log;
-            SdCard = sdCard;
+            ExternalStorage = externalStorage;
 
+            InternalStorage = new SdCard();
             RelaysArray = new RelaysArray(new[]
             {
                 FEZ_Pin.Digital.Di0,

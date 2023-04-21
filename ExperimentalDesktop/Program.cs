@@ -6,26 +6,19 @@
     {
         static void Main(string[] args)
         {
-            UInt16 debug = 0;
-
-
-
-            debug = (UInt16)(0 | DebugTarget.Ui);
-            
-            Console.WriteLine(ToBits(debug));
-
-            if ((debug & (ushort)DebugTarget.Ui) > 0)
+            for (int i = 1; i <= 12; i++)
             {
-                Console.WriteLine("UI");
+                int month = i;
+
+                month = month % 12 + 1;
+                var now = DateTime.Now;
+                var date = new DateTime(now.Year, month, 1).Subtract(new TimeSpan(7, 0, 0, 0));
+                var add = (7 - (int)date.DayOfWeek) % 7;
+                var lastSunday = date.AddDays(add);
+
+                Console.WriteLine(i + " - " + lastSunday.ToString("M"));
             }
-            if ((debug & (ushort)DebugTarget.ScreenSaver) > 0)
-            {
-                Console.WriteLine("SS");
-            }
-            if ((debug & (ushort)DebugTarget.Log) > 0)
-            {
-                Console.WriteLine("Log");
-            }
+
         }
 
         private static string ToBits(UInt16 data)

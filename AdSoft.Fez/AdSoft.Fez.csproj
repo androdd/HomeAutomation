@@ -49,6 +49,7 @@
     <Compile Include="Hardware\PumpStateSensor.cs" />
     <Compile Include="Hardware\RelaysArray.cs" />
     <Compile Include="Hardware\ScreenPowerButton.cs" />
+    <Compile Include="Hardware\Storage\IStorage.cs" />
     <Compile Include="Hardware\Storage\SdCard.cs" />
     <Compile Include="Hardware\Storage\Status.cs" />
     <Compile Include="Hardware\FlowRateSensor.cs" />

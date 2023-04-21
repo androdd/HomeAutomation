@@ -22,8 +22,6 @@ namespace HomeAutomation.Tools
         public ValveConfiguration[] SouthValveConfigurations { get; private set; }
 
         public bool IsDst { get; set; }
-        public bool ManualStartDst { get; set; }
-        public bool ManualEndDst { get; set; }
         
         public Configuration()
         {
@@ -47,7 +45,14 @@ namespace HomeAutomation.Tools
             AutoTurnOffPumpConfiguration.MaxEventsCount = 2;
             AutoTurnOffPumpConfiguration.SignalLength = 500;
 
-            SouthValveConfigurations = new ValveConfiguration[4];
+            SouthValveConfigurations = new[]
+            {
+                new ValveConfiguration("0 0 00|00 1 0000000"), 
+                new ValveConfiguration("0 0 00|00 1 0000000"),
+                new ValveConfiguration("0 0 00|00 1 0000000"), 
+                new ValveConfiguration("0 0 00|00 1 0000000")
+            };
+
         }
     }
 }

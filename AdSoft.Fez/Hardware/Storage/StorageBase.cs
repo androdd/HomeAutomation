@@ -13,12 +13,13 @@ namespace AdSoft.Fez.Hardware.Storage
 
     public delegate void FileOpenedCallback(FileStream stream);
 
-    public abstract class StorageBase : IDisposable
+    public abstract class StorageBase : IDisposable, IStorage
     {
         protected PersistentStorage Storage;
-        protected bool IsLoaded;
 
         protected abstract string Root { get; }
+
+        public bool IsLoaded { get; set; }
 
         public static void WriteToStream(Stream stream, string text)
         {

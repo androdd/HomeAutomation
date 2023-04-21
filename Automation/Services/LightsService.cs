@@ -31,13 +31,7 @@ namespace HomeAutomation.Services
 
             var sunrise = _config.Sunrise.AddMinutes(_config.SunriseOffsetMin);
             var sunset = _config.Sunset.AddMinutes(_config.SunsetOffsetMin);
-
-            if (_config.IsDst)
-            {
-                sunrise = sunrise.AddHours(1);
-                sunset = sunset.AddHours(1);
-            }
-
+            
             if (now < sunrise)
             {
                 _realTimer.TryScheduleRunAt(sunrise, SunriseAction, "Sunrise ");
