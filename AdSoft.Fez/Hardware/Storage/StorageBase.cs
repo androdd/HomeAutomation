@@ -1,4 +1,4 @@
-namespace AdSoft.Fez.Hardware.SdCard
+namespace AdSoft.Fez.Hardware.Storage
 {
     using System;
     using System.Collections;
@@ -9,55 +9,30 @@ namespace AdSoft.Fez.Hardware.SdCard
 
     using Microsoft.SPOT;
 
-    public class SdCard: IDisposable
+    public delegate void StorageStatusChangedEventHandler(Status status);
+
+    public delegate void FileOpenedCallback(FileStream stream);
+
+    public abstract class StorageBase : IDisposable
     {
-        private PersistentStorage _sdCard;
-        private bool _isLoaded;
+        protected PersistentStorage Storage;
+        protected bool IsLoaded;
 
-        public delegate void CardStatusChangedEventHandler(Status status);
+        protected abstract string Root { get; }
 
-        public event CardStatusChangedEventHandler CardStatusChanged;
-
-        public delegate void FileOpenedCallback(FileStream stream);
-        
-        public bool TryReadAllLines(string filename, out ArrayList result)
+        public static void WriteToStream(Stream stream, string text)
         {
-            InitCard();
-
-            if (!_isLoaded)
-            {
-                result = null;
-                return false;
-            }
-
-            string path = GetPath(filename);
-            if (!File.Exists(path))
-            {
-                //Thread.Sleep(200);
-                result = null;
-                return false;
-            }
-
-            byte[] data = File.ReadAllBytes(path);
-
-            result = GetUtf8Lines(data);
-
-            if (result == null)
-            {
-                //Thread.Sleep(200);
-                result = null;
-                return false;
-            }
-
-            //Thread.Sleep(200);
-            return true;
+            var bytes = Encoding.UTF8.GetBytes(text);
+            stream.Write(bytes, 0, bytes.Length);
         }
+
+        public virtual event StorageStatusChangedEventHandler StatusChanged;
 
         public bool TryIsExists(string filename, out bool result)
         {
-            InitCard();
+            InitStorage();
 
-            if (!_isLoaded)
+            if (!IsLoaded)
             {
                 result = false;
                 return false;
@@ -69,11 +44,41 @@ namespace AdSoft.Fez.Hardware.SdCard
             return true;
         }
 
+        public bool TryReadAllLines(string filename, out ArrayList result)
+        {
+            InitStorage();
+
+            if (!IsLoaded)
+            {
+                result = null;
+                return false;
+            }
+
+            string path = GetPath(filename);
+            if (!File.Exists(path))
+            {
+                result = null;
+                return false;
+            }
+
+            byte[] data = File.ReadAllBytes(path);
+
+            result = GetUtf8Lines(data);
+
+            if (result == null)
+            {
+                result = null;
+                return false;
+            }
+
+            return true;
+        }
+
         public bool TryDelete(string filename)
         {
-            InitCard();
+            InitStorage();
 
-            if (!_isLoaded)
+            if (!IsLoaded)
             {
                 return false;
             }
@@ -81,14 +86,16 @@ namespace AdSoft.Fez.Hardware.SdCard
             string path = GetPath(filename);
             File.Delete(path);
 
+            Flush();
+
             return true;
         }
 
         public bool TryRename(string filename, string newName)
         {
-            InitCard();
+            InitStorage();
 
-            if (!_isLoaded)
+            if (!IsLoaded)
             {
                 return false;
             }
@@ -97,14 +104,16 @@ namespace AdSoft.Fez.Hardware.SdCard
             string destination = GetPath(newName);
             File.Move(source, destination);
 
+            Flush();
+
             return true;
         }
 
         public bool TryCopy(string filename, string newName)
         {
-            InitCard();
+            InitStorage();
 
-            if (!_isLoaded)
+            if (!IsLoaded)
             {
                 return false;
             }
@@ -113,14 +122,16 @@ namespace AdSoft.Fez.Hardware.SdCard
             string destination = GetPath(newName);
             File.Copy(source, destination);
 
+            Flush();
+
             return true;
         }
 
         public bool TryGetFiles(string path, out string[] files)
         {
-            InitCard();
+            InitStorage();
 
-            if (!_isLoaded)
+            if (!IsLoaded)
             {
                 files = null;
                 return false;
@@ -133,9 +144,9 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryReadFixedLengthLine(string filename, int lineLength, int lineNumber, out string result)
         {
-            InitCard();
+            InitStorage();
 
-            if (!_isLoaded)
+            if (!IsLoaded)
             {
                 result = null;
                 return false;
@@ -144,7 +155,6 @@ namespace AdSoft.Fez.Hardware.SdCard
             string path = GetPath(filename);
             if (!File.Exists(path))
             {
-                //Thread.Sleep(200);
                 result = null;
                 return false;
             }
@@ -156,7 +166,6 @@ namespace AdSoft.Fez.Hardware.SdCard
                 var seekPosition = (lineLength + 2) * (lineNumber - 1);
                 if (seekPosition > stream.Length)
                 {
-                    //Thread.Sleep(200);
                     result = null;
                     return false;
                 }
@@ -170,12 +179,10 @@ namespace AdSoft.Fez.Hardware.SdCard
 
             if (result == null)
             {
-                //Thread.Sleep(200);
                 result = null;
                 return false;
             }
 
-            //Thread.Sleep(200);
             return true;
         }
 
@@ -186,9 +193,9 @@ namespace AdSoft.Fez.Hardware.SdCard
 
         public bool TryAppend(string filename, FileOpenedCallback fileOpenedCallback)
         {
-            InitCard();
+            InitStorage();
 
-            if (!_isLoaded)
+            if (!IsLoaded)
             {
                 return false;
             }
@@ -203,6 +210,8 @@ namespace AdSoft.Fez.Hardware.SdCard
 
                     fileOpenedCallback(stream);
                 }
+
+                Flush();
             }
             catch (Exception ex)
             {
@@ -210,20 +219,21 @@ namespace AdSoft.Fez.Hardware.SdCard
                 return false;
             }
 
-            //Thread.Sleep(200);
             return true;
         }
 
         public void Unmount()
         {
-            if (_sdCard == null)
+            IsLoaded = false;
+
+            if (Storage == null)
             {
                 return;
             }
 
-            _sdCard.UnmountFileSystem();
-            _sdCard.Dispose();
-            _sdCard = null;
+            Storage.UnmountFileSystem();
+            Storage.Dispose();
+            Storage = null;
         }
 
         public void Dispose()
@@ -231,66 +241,30 @@ namespace AdSoft.Fez.Hardware.SdCard
             Unmount();
         }
 
-        public static void WriteToStream(Stream stream, string text)
-        {
-            var bytes = Encoding.UTF8.GetBytes(text);
-            stream.Write(bytes, 0, bytes.Length);
-        }
+        protected abstract void InitStorage();
 
-        private void InitCard()
-        {
-            if (!PersistentStorage.DetectSDCard())
-            {
-                Debug.Print("SD - card missing");
-                _isLoaded = false;
+        protected abstract void Flush();
 
-                Unmount();
-
-                RaiseStatusChanged(Status.Unavailable);
-
-                return;
-            }
-
-            if (_sdCard != null)
-            {
-                return;
-            }
-
-            try
-            {
-                _sdCard = new PersistentStorage("SD");
-                _sdCard.MountFileSystem();
-                _isLoaded = true;
-                RaiseStatusChanged(Status.Available);
-            }
-            catch (Exception ex)
-            {
-                Debug.Print("SD - Failed to mount SD card: " + ex.Message);
-                _isLoaded = false;
-
-                RaiseStatusChanged(Status.Error);
-            }
-        }
-
-        private void RaiseStatusChanged(Status status)
-        {
-            if (CardStatusChanged != null)
-            {
-                CardStatusChanged(status);
-            }
-        }
-
-        private static string GetPath(string filename)
+        protected string GetPath(string filename)
         {
             if (filename[0] == '\\')
             {
                 filename = filename.Substring(1);
             }
 
-            return Path.Combine("\\SD", filename);
+            return Path.Combine(Root, filename);
         }
 
-        private static ArrayList GetUtf8Lines(byte[] data)
+        protected void RaiseStatusChanged(Status status)
+        {
+            var onStatusChanged = StatusChanged;
+            if (onStatusChanged != null)
+            {
+                onStatusChanged(status);
+            }
+        }
+
+        protected static ArrayList GetUtf8Lines(byte[] data)
         {
             if (data == null)
             {
@@ -324,7 +298,7 @@ namespace AdSoft.Fez.Hardware.SdCard
             return result;
         }
 
-        private static string GetUtf8String(byte[] data)
+        protected static string GetUtf8String(byte[] data)
         {
             if (data == null)
             {

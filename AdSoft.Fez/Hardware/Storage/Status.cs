@@ -1,4 +1,4 @@
-namespace AdSoft.Fez.Hardware.SdCard
+namespace AdSoft.Fez.Hardware.Storage
 {
     public enum Status
     {

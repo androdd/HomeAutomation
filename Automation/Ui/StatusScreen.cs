@@ -5,7 +5,7 @@ namespace HomeAutomation.Ui
 
     using AdSoft.Fez.Hardware.Interfaces;
     using AdSoft.Fez.Hardware.Lcd2004;
-    using AdSoft.Fez.Hardware.SdCard;
+    using AdSoft.Fez.Hardware.Storage;
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Interfaces;
 
@@ -228,7 +228,7 @@ namespace HomeAutomation.Ui
             }
         }
 
-        public void SetSdCardStatus(Status status)
+        public void SetSdStatus(Status status)
         {
             string statusText;
             switch (status)

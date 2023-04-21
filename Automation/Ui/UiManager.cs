@@ -114,7 +114,7 @@ namespace HomeAutomation.Ui
             _statusScreen.Show();
 
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
-            _hardwareManager.SdCard.CardStatusChanged += _statusScreen.SetSdCardStatus;
+            _hardwareManager.SdCard.StatusChanged += _statusScreen.SetSdStatus;
         }
 
         private void ScreenPowerButtonOnStateChanged(bool isOn)

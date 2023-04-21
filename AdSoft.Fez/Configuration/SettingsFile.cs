@@ -4,7 +4,7 @@ namespace AdSoft.Fez.Configuration
     using System;
     using System.Collections;
 
-    using AdSoft.Fez.Hardware.SdCard;
+    using AdSoft.Fez.Hardware.Storage;
 
     using Microsoft.SPOT;
 

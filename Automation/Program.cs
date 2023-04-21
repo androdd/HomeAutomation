@@ -7,7 +7,7 @@ namespace HomeAutomation
     using AdSoft.Fez;
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware;
-    using AdSoft.Fez.Hardware.SdCard;
+    using AdSoft.Fez.Hardware.Storage;
 
     using GHIElectronics.NETMF.Hardware;
     using GHIElectronics.NETMF.System;

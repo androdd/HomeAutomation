@@ -49,9 +49,11 @@
     <Compile Include="Hardware\PumpStateSensor.cs" />
     <Compile Include="Hardware\RelaysArray.cs" />
     <Compile Include="Hardware\ScreenPowerButton.cs" />
-    <Compile Include="Hardware\SdCard\SdCard.cs" />
-    <Compile Include="Hardware\SdCard\Status.cs" />
+    <Compile Include="Hardware\Storage\SdCard.cs" />
+    <Compile Include="Hardware\Storage\Status.cs" />
     <Compile Include="Hardware\FlowRateSensor.cs" />
+    <Compile Include="Hardware\Storage\StorageBase.cs" />
+    <Compile Include="Hardware\Storage\UsbStick.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringEx.cs" />
     <Compile Include="Ui\Clock.cs" />
@@ -79,6 +81,7 @@
     <Reference Include="GHIElectronics.NETMF.IO, Version=4.1.5.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="GHIElectronics.NETMF.Net, Version=4.1.5.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="GHIElectronics.NETMF.System, Version=4.1.5.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="GHIElectronics.NETMF.USBHost, Version=4.1.5.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.SPOT.Hardware" />
     <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native" />

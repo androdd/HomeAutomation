@@ -2,6 +2,7 @@ namespace ExperimentalBoard
 {
     using System;
     using System.Collections;
+    using System.IO;
     using System.IO.Ports;
     using System.Text;
     using System.Threading;
@@ -10,7 +11,7 @@ namespace ExperimentalBoard
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.NecRemote;
-    using AdSoft.Fez.Hardware.SdCard;
+    using AdSoft.Fez.Hardware.Storage;
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
 
@@ -35,61 +36,46 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
-            int maxId = 1;
-            
-            for (int i = 0; i < 50; i++)
-            {
-                new Timer(state =>
-                    {
-                        Interlocked.CompareExchange(ref maxId, (int)state + 1, (int)state);
-                    },
-                    i,
-                    i * 1000,
-                    2 * i * 1000);
-            }
-            
-
-            Debug.Print("Done");
-
-            while (true)
-            {
-                Thread.Sleep(3000);
-
-                Debug.Print("Max: " + maxId);
-            }
+            TestUsb();
             
             Thread.Sleep(Timeout.Infinite);
         }
 
         private static void TestUsb()
         {
-            RemovableMedia.Insert += RemovableMedia_Insert;
-            RemovableMedia.Eject += RemovableMedia_Eject;
-            // Subscribe to USB events
-            USBHostController.DeviceConnectedEvent += DeviceConnectedEvent;
-        }
+            _lcd2004 = new Lcd2004(0x27);
 
+            _lcd2004.Init();
+            _lcd2004.BackLightOn();
 
-        static void DeviceConnectedEvent(USBH_Device device)
-        {
-            //if (device.TYPE == USBH_DeviceType.MassStorage)
+            UsbStick stick = new UsbStick();
+            stick.StatusChanged += status =>
             {
-                Debug.Print("USB Mass Storage detected..." + device.TYPE);
-            }
+                switch (status)
+                {
+                    case Status.Available:
+                        _lcd2004.Write(0, 1, @"Inserted");
+
+                        string fileName = "testUsb.txt";
+
+                        bool isExists;
+                        if (stick.TryIsExists(fileName, out isExists))
+                        {
+                            _lcd2004.Write(0, 2, "Exists:" + isExists);
+                        }
+            
+                        stick.TryAppend(fileName, "File.WriteAllBytes(fileName, Encoding.UTF8.GetBytes(\"File....\"));");
+                        break;
+                    case Status.Unavailable:
+                        _lcd2004.Write(0, 1, @"Ejected");
+                        break;
+                    case Status.Error:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("status");
+                }
+            };
         }
-
-        static void RemovableMedia_Insert(object sender, MediaEventArgs e)
-        {
-            Debug.Print("RemovableMedia_Insert");
-        }
-
-        static void RemovableMedia_Eject(object sender, MediaEventArgs e)
-        {
-            Debug.Print("Storage \"" + e.Volume.RootDirectory + "\" is ejected.");
-        }
-        
-
-
 
         private static void TestCreateChar()
         {

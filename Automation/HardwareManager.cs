@@ -4,7 +4,7 @@ namespace HomeAutomation
     using AdSoft.Fez.Hardware.Interfaces;
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.NecRemote;
-    using AdSoft.Fez.Hardware.SdCard;
+    using AdSoft.Fez.Hardware.Storage;
 
     using GHIElectronics.NETMF.FEZ;
 
