@@ -1,6 +1,7 @@
 namespace HomeAutomation.Services.Watering
 {
     using System;
+    using System.Collections;
     using System.Threading;
 
     using AdSoft.Fez;
@@ -20,6 +21,8 @@ namespace HomeAutomation.Services.Watering
         private readonly int _southMainValveRelayId;
         private readonly RelaysArray _relaysArray;
         private readonly IFlowRateSensor _flowRateSensor;
+
+        private readonly ArrayList _timerKeys;
 
         private DateTime _lastManualWateringEnd;
 
@@ -45,6 +48,8 @@ namespace HomeAutomation.Services.Watering
             _northMainValveRelayId = northMainValveRelayId;
             _relaysArray = relaysArray;
             _flowRateSensor = flowRateSensor;
+
+            _timerKeys = new ArrayList();
 
             _lastManualWateringEnd = DateTime.Now;
         }
@@ -96,7 +101,7 @@ namespace HomeAutomation.Services.Watering
 
             _lastManualWateringEnd = next.AddMinutes(minutes);
 
-            _realTimer.TryScheduleRunAt(next,
+            var key = _realTimer.TryScheduleRunAt(next,
                 state =>
                 {
                     var wateringState = (WateringTimerState)state;
@@ -128,8 +133,40 @@ namespace HomeAutomation.Services.Watering
                 new WateringTimerState { RelayId = configuration.RelayId },
                 new TimeSpan(0, minutes, 0),
                 "Valve " + valveId + " South ");
+
+            if (!key.Equals(Guid.Empty))
+            {
+                _timerKeys.Add(key);
+            }
             
             return true;
+        }
+
+        public void StopManual()
+        {
+            foreach (var timerKey in _timerKeys)
+            {
+                var key = (Guid)timerKey;
+                _realTimer.TryDispose(key);
+            }
+
+            _relaysArray.Set(_southMainValveRelayId, false);
+
+            Thread.Sleep(2000);
+
+            for (int i = 0; i < 4; i++)
+            {
+                var configuration = _configuration.SouthValveConfigurations[i];
+
+                if (!configuration.IsValid)
+                {
+                    continue;
+                }
+
+                _relaysArray.Set(configuration.RelayId, false);
+            }
+
+            _log.Write("Valve all manual watering stopped.");
         }
 
         public void ResetVolume()

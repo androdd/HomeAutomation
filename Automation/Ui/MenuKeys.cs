@@ -11,5 +11,6 @@ namespace HomeAutomation.Ui
         internal const byte TuneFlowRate = 7;
         internal const byte ScheduleNextWatering = 8;
         internal const byte ResetVolume = 9;
+        internal const byte StopWatering = 10;
     }
 }

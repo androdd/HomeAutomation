@@ -12,6 +12,8 @@ namespace HomeAutomation.Ui
     using HomeAutomation.Services.Watering;
     using HomeAutomation.Tools;
 
+    using Microsoft.SPOT;
+
     public class UiManager
     {
         private readonly Configuration _configuration;
@@ -80,6 +82,7 @@ namespace HomeAutomation.Ui
             {
                 new MenuItem(MenuKeys.ScheduleNextWatering, "Start watering"),
                 new MenuItem(MenuKeys.ResetVolume, "Reset Volume"),
+                new MenuItem(MenuKeys.StopWatering, "Stop watering"),
                 new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
@@ -263,6 +266,13 @@ namespace HomeAutomation.Ui
                     _status = UiStatus.None;
 
                     _wateringService.ResetVolume();
+
+                    _statusScreen.Show();
+                    break;
+                case MenuKeys.StopWatering:
+                    _status = UiStatus.None;
+
+                    _wateringService.StopManual();
 
                     _statusScreen.Show();
                     break;

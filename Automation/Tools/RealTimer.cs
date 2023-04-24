@@ -25,7 +25,7 @@ namespace HomeAutomation.Tools
             _nonDisposable = new Hashtable();
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, SingleCallback timerCallback, string name = "", bool isDisposable = true)
+        public Guid TryScheduleRunAt(DateTime dueDateTime, SingleCallback timerCallback, string name = "", bool isDisposable = true)
         {
             return TryScheduleRunAt(dueDateTime,
                 state =>
@@ -39,12 +39,12 @@ namespace HomeAutomation.Tools
                 isDisposable);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimeSpan period, string name = "", bool isDisposable = true)
+        public Guid TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimeSpan period, string name = "", bool isDisposable = true)
         {
             return TryScheduleRunAt(dueDateTime, timerCallback, null, period, name, isDisposable);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, SingleCallback timerCallback, TimerState timerState, string name = "", bool isDisposable = true)
+        public Guid TryScheduleRunAt(DateTime dueDateTime, SingleCallback timerCallback, TimerState timerState, string name = "", bool isDisposable = true)
         {
             return TryScheduleRunAt(dueDateTime,
                 state =>
@@ -58,13 +58,13 @@ namespace HomeAutomation.Tools
                 isDisposable);
         }
 
-        public bool TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState state, TimeSpan period, string name = "", bool isDisposable = true)
+        public Guid TryScheduleRunAt(DateTime dueDateTime, Callback timerCallback, TimerState state, TimeSpan period, string name = "", bool isDisposable = true)
         {
             var now = DateTime.Now;
 
             if (now > dueDateTime)
             {
-                return false;
+                return Guid.Empty;
             }
 
             var interval = dueDateTime - now;
@@ -113,7 +113,7 @@ namespace HomeAutomation.Tools
                 _log.Write(name + "Timer set for: " + Format(dueDateTime) + " with period: " + period);
             }
 
-            return true;
+            return key;
         }
 
         public bool TryDispose(Guid key)
