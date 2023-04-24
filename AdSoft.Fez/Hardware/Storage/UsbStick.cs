@@ -39,25 +39,32 @@ namespace AdSoft.Fez.Hardware.Storage
 
         private void DeviceConnectedEvent(USBH_Device device)
         {
-            if (device.TYPE == USBH_DeviceType.MassStorage)
+            if (device.TYPE != USBH_DeviceType.MassStorage)
             {
-                try
-                {
-                    Storage = new PersistentStorage(device);
-                    Storage.MountFileSystem();
-                }
-                catch (Exception ex)
-                {
-                    Debug.Print("USB - Failed to mount USB stick: " + ex.Message);
-                    IsLoaded = false;
+                return;
+            }
 
-                    RaiseStatusChanged(Status.Error);
-                }
+            try
+            {
+                Storage = new PersistentStorage(device);
+                Storage.MountFileSystem();
+            }
+            catch (Exception ex)
+            {
+                Debug.Print("USB - Failed to mount USB stick: " + ex.Message);
+                IsLoaded = false;
+
+                RaiseStatusChanged(Status.Error);
             }
         }
 
         private void RemovableMediaInsert(object sender, MediaEventArgs e)
         {
+            if (e.Volume.Name != "USB")
+            {
+                return;
+            }
+
             if(Storage != null)
             {
                 _volume = e.Volume;

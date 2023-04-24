@@ -6,17 +6,17 @@
     {
         static void Main(string[] args)
         {
-            for (int i = 1; i <= 12; i++)
+            var init = DateTime.Now;
+
+            for (int i = 0; i <= 12; i++)
             {
-                int month = i;
+                var now = init.AddMinutes(i * 5);
 
-                month = month % 12 + 1;
-                var now = DateTime.Now;
-                var date = new DateTime(now.Year, month, 1).Subtract(new TimeSpan(7, 0, 0, 0));
-                var add = (7 - (int)date.DayOfWeek) % 7;
-                var lastSunday = date.AddDays(add);
+                var add = 5 - now.Minute % 5;
+                var schedule = now.AddMinutes(add);
+                schedule = new DateTime(schedule.Year, schedule.Month, schedule.Day, schedule.Hour, schedule.Minute, 0);
 
-                Console.WriteLine(i + " - " + lastSunday.ToString("M"));
+                Console.WriteLine(now.ToString("T") + " - " + schedule);
             }
 
         }

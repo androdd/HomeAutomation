@@ -1,17 +1,13 @@
 namespace HomeAutomation.Services
 {
     using System;
-    using System.Threading;
 
-    using AdSoft.Fez;
     using AdSoft.Fez.Hardware.Interfaces;
     using AdSoft.Fez.Hardware.Storage;
 
-    using GHIElectronics.NETMF.Hardware;
-
     using HomeAutomation.Tools;
 
-    using Configuration = HomeAutomation.Tools.Configuration;
+    using Microsoft.SPOT;
 
     internal class PressureLoggingService : Base
     {
@@ -32,7 +28,13 @@ namespace HomeAutomation.Services
 
         public void Init()
         {
-            _realTimer.TryScheduleRunAt(DateTime.Now.AddMinutes(1),
+            var now = DateTime.Now;
+
+            var add = 5 - now.Minute % 5;
+            var schedule = now.AddMinutes(add);
+            schedule = new DateTime(schedule.Year, schedule.Month, schedule.Day, schedule.Hour, schedule.Minute, 0);
+
+            _realTimer.TryScheduleRunAt(schedule,
                 Log,
                 new TimeSpan(0, _configuration.PressureLogIntervalMin, 0),
                 "PressureLoggingService ",
@@ -41,7 +43,7 @@ namespace HomeAutomation.Services
 
         private bool Log(object state)
         {
-            var now = RealTimeClock.GetTime();
+            var now = DateTime.Now;
 
             var month = now.Month.ToString();
             if (month.Length == 1)
@@ -64,7 +66,7 @@ namespace HomeAutomation.Services
                 _log.Write("Created " + pressureLog + " file.");
             }
 
-            var pressureLogText = Format(now) + "," + _pressureSensor.Pressure.ToString("F2");
+            var pressureLogText = now.Day + "," + now.ToString("T") + "," + _pressureSensor.Pressure.ToString("F2");
             
             if (!_configuration.ManagementMode)
             {

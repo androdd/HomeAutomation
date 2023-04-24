@@ -99,9 +99,9 @@ namespace HomeAutomation.Services.Watering
             _realTimer.TryScheduleRunAt(next,
                 state =>
                 {
-                    var watering = (WateringTimerState)state;
+                    var wateringState = (WateringTimerState)state;
 
-                    var isOn = _relaysArray.Get(watering.RelayId);
+                    var isOn = _relaysArray.Get(wateringState.RelayId);
 
 #if DEBUG_WATERING
                     if (isOn)
@@ -116,7 +116,9 @@ namespace HomeAutomation.Services.Watering
                     
                     _relaysArray.Set(_southMainValveRelayId, !isOn);
                     Thread.Sleep(2000);
-                    _relaysArray.Set(watering.RelayId, !isOn);
+                    _relaysArray.Set(wateringState.RelayId, !isOn);
+
+                    _log.Write(wateringState.Name + "is " + (isOn ? "closed - " + (int)_flowRateSensor.Volume + " l. used" : "opened") + ".");
 
                     SouthVolume += _flowRateSensor.Volume;
                     _flowRateSensor.Volume = 0;

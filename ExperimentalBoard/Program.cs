@@ -36,8 +36,22 @@ namespace ExperimentalBoard
         {
             Debug.EnableGCMessages(false);
 
-            TestUsb();
-            
+            _lcd2004 = new Lcd2004(0x27);
+
+            _lcd2004.Init();
+            _lcd2004.BackLightOn();
+
+            SdCard sdCard = new SdCard();
+            UsbStick usbStick = new UsbStick();
+
+            var result = sdCard.TryAppend("testSd.txt", "sdCard.TryAppend");
+
+            _lcd2004.Write(0, 0, " SD " + result);
+
+            result = usbStick.TryAppend("testUsb.txt", "usbStick.TryAppend");
+
+            _lcd2004.Write(0, 1, "USB " + result);
+
             Thread.Sleep(Timeout.Infinite);
         }
 
