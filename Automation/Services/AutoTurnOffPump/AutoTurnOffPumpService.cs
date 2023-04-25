@@ -8,7 +8,9 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
     using HomeAutomation.Tools;
 
-    internal class AutoTurnOffPumpService
+    public delegate void PumpStatusChangedEventHandler(Status status);
+
+    public class AutoTurnOffPumpService
     {
         private readonly int _relayId;
 
@@ -21,6 +23,8 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
         private int _eventCount;
         private bool _lowPressureReacted;
+
+        public event PumpStatusChangedEventHandler StatusChanged;
 
         public AutoTurnOffPumpService(
             Log log,
@@ -63,6 +67,8 @@ namespace HomeAutomation.Services.AutoTurnOffPump
                 {
                     _lowPressureReacted = false;
                     _log.Write("Pressure restored.");
+
+                    RaiseStatusChanged(Status.Restore);
                 }
 
                 _eventCount = 0;
@@ -88,6 +94,17 @@ namespace HomeAutomation.Services.AutoTurnOffPump
             _relaysArray.Set(_relayId, false);
 
             _log.Write("Pump turned off due to low pressure.");
+
+            RaiseStatusChanged(Status.TurnOff);
+        }
+        
+        protected void RaiseStatusChanged(Status status)
+        {
+            var onStatusChanged = StatusChanged;
+            if (onStatusChanged != null)
+            {
+                onStatusChanged(status);
+            }
         }
     }
 }

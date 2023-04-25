@@ -9,10 +9,13 @@ namespace HomeAutomation.Ui
     using AdSoft.Fez.Ui.Menu;
 
     using HomeAutomation.Services;
+    using HomeAutomation.Services.AutoTurnOffPump;
     using HomeAutomation.Services.Watering;
     using HomeAutomation.Tools;
 
     using Microsoft.SPOT;
+
+    using Configuration = HomeAutomation.Tools.Configuration;
 
     public class UiManager
     {
@@ -20,6 +23,7 @@ namespace HomeAutomation.Ui
         private readonly ConfigurationManager _configurationManager;
         private readonly HardwareManager _hardwareManager;
         private readonly LightsService _lightsService;
+        private readonly AutoTurnOffPumpService _autoTurnOffPumpService;
         private readonly WateringService _wateringService;
 
         private readonly MiniRemoteKeyboard _keyboard;
@@ -42,12 +46,14 @@ namespace HomeAutomation.Ui
             ConfigurationManager configurationManager,
             HardwareManager hardwareManager,
             LightsService lightsService,
+            AutoTurnOffPumpService autoTurnOffPumpService,
             WateringService wateringService)
         {
             _configuration = configuration;
             _configurationManager = configurationManager;
             _hardwareManager = hardwareManager;
             _lightsService = lightsService;
+            _autoTurnOffPumpService = autoTurnOffPumpService;
             _wateringService = wateringService;
             
             _keyboard = new MiniRemoteKeyboard(hardwareManager.NecRemote);
@@ -56,8 +62,6 @@ namespace HomeAutomation.Ui
             _statusScreen = new StatusScreen("StatusScr",
                 hardwareManager.Screen,
                 _keyboard,
-                _hardwareManager.ExternalStorage,
-                _hardwareManager.PumpStateSensor,
                 _hardwareManager.PressureSensor,
                 _hardwareManager.FlowRateSensor,
                 _wateringService);
@@ -74,6 +78,8 @@ namespace HomeAutomation.Ui
             _hardwareManager.ScreenPowerButton.AddScreenSaver(_screenSaver);
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
             _hardwareManager.ExternalStorage.StatusChanged += _statusScreen.SetExternalStorageStatus;
+
+            _autoTurnOffPumpService.StatusChanged += _statusScreen.SetAutoTurnOffPumpStatus;
             
             _statusScreen.Setup();
             _statusScreen.Show();
@@ -410,6 +416,7 @@ namespace HomeAutomation.Ui
 
         private void DoublePickerOnKeyPressed(Key key)
         {
+            string status = "        ";
             switch (key)
             {
                 case Key.Enter:
@@ -425,7 +432,10 @@ namespace HomeAutomation.Ui
                         _hardwareManager.FlowRateSensor.FlowRateMultiplier = _doublePicker.Value;
                     }
 
-                    _configurationManager.Save();
+                    if (!_configurationManager.Save())
+                    {
+                        status = "Save-Err  ";
+                    }
                     break;
                 }
                 case Key.Escape:
@@ -436,7 +446,7 @@ namespace HomeAutomation.Ui
 
             _textDrum.Show(false);
             _doublePicker.Show(false);
-            _statusScreen.Show();
+            _statusScreen.Show(status);
 
             _textDrum = null;
             _doublePicker = null;

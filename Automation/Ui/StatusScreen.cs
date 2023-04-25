@@ -13,10 +13,8 @@ namespace HomeAutomation.Ui
 
     public class StatusScreen : Control
     {
-        private readonly IPumpStateSensor _pumpStateSensor;
         private readonly IPressureSensor _pressureSensor;
         private readonly IFlowRateSensor _flowRateSensor;
-        private readonly IStorage _externalStorage;
         private readonly WateringService _wateringService;
 
         private readonly Timer _timer;
@@ -29,7 +27,6 @@ namespace HomeAutomation.Ui
 
         private double _oldVolumeNorth;
         private double _oldVolumeSouth;
-        private string _oldPumpState;
         
         private bool _oldValveMainNorth;
         private char _oldNorthSwitchState;
@@ -43,16 +40,12 @@ namespace HomeAutomation.Ui
             string name,
             Lcd2004 screen,
             IKeyboard keyboard,
-            IStorage externalStorage,
-            IPumpStateSensor pumpStateSensor,
             IPressureSensor pressureSensor,
             IFlowRateSensor flowRateSensor,
             WateringService wateringService) 
             : base(name, screen, keyboard)
         {
-            _externalStorage = externalStorage;
             _wateringService = wateringService;
-            _pumpStateSensor = pumpStateSensor;
             _pressureSensor = pressureSensor;
             _flowRateSensor = flowRateSensor;
 
@@ -72,6 +65,12 @@ namespace HomeAutomation.Ui
         {
         }
 
+        public void Show(string status)
+        {
+            Show();
+            Screen.Write(4, 0, status);
+        }
+
         public override void Show(bool show = true)
         {
             if (show)
@@ -80,32 +79,27 @@ namespace HomeAutomation.Ui
                 {
                     Screen.Clear();
 
-                    Screen.Write(0, 0, "Pr:");
+                    Screen.Write(0, 0, "Sts:");
+                    
+                    Screen.Write(15, 0, DateTime.Now.ToString("HH:mm"));
                     
                     Screen.Write(0, 1, "FR:");
-                    Screen.Write(15, 1, "S:");
+                    Screen.Write(3, 1, _flowRateSensor.FlowRate.ToString("F1"));
+                    
+                    Screen.Write(8, 1, "Pr:");
+                    Screen.Write(11, 1, GetPressure().ToString("F2"));
 
                     Screen.Write(0, 2, "VN:");
-                    Screen.Write(8, 2, "VS:");
-                    Screen.Write(15, 2, "P:");
-
-                    Screen.Write(0, 3, "North:");
-                    Screen.Write(9, 3, "South:");
-
-                    Screen.Write(3, 0, GetPressure().ToString("F2"));
-                    Screen.Write(15, 0, DateTime.Now.ToString("HH:mm"));
-
-                    Screen.Write(3, 1, _flowRateSensor.FlowRate.ToString("F1"));
-                    SetExternalStorageStatus(_externalStorage.IsLoaded ? Status.Available : Status.Unavailable);
-
                     Screen.Write(3, 2, _wateringService.NorthVolume.ToString("F0"));
-                    Screen.Write(11, 2, _wateringService.SouthVolume.ToString("F0"));
-                    Screen.Write(17, 2, _pumpStateSensor.IsWorking ? "On " : "Off");
                     
-                    Screen.SetCursor(6, 3);
+                    Screen.Write(8, 2, "VS:");
+                    Screen.Write(11, 2, _wateringService.SouthVolume.ToString("F0"));
+                    
+                    Screen.Write(0, 3, "North:");
                     Screen.WriteChar(_wateringService.GetValveMainNorth() ? '*' : (char)219);
                     Screen.WriteChar(_wateringService.NorthSwitchState.ToString()[0]);
-                    Screen.SetCursor(15, 3);
+                    
+                    Screen.Write(9, 3, "South:");
                     Screen.WriteChar(_wateringService.GetValveMainSouth() ? '*' : (char)219);
                     Screen.WriteChar(GetValveChar(1));
                     Screen.WriteChar(GetValveChar(2));
@@ -132,6 +126,55 @@ namespace HomeAutomation.Ui
             }
         }
 
+        public void SetExternalStorageStatus(Status status)
+        {
+            if (!IsVisible)
+            {
+                return;
+            }
+
+            string statusText;
+            switch (status)
+            {
+                case Status.Available:
+                    statusText = "          ";
+                    break;
+                case Status.Unavailable:
+                    statusText = "USB:N/A   ";
+                    break;
+                case Status.Error:
+                    statusText = "USB:Error ";
+                    break;
+                default:
+                    return;
+            }
+
+            Screen.Write(4, 0, statusText);
+        }
+
+        public void SetAutoTurnOffPumpStatus(Services.AutoTurnOffPump.Status status)
+        {
+            if (!IsVisible)
+            {
+                return;
+            }
+
+            string statusText;
+            switch (status)
+            {
+                case Services.AutoTurnOffPump.Status.TurnOff:
+                    statusText = "Pump-Off  ";
+                    break;
+                case Services.AutoTurnOffPump.Status.Restore:
+                    statusText = "Prsr-back ";
+                    break;
+                default:
+                    return;
+            }
+
+            Screen.Write(4, 0, statusText);
+        }
+
         private char GetValveChar(int valveId)
         {
             switch (_wateringService.GetValveSouth(valveId))
@@ -153,15 +196,14 @@ namespace HomeAutomation.Ui
         {
             Screen.Sync(() =>
             {
-                WriteIfChanged(3, 0, ref _oldPressure, GetPressure(), "F2", 5);
                 WriteIfChanged(15, 0, ref _oldTime, DateTime.Now.ToString("HH:mm"));
 
                 WriteIfChanged(3, 1, ref _oldFlowRate, _flowRateSensor.FlowRate, "F1", 5);
+                WriteIfChanged(11, 1, ref _oldPressure, GetPressure(), "F2", 5);
 
                 WriteIfChanged(3, 2, ref _oldVolumeNorth, _wateringService.NorthVolume, "F0", 5);
                 WriteIfChanged(11, 2, ref _oldVolumeSouth, _wateringService.SouthVolume, "F0", 4);
-                WriteIfChanged(17, 2, ref _oldPumpState, _pumpStateSensor.IsWorking ? "On " : "Off");
-
+             
                 WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
                 WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);
                 WriteIfChanged(15, 3, ref _oldValveMainSouth, _wateringService.GetValveMainSouth(), '*', (char)219);
@@ -230,27 +272,6 @@ namespace HomeAutomation.Ui
                 oldValue = newValue;
                 Screen.WriteChar(col, row, newValue);
             }
-        }
-
-        public void SetExternalStorageStatus(Status status)
-        {
-            string statusText;
-            switch (status)
-            {
-                case Status.Available:
-                    statusText = "   ";
-                    break;
-                case Status.Unavailable:
-                    statusText = "N/A";
-                    break;
-                case Status.Error:
-                    statusText = "Err";
-                    break;
-                default:
-                    return;
-            }
-
-            Screen.Write(17, 1, statusText);
         }
 
         protected override int GetLength()

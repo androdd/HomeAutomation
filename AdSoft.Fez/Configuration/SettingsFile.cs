@@ -292,7 +292,7 @@ namespace AdSoft.Fez.Configuration
                             }
                         }
 
-                        SdCard.WriteToStream(stream, newLine);
+                        StorageBase.WriteToStream(stream, newLine);
                         hasExistingLines = true;
                         
                         if (key != string.Empty)
@@ -312,7 +312,7 @@ namespace AdSoft.Fez.Configuration
                         var start = hasExistingLines || i != 0
                             ? "\r\n"
                             : String.Empty;
-                        SdCard.WriteToStream(stream, start + setting.Key + ": " + setting.Value);
+                        StorageBase.WriteToStream(stream, start + setting.Key + ": " + setting.Value);
                     }
                 });
 

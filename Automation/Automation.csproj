@@ -37,6 +37,7 @@
     <Compile Include="Base.cs" />
     <Compile Include="Services\AutoTurnOffPump\Configuration.cs" />
     <Compile Include="Services\AutoTurnOffPump\AutoTurnOffPumpService.cs" />
+    <Compile Include="Services\AutoTurnOffPump\Status.cs" />
     <Compile Include="Services\Interfaces\IRemoteCommandsService.cs" />
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />

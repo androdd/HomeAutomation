@@ -49,25 +49,34 @@ namespace AdSoft.Fez.Hardware.Storage
         {
             InitStorage();
 
-            if (!IsLoaded)
+            try
             {
-                result = null;
-                return false;
+                if (!IsLoaded)
+                {
+                    result = null;
+                    return false;
+                }
+
+                string path = GetPath(filename);
+                if (!File.Exists(path))
+                {
+                    result = null;
+                    return false;
+                }
+
+                byte[] data = File.ReadAllBytes(path);
+
+                result = GetUtf8Lines(data);
+
+                if (result == null)
+                {
+                    result = null;
+                    return false;
+                }
             }
-
-            string path = GetPath(filename);
-            if (!File.Exists(path))
+            catch (Exception ex)
             {
-                result = null;
-                return false;
-            }
-
-            byte[] data = File.ReadAllBytes(path);
-
-            result = GetUtf8Lines(data);
-
-            if (result == null)
-            {
+                Debug.Print("Storage.TryReadAllLines - " + ex.Message);
                 result = null;
                 return false;
             }
@@ -216,7 +225,7 @@ namespace AdSoft.Fez.Hardware.Storage
             }
             catch (Exception ex)
             {
-                Debug.Print("SD - " + ex.Message);
+                Debug.Print("Storage.TryAppend - " + ex.Message);
                 return false;
             }
 

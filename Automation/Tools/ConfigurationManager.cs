@@ -50,12 +50,9 @@ namespace HomeAutomation.Tools
             _configuration.ManagementMode = _internalStorage.TryIsExists(ManagementModeCfg, out managementModeCfgExists) && managementModeCfgExists;
         }
 
-        public void Save()
+        public bool Save()
         {
-            if (_settingsFile.TrySaveSettings())
-            {
-                Debug.Print("Configuration saved to file.");
-            }
+            return _settingsFile.TrySaveSettings();
         }
 
         public void SetManagementMode(bool on)

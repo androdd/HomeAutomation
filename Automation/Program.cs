@@ -59,7 +59,7 @@ namespace HomeAutomation
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 
-            Debug.EnableGCMessages(true);
+            Debug.EnableGCMessages(false);
 
             var usbStick = new UsbStick();
 
@@ -90,7 +90,7 @@ namespace HomeAutomation
             _pressureLoggingService.Init();
             _autoTurnOffPumpService.Init();
             
-            _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _wateringService);
+            _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _autoTurnOffPumpService, _wateringService);
             _uiManager.Setup();
 
             ScheduleConfigReload();
