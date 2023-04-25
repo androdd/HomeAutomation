@@ -62,12 +62,19 @@ namespace HomeAutomation
             Debug.EnableGCMessages(true);
 
             var usbStick = new UsbStick();
+
+            while (!usbStick.IsLoaded)
+            {
+                Thread.Sleep(500);
+                Debug.Print("Loading configuration...");
+            }
+
             _configuration = new Configuration();
             _log = new Log(_configuration, usbStick);
 
             _log.Write("Starting hardware...");
 
-            _hardwareManager = new HardwareManager(_log, usbStick);
+            _hardwareManager = new HardwareManager(usbStick);
             _hardwareManager.Setup();
             
             _log.Write("Starting...");
@@ -82,8 +89,6 @@ namespace HomeAutomation
             //_remoteCommandsService.Init();
             _pressureLoggingService.Init();
             _autoTurnOffPumpService.Init();
-            
-            Debug.Print(Debug.GC(true).ToString());
             
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _wateringService);
             _uiManager.Setup();
@@ -126,7 +131,6 @@ namespace HomeAutomation
 
             Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
 #endif
-            Debug.Print(Debug.GC(true).ToString());
             Thread.Sleep(Timeout.Infinite);
         }
 
@@ -134,7 +138,7 @@ namespace HomeAutomation
         {
             _configuration = new Configuration();
             _settingsFile = new SettingsFile(_hardwareManager.ExternalStorage, "config.txt");
-            _configurationManager = new ConfigurationManager(_configuration, _settingsFile, _hardwareManager.InternalStorage, _log);
+            _configurationManager = new ConfigurationManager(_configuration, _settingsFile, _hardwareManager.ExternalStorage, _log);
 
             _realTimer = new RealTimer(_log);
             _lightsService = new LightsService(_log, _configuration, _realTimer, _hardwareManager.RelaysArray, _hardwareManager.LightsRelayId);

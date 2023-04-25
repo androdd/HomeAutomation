@@ -22,7 +22,7 @@ namespace AdSoft.Fez.Hardware.Storage
         {
             RemovableMedia.Insert += RemovableMediaInsert;
             RemovableMedia.Eject += RemovableMediaEject;
-            USBHostController.DeviceConnectedEvent += DeviceConnectedEvent;
+            USBHostController.DeviceConnectedEvent += DeviceConnected;
         }
 
         protected override void InitStorage()
@@ -37,7 +37,7 @@ namespace AdSoft.Fez.Hardware.Storage
             }
         }
 
-        private void DeviceConnectedEvent(USBH_Device device)
+        private void DeviceConnected(USBH_Device device)
         {
             if (device.TYPE != USBH_DeviceType.MassStorage)
             {
@@ -65,6 +65,7 @@ namespace AdSoft.Fez.Hardware.Storage
                 return;
             }
 
+            //Debug.Print("RemovableMediaInsert");
             if(Storage != null)
             {
                 _volume = e.Volume;
@@ -77,6 +78,7 @@ namespace AdSoft.Fez.Hardware.Storage
 
         private void RemovableMediaEject(object sender, MediaEventArgs e)
         {
+            //Debug.Print("RemovableMediaEject");
             RaiseStatusChanged(Status.Unavailable);
             Unmount();
         }

@@ -8,14 +8,8 @@ namespace HomeAutomation
 
     using GHIElectronics.NETMF.FEZ;
 
-    using HomeAutomation.Hardware.Mocks;
-    using HomeAutomation.Tools;
-
     public class HardwareManager
     {
-        private readonly Log _log;
-
-        public IStorage InternalStorage { get; private set; }
         public IStorage ExternalStorage { get; private set; }
         public RelaysArray RelaysArray { get; private set; }
         public IPressureSensor PressureSensor { get; private set; }
@@ -28,19 +22,13 @@ namespace HomeAutomation
 
         public int LightsRelayId { get; private set; }
         public int AutoTurnOffPumpRelayId { get; private set; }
-        public int SouthValve1RelayId { get; private set; }
-        public int SouthValve2RelayId { get; private set; }
-        public int SouthValve3RelayId { get; private set; }
-        public int SouthValve4RelayId { get; private set; }
         public int SouthMainValveRelayId { get; private set; }
         public int NorthMainValveRelayId { get; private set; }
 
-        public HardwareManager(Log log, IStorage externalStorage)
+        public HardwareManager(IStorage externalStorage)
         {
-            _log = log;
             ExternalStorage = externalStorage;
 
-            InternalStorage = new SdCard();
             RelaysArray = new RelaysArray(new[]
             {
                 FEZ_Pin.Digital.Di0,
