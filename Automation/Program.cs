@@ -55,7 +55,7 @@ namespace HomeAutomation
         public static void Main()
         {
 #if DEBUG_SET_RTC
-            RealTimeClock.SetTime(new DateTime(2023, 4, 30, 22, 0, 0));
+            RealTimeClock.SetTime(new DateTime(2023, 4, 26, 22, 0, 0));
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 

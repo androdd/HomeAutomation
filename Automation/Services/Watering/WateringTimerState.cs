@@ -6,6 +6,6 @@ namespace HomeAutomation.Services.Watering
     {
         public int RelayId { get; set; }
 
-        public bool Start { get; set; }
+        public bool TurnMainOnOff { get; set; }
     }
 }

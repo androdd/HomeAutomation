@@ -102,35 +102,8 @@ namespace HomeAutomation.Services.Watering
             _lastManualWateringEnd = next.AddMinutes(minutes);
 
             var key = _realTimer.TryScheduleRunAt(next,
-                state =>
-                {
-                    var wateringState = (WateringTimerState)state;
-
-                    var isOn = _relaysArray.Get(wateringState.RelayId);
-
-#if DEBUG_WATERING
-                    if (isOn)
-                    {
-                        TurnOffWater();
-                    }
-                    else
-                    {
-                        TurnOnWater();
-                    } 
-#endif
-                    
-                    _relaysArray.Set(_southMainValveRelayId, !isOn);
-                    Thread.Sleep(2000);
-                    _relaysArray.Set(wateringState.RelayId, !isOn);
-
-                    _log.Write(wateringState.Name + "is " + (isOn ? "closed - " + (int)_flowRateSensor.Volume + " l. used" : "opened") + ".");
-
-                    SouthVolume += _flowRateSensor.Volume;
-                    _flowRateSensor.Volume = 0;
-                    
-                    return !isOn;
-                },
-                new WateringTimerState { RelayId = configuration.RelayId },
+                TimerCallback,
+                new WateringTimerState { RelayId = configuration.RelayId, TurnMainOnOff = true },
                 new TimeSpan(0, minutes, 0),
                 "Valve " + valveId + " South ");
 
@@ -154,7 +127,7 @@ namespace HomeAutomation.Services.Watering
 
             Thread.Sleep(2000);
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < _configuration.SouthValveConfigurations.Length; i++)
             {
                 var configuration = _configuration.SouthValveConfigurations[i];
 
@@ -178,8 +151,6 @@ namespace HomeAutomation.Services.Watering
 
         public void ScheduleWatering()
         {
-            return;
-
             //DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
 
             DateTime firstStarTime = DateTime.MaxValue;
@@ -215,12 +186,8 @@ namespace HomeAutomation.Services.Watering
 
                 _realTimer.TryScheduleRunAt(configuration.StartTime,
                     TimerCallback,
-                    new WateringTimerState { Start = true, RelayId = configuration.RelayId },
-                    name);
-
-                _realTimer.TryScheduleRunAt(endTime,
-                    TimerCallback,
-                    new WateringTimerState { Start = false, RelayId = configuration.RelayId },
+                    new WateringTimerState { RelayId = configuration.RelayId, TurnMainOnOff = false },
+                    new TimeSpan(0, configuration.Duration, 0),
                     name);
 
                 //DebugEx.Print(DebugEx.Target.WateringService,
@@ -228,37 +195,62 @@ namespace HomeAutomation.Services.Watering
             }
 
             var mainStart = firstStarTime.Subtract(new TimeSpan(0, 0, 2));
-            var mainEnd = lastEndTime.Subtract(new TimeSpan(0, 0, 5));
+            var mainEnd = lastEndTime.Subtract(new TimeSpan(0, 0, 2));
 
             //DebugEx.Print(DebugEx.Target.WateringService, "Main start: " + mainStart.ToString("s") + ". Main end: " + mainEnd.ToString("s"));
 
             var valveMainSouth = "Valve Main South ";
             _realTimer.TryScheduleRunAt(mainStart,
                 TimerCallback,
-                new WateringTimerState { Start = true, RelayId = _southMainValveRelayId },
-                valveMainSouth);
-
-            _realTimer.TryScheduleRunAt(mainEnd,
-                TimerCallback,
-                new WateringTimerState { Start = false, RelayId = _southMainValveRelayId },
+                new WateringTimerState { RelayId = _southMainValveRelayId, TurnMainOnOff = false },
+                mainEnd - mainStart,
                 valveMainSouth);
         }
 
-        private void TimerCallback(TimerState state)
+        private bool TimerCallback(TimerState state)
         {
-            var wateringTimerState = (WateringTimerState)state;
+            var wateringState = (WateringTimerState)state;
 
-            _relaysArray.Set(wateringTimerState.RelayId, wateringTimerState.Start);
+            var isOn = _relaysArray.Get(wateringState.RelayId);
 
-            _log.Write(wateringTimerState.Name + "valve is " + (wateringTimerState.Start ? "opened" : "closed") + ".");
+#if DEBUG_WATERING
+            if (isOn)
+            {
+                TurnOffWater();
+            }
+            else
+            {
+                TurnOnWater();
+            }
+#endif
+
+            if (wateringState.TurnMainOnOff)
+            {
+                _relaysArray.Set(_southMainValveRelayId, !isOn);
+                Thread.Sleep(2000);
+            }
+            _relaysArray.Set(wateringState.RelayId, !isOn);
+
+            _log.Write(wateringState.Name + "is " + (isOn ? "closed - " + (int)_flowRateSensor.Volume + " l. used" : "opened") + ".");
+
+            SouthVolume += _flowRateSensor.Volume;
+            _flowRateSensor.Volume = 0;
+
+            return !isOn;
         }
 
 #if DEBUG_WATERING
         private Thread _thread;
         private AutoResetEvent _resetEvent;
+        private bool _isWaterOn;
 
         private void TurnOnWater()
         {
+            if (_isWaterOn)
+            {
+                return;
+            }
+
             Debug.Print("TurnOnWater");
 
             _resetEvent = new AutoResetEvent(false);
@@ -274,12 +266,19 @@ namespace HomeAutomation.Services.Watering
             });
             
             _thread.Start();
+            _isWaterOn = true;
         }
 
         private void TurnOffWater()
         {
+            if (!_isWaterOn)
+            {
+                return;
+            }
+
             Debug.Print("TurnOffWater");
             _resetEvent.Set();
+            _isWaterOn = false;
         }
 #endif
     }
