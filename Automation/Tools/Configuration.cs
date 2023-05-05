@@ -6,8 +6,6 @@ namespace HomeAutomation.Tools
 
     public class Configuration
     {
-        public bool ManagementMode { get; set; }
-
         public DateTime Sunrise { get; set; }
         public DateTime Sunset { get; set; }
 
@@ -25,8 +23,6 @@ namespace HomeAutomation.Tools
         
         public Configuration()
         {
-            ManagementMode = false;
-
             AutoTurnOffPumpConfiguration = new Services.AutoTurnOffPump.Configuration();
 
             // Hardcoded values if config is missing

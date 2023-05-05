@@ -10,12 +10,10 @@ namespace HomeAutomation.Tools
 
     public class Log : Base
     {
-        private readonly Configuration _configuration;
         private readonly IStorage _storage;
 
-        public Log(Configuration configuration, IStorage storage)
+        public Log(IStorage storage)
         {
-            _configuration = configuration;
             _storage = storage;
         }
 
@@ -24,12 +22,14 @@ namespace HomeAutomation.Tools
             var text = Format(RealTimeClock.GetTime()) + " - " + message;
             Debug.Print(text);
 
-            if (_storage != null && !_configuration.ManagementMode)
+            if (_storage == null)
             {
-                var logFile = "Log_" + DateTime.Today.ToString("yyyy_MM_dd") + ".txt";
-
-                _storage.TryAppend(logFile, text + "\r\n");
+                return;
             }
+
+            var logFile = "Log_" + DateTime.Today.ToString("yyyy_MM_dd") + ".txt";
+
+            _storage.TryAppend(logFile, text + "\r\n");
         }
     }
 }

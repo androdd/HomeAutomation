@@ -22,14 +22,11 @@ namespace AdSoft.Fez.Ui
             _keyboard = keyboard;
         }
 
-        public void Init(int seconds, bool enabled)
+        public void Init(int seconds)
         {
             _seconds = seconds;
 
-            if (enabled)
-            {
-                CreateTimer();
-            }
+            CreateTimer();
         }
 
         public void Disable()

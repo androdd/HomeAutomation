@@ -71,7 +71,7 @@ namespace HomeAutomation
             }
 
             _configuration = new Configuration();
-            _log = new Log(_configuration, usbStick);
+            _log = new Log(usbStick);
 
             _log.Write("Starting hardware...");
 

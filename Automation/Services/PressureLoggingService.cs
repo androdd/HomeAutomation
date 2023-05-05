@@ -67,12 +67,9 @@ namespace HomeAutomation.Services
             }
 
             var pressureLogText = now.Day + "," + now.ToString("T") + "," + _pressureSensor.Pressure.ToString("F2");
-            
-            if (!_configuration.ManagementMode)
-            {
-                pressureLogText += "\r\n";
-                _storage.TryAppend(pressureLog, pressureLogText);
-            }
+
+            pressureLogText += "\r\n";
+            _storage.TryAppend(pressureLog, pressureLogText);
 
             return true;
         }

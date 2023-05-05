@@ -15,8 +15,6 @@ namespace HomeAutomation.Tools
 
     public class ConfigurationManager
     {
-        private const string ManagementModeCfg = "MgmtMode.cfg";
-
         private const string SunriseOffset = "SunriseOffset";
         private const string SunsetOffset = "SunsetOffset";
         private const string PressureLogInterval = "PressureLogInterval";
@@ -45,26 +43,11 @@ namespace HomeAutomation.Tools
 
             ReadSun();
             Read();
-
-            bool managementModeCfgExists;
-            _configuration.ManagementMode = _internalStorage.TryIsExists(ManagementModeCfg, out managementModeCfgExists) && managementModeCfgExists;
         }
 
         public bool Save()
         {
             return _settingsFile.TrySaveSettings();
-        }
-
-        public void SetManagementMode(bool on)
-        {
-            if (on)
-            {
-                _internalStorage.TryAppend(ManagementModeCfg, "");
-            }
-            else
-            {
-                _internalStorage.TryDelete(ManagementModeCfg);
-            }
         }
         
         public ArrayList GetAllSettings()
@@ -79,7 +62,6 @@ namespace HomeAutomation.Tools
             result.Add(new Setting { Key = "Sunrise", Value = _configuration.Sunrise.ToString("T"), TypeCode = TypeCode.Empty });
             result.Add(new Setting { Key = "Sunset", Value = _configuration.Sunset.ToString("T"), TypeCode = TypeCode.Empty });
             result.Add(new Setting { Key = "IsDst", Value = _configuration.IsDst.ToString(), TypeCode = TypeCode.Empty });
-            result.Add(new Setting { Key = "ManagementMode", Value = _configuration.ManagementMode.ToString(), TypeCode = TypeCode.Empty });
 
             return result;
         }

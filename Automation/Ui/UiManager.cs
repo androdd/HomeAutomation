@@ -74,7 +74,7 @@ namespace HomeAutomation.Ui
             _keyboard.Init();
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
             
-            _screenSaver.Init(3 * 60, !_configuration.ManagementMode);
+            _screenSaver.Init(3 * 60);
             _hardwareManager.ScreenPowerButton.AddScreenSaver(_screenSaver);
             _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
             _hardwareManager.ExternalStorage.StatusChanged += _statusScreen.SetExternalStorageStatus;
@@ -140,8 +140,7 @@ namespace HomeAutomation.Ui
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
                 new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
-                new MenuItem(MenuKeys.SetDate, "Set Date"),
-                new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On"))
+                new MenuItem(MenuKeys.SetDate, "Set Date")
             });
             menu.MenuItemEnter += MenuOnMenuItemEnter;
             menu.KeyPressed += MenuOnKeyPressed;
@@ -159,16 +158,6 @@ namespace HomeAutomation.Ui
                     break;
                 case MenuKeys.SetDate:
                     ShowSetDate();
-                    break;
-                case MenuKeys.ManagementMode:
-                    _status = UiStatus.None;
-
-                    _configuration.ManagementMode = !_configuration.ManagementMode;
-                    _configurationManager.SetManagementMode(_configuration.ManagementMode);
-                    _screenSaver.Enable(!_configuration.ManagementMode);
-                    _menu.ChangeTitle(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On"));
-
-                    _statusScreen.Show();
                     break;
                 case MenuKeys.TunePressure:
                     ShowTunePressure();

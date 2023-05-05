@@ -4,7 +4,6 @@ namespace HomeAutomation.Ui
     {
         internal const byte SetTime = 0;
         internal const byte SetDate = 1;
-        internal const byte ManagementMode = 2;
         internal const byte TunePressure = 4;
         internal const byte ShowConfig = 5;
         internal const byte ToggleLights = 6;
