@@ -71,7 +71,7 @@ namespace AdSoft.Fez.Ui.Menu
             }
             else
             {
-                Screen.Clear(0, 0, MaxLength - 1, _rows - 1);
+                Screen.Clear();
 
                 Unfocus();
 
@@ -116,7 +116,7 @@ namespace AdSoft.Fez.Ui.Menu
 
             Screen.Sync(() =>
             {
-                Screen.Clear(0, 0, MaxLength - 1, _rows - 1);
+                Screen.Clear();
 
                 for (int i = _firstItemIndex; i < _firstItemIndex + _itemsOnScreen; i++)
                 {
