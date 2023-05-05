@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MF_FRAMEWORK_VERSION_V4_1,DEBUG_WATERING,DEBUG_SET_RTC,MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MF_FRAMEWORK_VERSION_V4_1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -42,6 +42,7 @@
     <Compile Include="Services\LightsService.cs" />
     <Compile Include="Services\PressureLoggingService.cs" />
     <Compile Include="Services\Watering\DaysOfWeek.cs" />
+    <Compile Include="Services\Watering\TimeInterval.cs" />
     <Compile Include="Services\Watering\ValveConfiguration.cs" />
     <Compile Include="Services\Watering\ValveState.cs" />
     <Compile Include="Services\Watering\WateringService.cs" />

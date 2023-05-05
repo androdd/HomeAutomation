@@ -1,6 +1,7 @@
 namespace HomeAutomation
 {
     using System;
+    using System.Collections;
     using System.Reflection;
     using System.Threading;
 
@@ -55,7 +56,7 @@ namespace HomeAutomation
         public static void Main()
         {
 #if DEBUG_SET_RTC
-            RealTimeClock.SetTime(new DateTime(2023, 4, 26, 22, 0, 0));
+            RealTimeClock.SetTime(new DateTime(2023, 4, 25, 22, 0, 0));
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 
@@ -171,7 +172,7 @@ namespace HomeAutomation
         private static void ScheduleConfigReload()
         {
             var nextDay = Now.AddDays(1);
-            var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day);
+            var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day, 0, 1, 0);
 
             _realTimer.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0), "Config Reload ");
         }

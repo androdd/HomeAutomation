@@ -22,7 +22,9 @@ namespace HomeAutomation.Services.Watering
         private readonly RelaysArray _relaysArray;
         private readonly IFlowRateSensor _flowRateSensor;
 
-        private readonly ArrayList _timerKeys;
+        private readonly ArrayList _manualTimerKeys;
+        private readonly ArrayList _automaticTimerKeys;
+        private readonly ArrayList _runningTimerKeys;
 
         private DateTime _lastManualWateringEnd;
 
@@ -49,7 +51,9 @@ namespace HomeAutomation.Services.Watering
             _relaysArray = relaysArray;
             _flowRateSensor = flowRateSensor;
 
-            _timerKeys = new ArrayList();
+            _manualTimerKeys = new ArrayList();
+            _automaticTimerKeys = new ArrayList();
+            _runningTimerKeys = new ArrayList();
 
             _lastManualWateringEnd = DateTime.Now;
         }
@@ -109,35 +113,111 @@ namespace HomeAutomation.Services.Watering
 
             if (!key.Equals(Guid.Empty))
             {
-                _timerKeys.Add(key);
+                _manualTimerKeys.Add(key);
             }
             
             return true;
         }
 
-        public void StopManual()
+        public void ScheduleWatering()
         {
-            foreach (var timerKey in _timerKeys)
-            {
-                var key = (Guid)timerKey;
-                _realTimer.TryDispose(key);
-            }
+            //DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
 
-            _relaysArray.Set(_southMainValveRelayId, false);
+            ArrayList availableIntervals = new ArrayList();
 
-            Thread.Sleep(2000);
-
-            for (int i = 0; i < _configuration.SouthValveConfigurations.Length; i++)
+            for (var i = 0; i < _configuration.SouthValveConfigurations.Length; i++)
             {
                 var configuration = _configuration.SouthValveConfigurations[i];
 
-                if (!configuration.IsValid)
+                //Debug.Print(
+                //    "Configuration " + (i + 1) + ": IsValid:" + configuration.IsValid + " IsEnabled:" + configuration.IsEnabled +
+                //    " ContainsToday:" + configuration.ContainsDay(DateTime.Now.DayOfWeek) + " IsDue:" + (configuration.StartTime > DateTime.Now));
+
+                if (!configuration.IsValid || !configuration.IsEnabled || !configuration.ContainsDay(DateTime.Now.DayOfWeek) ||
+                    configuration.StartTime <= DateTime.Now)
                 {
                     continue;
                 }
 
-                _relaysArray.Set(configuration.RelayId, false);
+                DateTime endTime = configuration.StartTime.AddMinutes(configuration.Duration);
+
+                availableIntervals.Add(new TimeInterval(configuration.StartTime, endTime, i));
             }
+
+            if (availableIntervals.Count == 0)
+            {
+                _log.Write("No watering for today.");
+                return;
+            }
+
+            var intervals = new TimeInterval[availableIntervals.Count];
+            for (var i = 0; i < availableIntervals.Count; i++)
+            {
+                var interval = (TimeInterval)availableIntervals[i];
+                intervals[i] = interval;
+            }
+
+            var mainIntervals = GetNonOverlappingIntervals(intervals, 15);
+
+            foreach (var timeInterval in intervals)
+            {
+                var name = "Valve " + (timeInterval.ConfigId + 1) + " South ";
+
+                var configuration = _configuration.SouthValveConfigurations[timeInterval.ConfigId];
+
+                var key = _realTimer.TryScheduleRunAt(timeInterval.Start,
+                    TimerCallback,
+                    new WateringTimerState { RelayId = configuration.RelayId, TurnMainOnOff = false },
+                    new TimeSpan(0, configuration.Duration, 0),
+                    name);
+
+                if (!key.Equals(Guid.Empty))
+                {
+                    _automaticTimerKeys.Add(key);
+                }
+            }
+
+            foreach (var interval in mainIntervals)
+            {
+                var timeInterval = (TimeInterval)interval;
+                var offset = new TimeSpan(0, 0, 2);
+                var mainStart = timeInterval.Start.Subtract(offset);
+                var period = (timeInterval.End - timeInterval.Start).Add(offset);
+
+                var valveMainSouth = "Valve Main South ";
+                _realTimer.TryScheduleRunAt(mainStart,
+                    TimerCallback,
+                    new WateringTimerState { RelayId = _southMainValveRelayId, TurnMainOnOff = false },
+                    period,
+                    valveMainSouth);   
+            }
+        }
+
+        public void CancelManual()
+        {
+            DisposeTimers(_runningTimerKeys);
+            DisposeTimers(_manualTimerKeys);
+
+            StopSouthWater();
+
+            _log.Write("Valve all manual watering stopped.");
+        }
+
+        public void CancelAutomatic()
+        {
+            DisposeTimers(_runningTimerKeys);
+            DisposeTimers(_automaticTimerKeys);
+
+            StopSouthWater();
+
+            _log.Write("Valve all manual watering stopped.");
+        }
+
+        public void StopRunning()
+        {
+            DisposeTimers(_runningTimerKeys);
+
+            StopSouthWater();
 
             _log.Write("Valve all manual watering stopped.");
         }
@@ -149,69 +229,20 @@ namespace HomeAutomation.Services.Watering
             SouthVolume = 0;
         }
 
-        public void ScheduleWatering()
-        {
-            //DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
-
-            DateTime firstStarTime = DateTime.MaxValue;
-            DateTime lastEndTime = DateTime.MinValue;
-
-            for (var i = 0; i < _configuration.SouthValveConfigurations.Length; i++)
-            {
-                var configuration = _configuration.SouthValveConfigurations[i];
-
-                //DebugEx.Print(DebugEx.Target.WateringService,
-                //    "Configuration " + (i + 1) + ": IsValid:" + configuration.IsValid + " IsEnabled:" + configuration.IsEnabled +
-                //    " ContainsToday:" + configuration.ContainsDay(DateTime.Now.DayOfWeek) + " IsDue:" + (configuration.StartTime > DateTime.Now));
-
-                if (!configuration.IsValid || !configuration.IsEnabled || !configuration.ContainsDay(DateTime.Now.DayOfWeek) ||
-                    configuration.StartTime <= DateTime.Now)
-                {
-                    continue;
-                }
-
-                if (configuration.StartTime < firstStarTime)
-                {
-                    firstStarTime = configuration.StartTime;
-                }
-
-                DateTime endTime = configuration.StartTime.AddMinutes(configuration.Duration);
-
-                if (endTime > lastEndTime)
-                {
-                    lastEndTime = endTime;
-                }
-
-                var name = "Valve " + (i + 1) + " South ";
-
-                _realTimer.TryScheduleRunAt(configuration.StartTime,
-                    TimerCallback,
-                    new WateringTimerState { RelayId = configuration.RelayId, TurnMainOnOff = false },
-                    new TimeSpan(0, configuration.Duration, 0),
-                    name);
-
-                //DebugEx.Print(DebugEx.Target.WateringService,
-                //    "Index " + (i + 1) + " set. First start: " + firstStarTime.ToString("s") + ". Last end: " + lastEndTime.ToString("s"));
-            }
-
-            var mainStart = firstStarTime.Subtract(new TimeSpan(0, 0, 2));
-            var mainEnd = lastEndTime.Subtract(new TimeSpan(0, 0, 2));
-
-            //DebugEx.Print(DebugEx.Target.WateringService, "Main start: " + mainStart.ToString("s") + ". Main end: " + mainEnd.ToString("s"));
-
-            var valveMainSouth = "Valve Main South ";
-            _realTimer.TryScheduleRunAt(mainStart,
-                TimerCallback,
-                new WateringTimerState { RelayId = _southMainValveRelayId, TurnMainOnOff = false },
-                mainEnd - mainStart,
-                valveMainSouth);
-        }
-
         private bool TimerCallback(TimerState state)
         {
             var wateringState = (WateringTimerState)state;
-
+            
             var isOn = _relaysArray.Get(wateringState.RelayId);
+
+            if (!isOn)
+            {
+                _runningTimerKeys.Add(wateringState.TimerKey);
+            }
+            else
+            {
+                _runningTimerKeys.Remove(wateringState.TimerKey);
+            }
 
 #if DEBUG_WATERING
             if (isOn)
@@ -237,6 +268,96 @@ namespace HomeAutomation.Services.Watering
             _flowRateSensor.Volume = 0;
 
             return !isOn;
+        }
+
+        private void DisposeTimers(ArrayList keys)
+        {
+            foreach (var timerKey in keys)
+            {
+                var key = (Guid)timerKey;
+                _realTimer.TryDispose(key);
+            }
+
+            keys.Clear();
+        }
+
+        private void StopSouthWater()
+        {
+            _relaysArray.Set(_southMainValveRelayId, false);
+
+            Thread.Sleep(2000);
+
+            for (int i = 0; i < _configuration.SouthValveConfigurations.Length; i++)
+            {
+                var configuration = _configuration.SouthValveConfigurations[i];
+
+                if (!configuration.IsValid)
+                {
+                    continue;
+                }
+
+                _relaysArray.Set(configuration.RelayId, false);
+            }
+        }
+
+        public static ArrayList GetNonOverlappingIntervals(TimeInterval[] intervals, int thresholdMinutes)
+        {
+            ArrayList nonOverlappingIntervals = new ArrayList();
+
+            QuickSortDateTime(intervals, 0, intervals.Length - 1);
+
+            TimeInterval currentInterval = intervals[0];
+
+            for (int i = 1; i < intervals.Length; i++)
+            {
+                TimeInterval nextInterval = intervals[i];
+
+                if (nextInterval.Start > currentInterval.End.AddMinutes(thresholdMinutes))
+                {
+                    nonOverlappingIntervals.Add(currentInterval);
+                    currentInterval = nextInterval;
+                }
+                else
+                {
+                    currentInterval.End = currentInterval.End > nextInterval.End ? currentInterval.End : nextInterval.End;
+                }
+            }
+
+            nonOverlappingIntervals.Add(currentInterval);
+
+            return nonOverlappingIntervals;
+        }
+
+        public static void QuickSortDateTime(TimeInterval[] arr, int left, int right)
+        {
+            while (left < right)
+            {
+                int i = left, j = right;
+                TimeInterval pivot = arr[(i + j) / 2];
+                while (i <= j)
+                {
+                    while (arr[i].Start < pivot.Start) i++;
+                    while (arr[j].Start > pivot.Start) j--;
+                    if (i <= j)
+                    {
+                        TimeInterval tmp = arr[i];
+                        arr[i] = arr[j];
+                        arr[j] = tmp;
+                        i++;
+                        j--;
+                    }
+                }
+                if (j - left <= right - i)
+                {
+                    QuickSortDateTime(arr, left, j);
+                    left = i;
+                }
+                else
+                {
+                    QuickSortDateTime(arr, i, right);
+                    right = j;
+                }
+            }
         }
 
 #if DEBUG_WATERING

@@ -1,24 +1,105 @@
 ﻿namespace ExperimentalDesktop
 {
     using System;
+using System.Collections.Generic;
+
+    public class TimeInterval
+    {
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+
+        public TimeInterval(DateTime start, DateTime end)
+        {
+            Start = start;
+            End = end;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[{0} - {1}]", Start, End);
+        }
+    }
+
 
     class Program
     {
         static void Main(string[] args)
         {
-            var init = DateTime.Now;
-
-            for (int i = 0; i <= 12; i++)
+            TimeInterval[] intervals = new[]
             {
-                var now = init.AddMinutes(i * 5);
+                new TimeInterval(new DateTime(2022, 01, 01, 7, 00, 00), new DateTime(2022, 01, 01, 7, 30, 00)),
+                new TimeInterval(new DateTime(2022, 01, 01, 12, 00, 00), new DateTime(2022, 01, 01, 12, 30, 00)),
+                new TimeInterval(new DateTime(2022, 01, 01, 7, 40, 00), new DateTime(2022, 01, 01, 7, 50, 00)),
+                new TimeInterval(new DateTime(2022, 01, 01, 8, 40, 00), new DateTime(2022, 01, 01, 8, 50, 00)),
+            };
 
-                var add = 5 - now.Minute % 5;
-                var schedule = now.AddMinutes(add);
-                schedule = new DateTime(schedule.Year, schedule.Month, schedule.Day, schedule.Hour, schedule.Minute, 0);
+            List<TimeInterval> nonOverlappingIntervals = GetNonOverlappingIntervals(intervals, 15);
 
-                Console.WriteLine(now.ToString("T") + " - " + schedule);
+            foreach (TimeInterval interval in nonOverlappingIntervals)
+            {
+                Console.WriteLine(interval);
             }
 
+        }
+
+        public static List<TimeInterval> GetNonOverlappingIntervals(TimeInterval[] intervals, int thresholdMinutes)
+        {
+            List<TimeInterval> nonOverlappingIntervals = new List<TimeInterval>();
+
+            QuickSortDateTime(intervals, 0, intervals.Length - 1);
+
+            TimeInterval currentInterval = intervals[0];
+
+            for (int i = 1; i < intervals.Length; i++)
+            {
+                TimeInterval nextInterval = intervals[i];
+
+                if (nextInterval.Start > currentInterval.End.AddMinutes(thresholdMinutes))
+                {
+                    nonOverlappingIntervals.Add(currentInterval);
+                    currentInterval = nextInterval;
+                }
+                else
+                {
+                    currentInterval.End = currentInterval.End > nextInterval.End ? currentInterval.End : nextInterval.End;
+                }
+            }
+
+            nonOverlappingIntervals.Add(currentInterval);
+
+            return nonOverlappingIntervals;
+        }
+
+        public static void QuickSortDateTime(TimeInterval[] arr, int left, int right)
+        {
+            while (left < right)
+            {
+                int i = left, j = right;
+                TimeInterval pivot = arr[(i + j) / 2];
+                while (i <= j)
+                {
+                    while (arr[i].Start < pivot.Start) i++;
+                    while (arr[j].Start > pivot.Start) j--;
+                    if (i <= j)
+                    {
+                        TimeInterval tmp = arr[i];
+                        arr[i] = arr[j];
+                        arr[j] = tmp;
+                        i++;
+                        j--;
+                    }
+                }
+                if (j - left <= right - i)
+                {
+                    QuickSortDateTime(arr, left, j);
+                    left = i;
+                }
+                else
+                {
+                    QuickSortDateTime(arr, i, right);
+                    right = j;
+                }
+            }
         }
 
         private static string ToBits(UInt16 data)

@@ -214,7 +214,7 @@ namespace AdSoft.Fez.Hardware.Storage
             {
                 string path = GetPath(filename);
 
-                using (var stream = File.OpenWrite(path))
+                using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 240))
                 {
                     stream.Seek(0, SeekOrigin.End);
 

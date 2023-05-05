@@ -86,9 +86,11 @@ namespace HomeAutomation.Tools
 
             var timer = new Timer(s =>
                 {
-                    if (!timerCallback((TimerState)s))
+                    var callbackState = (TimerState)s;
+
+                    if (!timerCallback(callbackState))
                     {
-                        TryDispose(key);
+                        TryDispose(callbackState.TimerKey);
                     }
                 },
                 timerState,

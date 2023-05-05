@@ -130,22 +130,18 @@ namespace HomeAutomation.Ui
             var menu = new Menu("Menu", _hardwareManager.Screen, _keyboard);
             menu.Setup(new[]
             {
-                new MenuItem(MenuKeys.ScheduleNextWatering, "Start watering"),
+                new MenuItem(MenuKeys.ScheduleNextWatering, "Start South Watering"),
+                new MenuItem(MenuKeys.StopWatering, "Stop Running Water"),
+                new MenuItem(MenuKeys.StopWatering, "Cancel Auto Water"),
+                new MenuItem(MenuKeys.StopWatering, "Cancel Manual Water"),
                 new MenuItem(MenuKeys.ResetVolume, "Reset Volume"),
-                new MenuItem(MenuKeys.StopWatering, "Stop watering"),
-                new MenuItem(MenuKeys.ToggleLights,
-                    "Lights " + (_lightsService.GetLightsState()
-                        ? "Off"
-                        : "On")),
+                new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
                 new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date"),
-                new MenuItem(MenuKeys.ManagementMode,
-                    "Mgmt " + (_configuration.ManagementMode
-                        ? "Off"
-                        : "On"))
+                new MenuItem(MenuKeys.ManagementMode, "Mgmt " + (_configuration.ManagementMode ? "Off" : "On"))
             });
             menu.MenuItemEnter += MenuOnMenuItemEnter;
             menu.KeyPressed += MenuOnKeyPressed;
@@ -200,6 +196,12 @@ namespace HomeAutomation.Ui
                     break;
                 case MenuKeys.StopWatering:
                     StopWatering();
+                    break;
+                case MenuKeys.CancelAutomaticWatering:
+                    CancelAutomaticWatering();
+                    break;
+                case MenuKeys.CancelManualWatering:
+                    CancelManualWatering();
                     break;
             }
         }
@@ -258,7 +260,25 @@ namespace HomeAutomation.Ui
         {
             _status = UiStatus.None;
 
-            _wateringService.StopManual();
+            _wateringService.StopRunning();
+
+            _statusScreen.Show();
+        }
+
+        private void CancelAutomaticWatering()
+        {
+            _status = UiStatus.None;
+
+            _wateringService.CancelAutomatic();
+
+            _statusScreen.Show();
+        }
+
+        private void CancelManualWatering()
+        {
+            _status = UiStatus.None;
+
+            _wateringService.CancelManual();
 
             _statusScreen.Show();
         }

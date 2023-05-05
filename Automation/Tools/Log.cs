@@ -1,5 +1,7 @@
 namespace HomeAutomation.Tools
 {
+    using System;
+
     using AdSoft.Fez.Hardware.Storage;
 
     using GHIElectronics.NETMF.Hardware;
@@ -24,7 +26,9 @@ namespace HomeAutomation.Tools
 
             if (_storage != null && !_configuration.ManagementMode)
             {
-                _storage.TryAppend("Log.txt", text + "\r\n");
+                var logFile = "Log_" + DateTime.Today.ToString("yyyy_MM_dd") + ".txt";
+
+                _storage.TryAppend(logFile, text + "\r\n");
             }
         }
     }
