@@ -8,6 +8,7 @@ namespace HomeAutomation.Ui
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
 
+    using HomeAutomation.Hardware;
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;
     using HomeAutomation.Services.Watering;
@@ -132,8 +133,8 @@ namespace HomeAutomation.Ui
             {
                 new MenuItem(MenuKeys.ScheduleNextWatering, "Start South Watering"),
                 new MenuItem(MenuKeys.StopWatering, "Stop Running Water"),
-                new MenuItem(MenuKeys.StopWatering, "Cancel Auto Water"),
-                new MenuItem(MenuKeys.StopWatering, "Cancel Manual Water"),
+                new MenuItem(MenuKeys.CancelAutomaticWatering, "Cancel Auto Water"),
+                new MenuItem(MenuKeys.CancelManualWatering, "Cancel Manual Water"),
                 new MenuItem(MenuKeys.ResetVolume, "Reset Volume"),
                 new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),

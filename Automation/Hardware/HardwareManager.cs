@@ -1,4 +1,4 @@
-namespace HomeAutomation
+namespace HomeAutomation.Hardware
 {
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Interfaces;
@@ -48,9 +48,9 @@ namespace HomeAutomation
             ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, Screen);
             MbLed = new Led(FEZ_Pin.Digital.LED);
             
-            SouthMainValveRelayId = 4;
-            NorthMainValveRelayId = 6;
-            AutoTurnOffPumpRelayId = 5;
+            SouthMainValveRelayId = 0;
+            NorthMainValveRelayId = 1;
+            AutoTurnOffPumpRelayId = 6;
             LightsRelayId = 7;
             
 #if TEST_AUTO_TURN_OFF_SERVICE

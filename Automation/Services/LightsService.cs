@@ -6,6 +6,8 @@ namespace HomeAutomation.Services
 
     using HomeAutomation.Tools;
 
+    using Microsoft.SPOT;
+
     public class LightsService
     {
         private readonly int _relayId;
@@ -31,8 +33,11 @@ namespace HomeAutomation.Services
 
             var sunrise = _config.Sunrise.AddMinutes(_config.SunriseOffsetMin);
             var sunset = _config.Sunset.AddMinutes(_config.SunsetOffsetMin);
+
+            Debug.Print("ScheduleLights - sunrise: " + Base.Format(sunrise));
+            Debug.Print("ScheduleLights - sunset : " + Base.Format(sunset));
             
-            if (now < sunrise)
+            if (now.AddMinutes(1) < sunrise)
             {
                 _realTimer.TryScheduleRunAt(sunrise, SunriseAction, "Sunrise ");
             }

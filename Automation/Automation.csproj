@@ -30,7 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="HardwareManager.cs" />
+    <Compile Include="Hardware\HardwareManager.cs" />
     <Compile Include="Hardware\Mocks\PressureSensorMock.cs" />
     <Compile Include="Hardware\Mocks\PumpStateSensorMock.cs" />
     <Compile Include="Hardware\Mocks\AutoTurnOffPumpServiceTestRemoteCommandService.cs" />

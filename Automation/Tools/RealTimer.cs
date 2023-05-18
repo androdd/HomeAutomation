@@ -88,9 +88,16 @@ namespace HomeAutomation.Tools
                 {
                     var callbackState = (TimerState)s;
 
-                    if (!timerCallback(callbackState))
+                    try
                     {
-                        TryDispose(callbackState.TimerKey);
+                        if (!timerCallback(callbackState))
+                        {
+                            TryDispose(callbackState.TimerKey);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Print(callbackState.Name + "Timer callback error: " + ex.Message);
                     }
                 },
                 timerState,
@@ -120,17 +127,25 @@ namespace HomeAutomation.Tools
 
         public bool TryDispose(Guid key)
         {
-            var timer = _disposable[key] as Timer;
-
-            if (timer == null)
+            try
             {
-                return false;
+                var timer = _disposable[key] as Timer;
+
+                if (timer == null)
+                {
+                    return false;
+                }
+
+                timer.Dispose();
+                _disposable.Remove(key);
+
+                return true;
             }
-
-            timer.Dispose();
-            _disposable.Remove(key);
-
-            return true;
+            catch (Exception ex)
+            {
+                Debug.Print("RealTimer.TryDispose error: " + ex.Message);
+                throw;
+            }
         }
 
         public void DisposeAll()

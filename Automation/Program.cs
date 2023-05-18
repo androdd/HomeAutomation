@@ -13,6 +13,7 @@ namespace HomeAutomation
     using GHIElectronics.NETMF.Hardware;
     using GHIElectronics.NETMF.System;
 
+    using HomeAutomation.Hardware;
     using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;

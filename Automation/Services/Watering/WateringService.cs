@@ -106,7 +106,7 @@ namespace HomeAutomation.Services.Watering
             _lastManualWateringEnd = next.AddMinutes(minutes);
 
             var key = _realTimer.TryScheduleRunAt(next,
-                TimerCallback,
+                SouthTimerCallback,
                 new WateringTimerState { RelayId = configuration.RelayId, TurnMainOnOff = true },
                 new TimeSpan(0, minutes, 0),
                 "Valve " + valveId + " South ");
@@ -166,7 +166,7 @@ namespace HomeAutomation.Services.Watering
                 var configuration = _configuration.SouthValveConfigurations[timeInterval.ConfigId];
 
                 var key = _realTimer.TryScheduleRunAt(timeInterval.Start,
-                    TimerCallback,
+                    SouthTimerCallback,
                     new WateringTimerState { RelayId = configuration.RelayId, TurnMainOnOff = false },
                     new TimeSpan(0, configuration.Duration, 0),
                     name);
@@ -182,11 +182,11 @@ namespace HomeAutomation.Services.Watering
                 var timeInterval = (TimeInterval)interval;
                 var offset = new TimeSpan(0, 0, 2);
                 var mainStart = timeInterval.Start.Subtract(offset);
-                var period = (timeInterval.End - timeInterval.Start).Add(offset);
+                var period = (timeInterval.End - timeInterval.Start).Add(offset).Add(offset);
 
                 var valveMainSouth = "Valve Main South ";
                 _realTimer.TryScheduleRunAt(mainStart,
-                    TimerCallback,
+                    SouthTimerCallback,
                     new WateringTimerState { RelayId = _southMainValveRelayId, TurnMainOnOff = false },
                     period,
                     valveMainSouth);   
@@ -210,7 +210,7 @@ namespace HomeAutomation.Services.Watering
 
             StopSouthWater();
 
-            _log.Write("Valve all manual watering stopped.");
+            _log.Write("Valve all automatic watering stopped.");
         }
 
         public void StopRunning()
@@ -219,7 +219,7 @@ namespace HomeAutomation.Services.Watering
 
             StopSouthWater();
 
-            _log.Write("Valve all manual watering stopped.");
+            _log.Write("Valve all running watering stopped.");
         }
 
         public void ResetVolume()
@@ -229,7 +229,7 @@ namespace HomeAutomation.Services.Watering
             SouthVolume = 0;
         }
 
-        private bool TimerCallback(TimerState state)
+        private bool SouthTimerCallback(TimerState state)
         {
             var wateringState = (WateringTimerState)state;
             
@@ -255,11 +255,27 @@ namespace HomeAutomation.Services.Watering
             }
 #endif
 
+            // Used by the manual watering when every time the mains is opened and closed together with the specific valve.
             if (wateringState.TurnMainOnOff)
             {
                 _relaysArray.Set(_southMainValveRelayId, !isOn);
                 Thread.Sleep(2000);
             }
+
+            if (wateringState.RelayId != _southMainValveRelayId)
+            {
+                var isMainOn = _relaysArray.Get(_southMainValveRelayId);
+
+                // When watering is stopped manually but there are still automatic valves to be triggered. 
+                // The main is stopped by the Stopping action and auto watering starts and stops main and specific separately.
+                // So I need to turn on the main again.
+                if (!isOn && !isMainOn)
+                {
+                    _relaysArray.Set(_southMainValveRelayId, true);
+                    Thread.Sleep(2000);
+                }
+            }
+
             _relaysArray.Set(wateringState.RelayId, !isOn);
 
             _log.Write(wateringState.Name + "is " + (isOn ? "closed - " + (int)_flowRateSensor.Volume + " l. used" : "opened") + ".");
