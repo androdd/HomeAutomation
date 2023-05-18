@@ -122,6 +122,10 @@ namespace HomeAutomation.Ui
                 _menu.Show();
                 _menu.Focus();
             }
+            else if (_status == UiStatus.TestRelays)
+            {
+                TestRelayOrCancel(key);
+            }
         }
 
         #region Main Menu
@@ -137,9 +141,10 @@ namespace HomeAutomation.Ui
                 new MenuItem(MenuKeys.CancelManualWatering, "Cancel Manual Water"),
                 new MenuItem(MenuKeys.ResetVolume, "Reset Volume"),
                 new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
+                new MenuItem(MenuKeys.ShowConfig, "Show Config"),
+                new MenuItem(MenuKeys.TestRelays, "Test Relays"),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
-                new MenuItem(MenuKeys.ShowConfig, "Show Config"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date")
             });
@@ -192,6 +197,9 @@ namespace HomeAutomation.Ui
                     break;
                 case MenuKeys.CancelManualWatering:
                     CancelManualWatering();
+                    break;
+                case MenuKeys.TestRelays:
+                    TestRelays();
                     break;
             }
         }
@@ -271,6 +279,57 @@ namespace HomeAutomation.Ui
             _wateringService.CancelManual();
 
             _statusScreen.Show();
+        }
+
+        private bool[] _relaysStatus;
+
+        private void TestRelays()
+        {
+            _status = UiStatus.TestRelays;
+
+            _hardwareManager.Screen.Write(0, 0, "Press valve number.");
+
+            var relays = _hardwareManager.RelaysArray;
+
+            _relaysStatus = new bool[relays.Count];
+
+            for (int i = 0; i < relays.Count; i++)
+            {
+                var isOn = relays.Get(i);
+
+                _relaysStatus[i] = isOn;
+
+                _hardwareManager.Screen.Write(i, 3, isOn ? i.ToString() : " ");
+            }
+        }
+
+        private void TestRelayOrCancel(Key key)
+        {
+            var relays = _hardwareManager.RelaysArray;
+
+            if (key == Key.Escape)
+            {
+                _status = UiStatus.None;
+
+                for (int i = 0; i < relays.Count; i++)
+                {
+                    relays.Set(i, _relaysStatus[i]);
+                }
+
+                _relaysStatus = null;
+
+                _statusScreen.Show();
+            }
+            else if (key >= Key.D0 && key <= Key.D9)
+            {
+                int relay = key - Key.D0;
+
+                var isOn = relays.Get(relay);
+
+                _hardwareManager.Screen.Write(relay, 3, isOn ? " " : relay.ToString());
+
+                relays.Set(relay, !isOn);
+            }
         }
 
         private void NumericBoxOnKeyPressed(Key key)

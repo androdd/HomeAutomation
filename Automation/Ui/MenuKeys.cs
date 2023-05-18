@@ -13,5 +13,6 @@ namespace HomeAutomation.Ui
         internal const byte StopWatering = 10;
         internal const byte CancelAutomaticWatering = 11;
         internal const byte CancelManualWatering = 12;
+        internal const byte TestRelays = 13;
     }
 }

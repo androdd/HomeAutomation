@@ -9,6 +9,7 @@ namespace HomeAutomation.Ui
         TunePressure,
         TuneFlowRate,
         ShowConfig,
-        ScheduleNextWatering
+        ScheduleNextWatering,
+        TestRelays
     }
 }
