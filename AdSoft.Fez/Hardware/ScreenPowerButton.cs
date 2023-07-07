@@ -7,11 +7,12 @@ namespace AdSoft.Fez.Hardware
 
     using GHIElectronics.NETMF.FEZ;
 
+    using Microsoft.SPOT;
     using Microsoft.SPOT.Hardware;
 
     public class ScreenPowerButton
     {
-        private readonly FEZ_Pin.Digital _portId;
+        private readonly FEZ_Pin.Interrupt _portId;
         private readonly Lcd2004.Lcd2004 _screen;
         private ScreenSaver _screenSaver;
         private InputPort _interruptPort;
@@ -20,7 +21,7 @@ namespace AdSoft.Fez.Hardware
 
         public event StateChangedEventHandler StateChanged;
 
-        public ScreenPowerButton(FEZ_Pin.Digital portId, Lcd2004.Lcd2004 screen)
+        public ScreenPowerButton(FEZ_Pin.Interrupt portId, Lcd2004.Lcd2004 screen)
         {
             _portId = portId;
             _screen = screen;

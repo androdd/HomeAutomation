@@ -13,6 +13,8 @@ namespace HomeAutomation.Ui
 
     public class StatusScreen : Control
     {
+        private const string StatusEmpty = "          ";
+
         private readonly IPressureSensor _pressureSensor;
         private readonly IFlowRateSensor _flowRateSensor;
         private readonly WateringService _wateringService;
@@ -68,7 +70,26 @@ namespace HomeAutomation.Ui
         public void Show(string status)
         {
             Show();
+            SetStatus(status);
+        }
+
+        public void SetStatus(string status)
+        {
+            if (status.Length > 10)
+            {
+                status = status.Substring(0, 10);
+            }
+            else
+            {
+                ClearStatus();
+            }
+
             Screen.Write(4, 0, status);
+        }
+
+        public void ClearStatus()
+        {
+            Screen.Write(4, 0, StatusEmpty);
         }
 
         public override void Show(bool show = true)
@@ -137,7 +158,7 @@ namespace HomeAutomation.Ui
             switch (status)
             {
                 case Status.Available:
-                    statusText = "          ";
+                    statusText = StatusEmpty;
                     break;
                 case Status.Unavailable:
                     statusText = "USB:N/A   ";
@@ -175,6 +196,20 @@ namespace HomeAutomation.Ui
             Screen.Write(4, 0, statusText);
         }
 
+        public void UpdateValveStatus()
+        {
+            Screen.Sync(() =>
+            {
+                WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
+                WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);
+                WriteIfChanged(15, 3, ref _oldValveMainSouth, _wateringService.GetValveMainSouth(), '*', (char)219);
+                WriteIfChanged(16, 3, ref _oldValveSouth1, GetValveChar(1));
+                WriteIfChanged(17, 3, ref _oldValveSouth2, GetValveChar(2));
+                WriteIfChanged(18, 3, ref _oldValveSouth3, GetValveChar(3));
+                WriteIfChanged(19, 3, ref _oldValveSouth4, GetValveChar(4));
+            });
+        }
+
         private char GetValveChar(int valveId)
         {
             switch (_wateringService.GetValveSouth(valveId))
@@ -204,13 +239,7 @@ namespace HomeAutomation.Ui
                 WriteIfChanged(3, 2, ref _oldVolumeNorth, _wateringService.NorthVolume, "F0", 5);
                 WriteIfChanged(11, 2, ref _oldVolumeSouth, _wateringService.SouthVolume, "F0", 4);
              
-                WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
-                WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);
-                WriteIfChanged(15, 3, ref _oldValveMainSouth, _wateringService.GetValveMainSouth(), '*', (char)219);
-                WriteIfChanged(16, 3, ref _oldValveSouth1, GetValveChar(1));
-                WriteIfChanged(17, 3, ref _oldValveSouth2, GetValveChar(2));
-                WriteIfChanged(18, 3, ref _oldValveSouth3, GetValveChar(3));
-                WriteIfChanged(19, 3, ref _oldValveSouth4, GetValveChar(4));
+                UpdateValveStatus();
             });
         }
 

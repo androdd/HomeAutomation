@@ -41,16 +41,15 @@ namespace ExperimentalBoard
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
-            SdCard sdCard = new SdCard();
             UsbStick usbStick = new UsbStick();
 
-            var result = sdCard.TryAppend("testSd.txt", "sdCard.TryAppend");
-
-            _lcd2004.Write(0, 0, " SD " + result);
-
-            result = usbStick.TryAppend("testUsb.txt", "usbStick.TryAppend");
+            Thread.Sleep(4000);
+            
+            var result = usbStick.TryAppend("testUsb.txt", "usbStick.TryAppend");
 
             _lcd2004.Write(0, 1, "USB " + result);
+
+            Watchdog.Enable(2000);
 
             Thread.Sleep(Timeout.Infinite);
         }

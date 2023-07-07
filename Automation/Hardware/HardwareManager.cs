@@ -45,7 +45,7 @@ namespace HomeAutomation.Hardware
             NecRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
             FlowRateSensor = new FlowRateSensor(FEZ_Pin.Interrupt.Di12);
             Screen = new Lcd2004(0x27);
-            ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Digital.Di13, Screen);
+            ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Interrupt.An3, Screen);
             MbLed = new Led(FEZ_Pin.Digital.LED);
             
             SouthMainValveRelayId = 0;
