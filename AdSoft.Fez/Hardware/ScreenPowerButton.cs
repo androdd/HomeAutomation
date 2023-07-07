@@ -48,7 +48,8 @@ namespace AdSoft.Fez.Hardware
         private void InitScreenIfOn()
         {
             bool isTurnedOn = _interruptPort.Read();
-
+            Debug.Print("InitScreenIfOn: " + isTurnedOn);
+            
             if (isTurnedOn)
             {
                 _screen.Init();

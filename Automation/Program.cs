@@ -211,7 +211,8 @@ namespace HomeAutomation
             #endregion
 
             _lightsService.ScheduleLights(true);
-            _wateringService.ScheduleWatering();
+            _wateringService.ScheduleSouthWatering();
+            _wateringService.ScheduleNorthWatering();
         }
 
         private static void DstStart(TimerState state)

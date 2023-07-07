@@ -19,6 +19,8 @@ namespace HomeAutomation.Tools
 
         public ValveConfiguration[] SouthValveConfigurations { get; private set; }
 
+        public ValveConfiguration NorthValveConfiguration { get; set; }
+
         public bool IsDst { get; set; }
         
         public Configuration()
@@ -49,6 +51,7 @@ namespace HomeAutomation.Tools
                 new ValveConfiguration("0 0 00|00 1 0000000")
             };
 
+            NorthValveConfiguration = new ValveConfiguration("0 0 00|00 1 0000000");
         }
     }
 }

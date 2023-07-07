@@ -90,7 +90,7 @@ namespace HomeAutomation.Services.Watering
             return _relaysArray.Get(_northMainValveRelayId);
         }
 
-        public bool TryStart(int valveId, int minutes)
+        public bool TryStartSouth(int valveId, int minutes)
         {
             var configuration = _configuration.SouthValveConfigurations[valveId - 1];
 
@@ -119,7 +119,30 @@ namespace HomeAutomation.Services.Watering
             return true;
         }
 
-        public void ScheduleWatering()
+        public bool TryStartNorth(int minutes)
+        {
+            var isOn = _relaysArray.Get(_northMainValveRelayId);
+
+            if (isOn)
+            {
+                return false;
+            }
+            
+            var key = _realTimer.TryScheduleRunAt(DateTime.Now.AddSeconds(3), 
+                NorthTimerCallback,
+                new WateringTimerState { RelayId = _northMainValveRelayId },
+                new TimeSpan(0, minutes, 0),
+                "Valve Main North ");
+
+            if (!key.Equals(Guid.Empty))
+            {
+                _manualTimerKeys.Add(key);
+            }
+            
+            return true;
+        }
+
+        public void ScheduleSouthWatering()
         {
             //DebugEx.Print(DebugEx.Target.WateringService, DateTime.Now.ToString("s") + " Start");
 
@@ -146,7 +169,7 @@ namespace HomeAutomation.Services.Watering
 
             if (availableIntervals.Count == 0)
             {
-                _log.Write("No watering for today.");
+                _log.Write("No South watering for today.");
                 return;
             }
 
@@ -193,12 +216,35 @@ namespace HomeAutomation.Services.Watering
             }
         }
 
+        public void ScheduleNorthWatering()
+        {
+            var configuration = _configuration.NorthValveConfiguration;
+
+            if (!configuration.IsValid || !configuration.IsEnabled || !configuration.ContainsDay(DateTime.Now.DayOfWeek) ||
+                configuration.StartTime <= DateTime.Now)
+            {
+                _log.Write("No North watering for today.");
+                return;
+            }
+
+            var key = _realTimer.TryScheduleRunAt(configuration.StartTime,
+                NorthTimerCallback,
+                new WateringTimerState { RelayId = _northMainValveRelayId },
+                new TimeSpan(0, configuration.Duration, 0),
+                "Valve Main North ");
+
+            if (!key.Equals(Guid.Empty))
+            {
+                _automaticTimerKeys.Add(key);
+            }
+        }
+
         public void CancelManual()
         {
             DisposeTimers(_runningTimerKeys);
             DisposeTimers(_manualTimerKeys);
 
-            StopSouthWater();
+            StopAllWater();
 
             _log.Write("Valve all manual watering stopped.");
         }
@@ -208,7 +254,7 @@ namespace HomeAutomation.Services.Watering
             DisposeTimers(_runningTimerKeys);
             DisposeTimers(_automaticTimerKeys);
 
-            StopSouthWater();
+            StopAllWater();
 
             _log.Write("Valve all automatic watering stopped.");
         }
@@ -217,7 +263,7 @@ namespace HomeAutomation.Services.Watering
         {
             DisposeTimers(_runningTimerKeys);
 
-            StopSouthWater();
+            StopAllWater();
 
             _log.Write("Valve all running watering stopped.");
         }
@@ -286,6 +332,42 @@ namespace HomeAutomation.Services.Watering
             return !isOn;
         }
 
+        private bool NorthTimerCallback(TimerState state)
+        {
+            var wateringState = (WateringTimerState)state;
+            
+            var isOn = _relaysArray.Get(wateringState.RelayId);
+
+            if (!isOn)
+            {
+                _runningTimerKeys.Add(wateringState.TimerKey);
+            }
+            else
+            {
+                _runningTimerKeys.Remove(wateringState.TimerKey);
+            }
+
+#if DEBUG_WATERING
+            if (isOn)
+            {
+                TurnOffWater();
+            }
+            else
+            {
+                TurnOnWater();
+            }
+#endif
+
+            _relaysArray.Set(wateringState.RelayId, !isOn);
+
+            _log.Write(wateringState.Name + "is " + (isOn ? "closed - " + (int)_flowRateSensor.Volume + " l. used" : "opened") + ".");
+
+            NorthVolume += _flowRateSensor.Volume;
+            _flowRateSensor.Volume = 0;
+
+            return !isOn;
+        }
+
         private void DisposeTimers(ArrayList keys)
         {
             foreach (var timerKey in keys)
@@ -297,9 +379,10 @@ namespace HomeAutomation.Services.Watering
             keys.Clear();
         }
 
-        private void StopSouthWater()
+        private void StopAllWater()
         {
             _relaysArray.Set(_southMainValveRelayId, false);
+            _relaysArray.Set(_northMainValveRelayId, false);
 
             Thread.Sleep(2000);
 

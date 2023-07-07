@@ -132,6 +132,8 @@ namespace HomeAutomation.Tools
             _configuration.SouthValveConfigurations[2] = new ValveConfiguration(_settingsFile.GetValue("Watering-South3"));
             _configuration.SouthValveConfigurations[3] = new ValveConfiguration(_settingsFile.GetValue("Watering-South4"));
 
+            _configuration.NorthValveConfiguration = new ValveConfiguration(_settingsFile.GetValue("Watering-North"));
+
             _configuration.AutoTurnOffPumpConfiguration.Interval =
                 _settingsFile.GetByteValue("AutoTurnOffPump-Interval", _configuration.AutoTurnOffPumpConfiguration.Interval);
             _configuration.AutoTurnOffPumpConfiguration.MinPressure = 
