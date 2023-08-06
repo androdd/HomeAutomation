@@ -32,27 +32,101 @@ namespace ExperimentalBoard
         private static Lcd2004 _lcd2004;
         private static Led _led;
 
+
+        private static ArrayList _timers;
+        private static int _index;
+        private static Timer _timer;
+
         public static void Main()
         {
-            Debug.EnableGCMessages(false);
+            var initialFree = Debug.GC(true);
+
+            Debug.EnableGCMessages(true);
 
             _lcd2004 = new Lcd2004(0x27);
 
             _lcd2004.Init();
             _lcd2004.BackLightOn();
 
-            UsbStick usbStick = new UsbStick();
+            var free = Debug.GC(true);
 
-            Thread.Sleep(4000);
+            _timers = new ArrayList();
+
+            var now = DateTime.Now;
+
+            for (int i = 1; i <= 30; i++)
+            {
+                var timerTask = new TimerTask { DueTime = now.AddSeconds(5 * i + 5) };
+
+                Debug.Print(timerTask.Id + " - " + timerTask.DueTime.ToString("T"));
+
+                _timers.Add(timerTask);
+            }
+
+            _index = 0;
+            var next = (TimerTask)_timers[_index];
+
+            _timer = new Timer(TimerCallbackRunner,
+                null,
+                next.DueTime.Subtract(now),
+                TimeSpan.Zero);
             
-            var result = usbStick.TryAppend("testUsb.txt", "usbStick.TryAppend");
 
-            _lcd2004.Write(0, 1, "USB " + result);
+            var timersFree = Debug.GC(true);
 
-            Watchdog.Enable(2000);
+            _lcd2004.Write(0, 0, "" + initialFree);
+            _lcd2004.Write(0, 1, "" + free);
+            _lcd2004.Write(0, 2, "" + timersFree);
+
+            //Watchdog.Enable(2000);
 
             Thread.Sleep(Timeout.Infinite);
         }
+
+        private static void TimerCallbackRunner(object state)
+        {
+            var current = (TimerTask)_timers[_index];
+
+            var noRestart = new TimeSpan(0, 0, 0, 0, -1);
+            if(_index + 1 < _timers.Count)
+            {
+                var next = (TimerTask)_timers[_index + 1];
+                var period = next.DueTime.Subtract(current.DueTime);
+                _timer.Change(new TimeSpan(0), period);
+            }
+            else
+            {
+                _timer.Change(noRestart, noRestart);
+            }
+
+            _index++;
+            
+            TimerCallback(current.Id);
+        }
+
+        private static void TimerCallback(object state)
+        {
+            Debug.Print("Run: " + state + " - " + DateTime.Now.ToString("T"));
+        }
+
+
+        private class TimerTask
+        {
+            public TimerTask()
+            {
+                Id = Guid.NewGuid();
+            }
+
+            public Guid Id { get; private set; }
+
+            public DateTime DueTime { get; set; }
+        }
+        
+
+
+
+
+
 
         private static void TestUsb()
         {
