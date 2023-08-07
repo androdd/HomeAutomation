@@ -34,11 +34,14 @@ namespace ExperimentalBoard
 
 
         private static ArrayList _timers;
-        private static int _index;
-        private static Timer _timer;
+        private const int Period = 10;
+
+        private const long TicksPerSecond = 10000000;
 
         public static void Main()
         {
+            Watchdog.Enable((uint)Period * 3 * 1000);
+
             var initialFree = Debug.GC(true);
 
             Debug.EnableGCMessages(true);
@@ -50,26 +53,29 @@ namespace ExperimentalBoard
 
             var free = Debug.GC(true);
 
+
+
+
             _timers = new ArrayList();
 
             var now = DateTime.Now;
 
-            for (int i = 1; i <= 30; i++)
+            for (int i = 1; i <= 10; i++)
             {
-                var timerTask = new TimerTask { DueTime = now.AddSeconds(5 * i + 5) };
+                var timerTask = new TimerTask { DueTime = now.AddSeconds(2 * Period * i + 9), Callback = TimerCallback };
 
                 Debug.Print(timerTask.Id + " - " + timerTask.DueTime.ToString("T"));
 
                 _timers.Add(timerTask);
             }
 
-            _index = 0;
-            var next = (TimerTask)_timers[_index];
 
-            _timer = new Timer(TimerCallbackRunner,
+
+
+            var timer = new Timer(TimerCallbackRunner,
                 null,
-                next.DueTime.Subtract(now),
-                TimeSpan.Zero);
+                3000,
+                Period * 1000);
             
 
             var timersFree = Debug.GC(true);
@@ -77,31 +83,40 @@ namespace ExperimentalBoard
             _lcd2004.Write(0, 0, "" + initialFree);
             _lcd2004.Write(0, 1, "" + free);
             _lcd2004.Write(0, 2, "" + timersFree);
-
-            //Watchdog.Enable(2000);
-
+            
             Thread.Sleep(Timeout.Infinite);
+
+            timer.Dispose();
         }
 
         private static void TimerCallbackRunner(object state)
         {
-            var current = (TimerTask)_timers[_index];
-
-            var noRestart = new TimeSpan(0, 0, 0, 0, -1);
-            if(_index + 1 < _timers.Count)
+            if (_timers.Count == 0)
             {
-                var next = (TimerTask)_timers[_index + 1];
-                var period = next.DueTime.Subtract(current.DueTime);
-                _timer.Change(new TimeSpan(0), period);
-            }
-            else
-            {
-                _timer.Change(noRestart, noRestart);
+                Watchdog.ResetCounter();
+                return;
             }
 
-            _index++;
+            var first = (TimerTask)_timers[0];
+
+            long seconds = DateTime.Now.Subtract(first.DueTime).Ticks / TicksPerSecond;
+            Debug.Print(seconds.ToString());
+
+            if (seconds < 0)
+            {
+                // Do nothing
+                Watchdog.ResetCounter();
+                return;
+            }
+
+            if (seconds <= Period)
+            {
+                first.Callback(first.Id);
+            }
+
+            _timers.RemoveAt(0);
             
-            TimerCallback(current.Id);
+            Watchdog.ResetCounter();
         }
 
         private static void TimerCallback(object state)
@@ -120,6 +135,8 @@ namespace ExperimentalBoard
             public Guid Id { get; private set; }
 
             public DateTime DueTime { get; set; }
+
+            public TimerCallback Callback { get; set; }
         }
         
 
