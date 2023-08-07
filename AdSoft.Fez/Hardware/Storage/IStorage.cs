@@ -17,5 +17,6 @@ namespace AdSoft.Fez.Hardware.Storage
         bool TryAppend(string filename, FileOpenedCallback fileOpenedCallback);
         void Unmount();
         void Dispose();
+        string GetPath(string filename);
     }
 }

@@ -251,11 +251,7 @@ namespace AdSoft.Fez.Hardware.Storage
             Unmount();
         }
 
-        protected abstract void InitStorage();
-
-        protected abstract void Flush();
-
-        protected string GetPath(string filename)
+        public string GetPath(string filename)
         {
             if (filename[0] == '\\')
             {
@@ -264,6 +260,10 @@ namespace AdSoft.Fez.Hardware.Storage
 
             return Path.Combine(Root, filename);
         }
+
+        protected abstract void InitStorage();
+
+        protected abstract void Flush();
 
         protected void RaiseStatusChanged(Status status)
         {

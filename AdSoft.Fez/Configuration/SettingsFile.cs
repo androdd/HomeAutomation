@@ -3,6 +3,7 @@ namespace AdSoft.Fez.Configuration
 {
     using System;
     using System.Collections;
+    using System.IO;
 
     using AdSoft.Fez.Hardware.Storage;
 
@@ -23,17 +24,18 @@ namespace AdSoft.Fez.Configuration
 
         public bool TryLoadSettings()
         {
-            ArrayList lines;
-            if (!_storage.TryReadAllLines(_filename, out lines))
+            if (!_storage.IsLoaded)
             {
-                Debug.Print("Settings=>" + _filename + " can not be read.");
                 return false;
             }
 
+            StreamReader reader = new StreamReader(_storage.GetPath(_filename));
+
             Settings.Clear();
-            for (var i = 0; i < lines.Count; i++)
+            do
             {
-                var line = (string)lines[i];
+                var line = reader.ReadLine();
+
                 if (line.IndexOf(":") == -1)
                 {
                     continue;
@@ -57,7 +59,10 @@ namespace AdSoft.Fez.Configuration
                         : parts[1].Trim(),
                     TypeCode = TypeCode.String
                 });
-            }
+            } while (!reader.EndOfStream);
+
+            reader.Close();
+            reader.Dispose();
 
             return true;
         }
