@@ -1,6 +1,7 @@
+Stop watering pump on close to zero pressure.
+Update all writing and reading operations to be line by line.
+Restart using watchdog every noon instead of reloading
 Edit settings
 Add Names in the watering configurations - Show them scroling on the value line or mark the Setting as ComplexWithName, extract the Name  and add it in the menu
 Fix used volumes
-Restart using watchdog every evening instead of reloading
-
 
