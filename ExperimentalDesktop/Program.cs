@@ -25,6 +25,28 @@ using System.Collections.Generic;
     {
         static void Main(string[] args)
         {
+            var random = new Random();
+
+            var count = 10;
+            var offsets = new List<int>();
+
+            for (int i = 0; i < count; i++)
+            {
+                offsets.Add(i - count / 2);
+            }
+            
+            for (int i = 0; i < count; i++)
+            {
+                var index = random.Next(0, offsets.Count);
+                var offset = offsets[index];
+                offsets.RemoveAt(index);
+
+                Console.WriteLine(DateTime.Now.Add(new TimeSpan(0, 0, offset * 10)));
+            }
+        }
+
+        private static void TestNonOverlappingIntervals()
+        {
             TimeInterval[] intervals = new[]
             {
                 new TimeInterval(new DateTime(2022, 01, 01, 7, 00, 00), new DateTime(2022, 01, 01, 7, 30, 00)),
@@ -39,7 +61,6 @@ using System.Collections.Generic;
             {
                 Console.WriteLine(interval);
             }
-
         }
 
         public static List<TimeInterval> GetNonOverlappingIntervals(TimeInterval[] intervals, int thresholdMinutes)
