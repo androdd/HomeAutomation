@@ -61,7 +61,7 @@ namespace HomeAutomation
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 
-            Debug.EnableGCMessages(false);
+            Debug.EnableGCMessages(true);
 
             var usbStick = new UsbStick();
 
