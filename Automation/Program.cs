@@ -34,7 +34,7 @@ namespace HomeAutomation
         private static RealTimer _realTimer;
         private static LightsService _lightsService;
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
-        private static PressureLoggingService _pressureLoggingService;
+        //private static PressureLoggingService _pressureLoggingService;
         private static WateringService _wateringService;
         
         private static HardwareManager _hardwareManager;
@@ -89,7 +89,7 @@ namespace HomeAutomation
             _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
 
             //_remoteCommandsService.Init();
-            _pressureLoggingService.Init();
+            //_pressureLoggingService.Init();
             _autoTurnOffPumpService.Init();
             
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _autoTurnOffPumpService, _wateringService);
@@ -160,7 +160,7 @@ namespace HomeAutomation
             _remoteCommandsService.Init;
 #endif
 
-            _pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.ExternalStorage, _hardwareManager.PressureSensor, _realTimer);
+            //_pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.ExternalStorage, _hardwareManager.PressureSensor, _realTimer);
             _wateringService = new WateringService(_log,
                 _configuration,
                 _realTimer,
