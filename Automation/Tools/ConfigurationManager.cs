@@ -130,7 +130,6 @@ namespace HomeAutomation.Tools
             _configuration.SouthValveConfigurations[0] = new ValveConfiguration(_settingsFile.GetValue("Watering-South1"));
             _configuration.SouthValveConfigurations[1] = new ValveConfiguration(_settingsFile.GetValue("Watering-South2"));
             _configuration.SouthValveConfigurations[2] = new ValveConfiguration(_settingsFile.GetValue("Watering-South3"));
-            _configuration.SouthValveConfigurations[3] = new ValveConfiguration(_settingsFile.GetValue("Watering-South4"));
 
             _configuration.NorthValveConfiguration = new ValveConfiguration(_settingsFile.GetValue("Watering-North"));
 

@@ -10,10 +10,10 @@ AutoTurnOffPump-MinPressure : 0.5 ; bar
 AutoTurnOffPump-MaxEventsCount : 2 ; Sends turn off signal after specified number of times with low pressure
 AutoTurnOffPump-SignalLength : 500 ; millisecods
 
-;;South watering schedule      SMTWTFS
+;;South watering schedule     SMTWTFS
 Watering-South1 : 1 2 22|01 5 1111111 ; Enabled
 Watering-South2 : 1 3 22|03 2 1110101 ; Enabled
 Watering-South3 : 1 4 22|05 7 1000101 ; Enabled
-Watering-South4 : 0 5 22|08 8 0011100 ; Disabled
+Watering-South4 : 0 5 22|08 8 0011100 ; Disabled in code
 
 Watering-North : 1 1 09|50 01 1111111 ; Enabled

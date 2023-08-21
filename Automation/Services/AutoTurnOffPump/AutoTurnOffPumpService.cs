@@ -8,11 +8,14 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
     using HomeAutomation.Tools;
 
+    using Microsoft.SPOT;
+
     public delegate void PumpStatusChangedEventHandler(Status status);
 
     public class AutoTurnOffPumpService
     {
-        private readonly int _relayId;
+        private readonly int _housePumpRelayId;
+        private readonly int _wateringPumpRelayId;
 
         private readonly Log _log;
         private readonly Tools.Configuration _configuration;
@@ -23,6 +26,8 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
         private int _eventCount;
         private bool _lowPressureReacted;
+        private int _housePumpCheckCycles;
+        private int _cycle;
 
         public event PumpStatusChangedEventHandler StatusChanged;
 
@@ -33,7 +38,8 @@ namespace HomeAutomation.Services.AutoTurnOffPump
             IPressureSensor pressureSensor,
             IPumpStateSensor pumpStateSensor,
             RelaysArray relaysArray,
-            int relayId)
+            int housePumpRelayId,
+            int wateringPumpRelayId)
         {
             _log = log;
             _configuration = configuration;
@@ -41,7 +47,8 @@ namespace HomeAutomation.Services.AutoTurnOffPump
             _pressureSensor = pressureSensor;
             _pumpStateSensor = pumpStateSensor;
             _relaysArray = relaysArray;
-            _relayId = relayId;
+            _housePumpRelayId = housePumpRelayId;
+            _wateringPumpRelayId = wateringPumpRelayId;
 
             _eventCount = 0;
             _lowPressureReacted = false;
@@ -49,14 +56,49 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
         public void Init()
         {
-            _realTimer.TryScheduleRunAt(DateTime.Now.AddMinutes(2),
+            _housePumpCheckCycles = _configuration.AutoTurnOffPumpConfiguration.Interval * 6;
+
+            _realTimer.TryScheduleRunAt(DateTime.Now.AddSeconds(10),
                 CheckPressure,
-                new TimeSpan(0, _configuration.AutoTurnOffPumpConfiguration.Interval, 0),
+                new TimeSpan(0, 0, 10),
                 "AutoTurnOffPumpService ",
                 false);
         }
 
         private bool CheckPressure(object state)
+        {
+            var isLowPressure = _pressureSensor.Pressure < 0.2;
+            var isWateringPumpOn = !_relaysArray.Get(_wateringPumpRelayId);
+
+            if (isLowPressure)
+            {
+                if (isWateringPumpOn)
+                {
+                    _relaysArray.Set(_wateringPumpRelayId, true);
+                    _log.Write("Low watering pressure. Watering Pump is turned Off.");
+                }
+            }
+            else
+            {
+                if (!isWateringPumpOn)
+                {
+                    _relaysArray.Set(_wateringPumpRelayId, false);
+                    _log.Write("Watering pressure restored. Watering Pump is turned On.");
+                }
+            }
+
+            if (_cycle == _housePumpCheckCycles)
+            {
+                CheckHousePump();
+                _cycle = 0;
+            }
+
+            _cycle++;
+
+            return true;
+        }
+
+        private void CheckHousePump()
         {
             var pumpTurnedOff = !_pumpStateSensor.IsWorking;
             var normalPressure = _pressureSensor.Pressure > _configuration.AutoTurnOffPumpConfiguration.MinPressure;
@@ -72,26 +114,25 @@ namespace HomeAutomation.Services.AutoTurnOffPump
                 }
 
                 _eventCount = 0;
-                return true;
             }
-
-            _eventCount++;
-            
-            if (_eventCount >= _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount)
+            else
             {
-                _lowPressureReacted = true;
+                _eventCount++;
 
-                SendTurnOffSignal();
+                if (_eventCount >= _configuration.AutoTurnOffPumpConfiguration.MaxEventsCount)
+                {
+                    _lowPressureReacted = true;
+
+                    SendTurnOffSignal();
+                }
             }
-
-            return true;
         }
 
         private void SendTurnOffSignal()
         {
-            _relaysArray.Set(_relayId, true);
+            _relaysArray.Set(_housePumpRelayId, true);
             Thread.Sleep(_configuration.AutoTurnOffPumpConfiguration.SignalLength);
-            _relaysArray.Set(_relayId, false);
+            _relaysArray.Set(_housePumpRelayId, false);
 
             _log.Write("Pump turned off due to low pressure.");
 

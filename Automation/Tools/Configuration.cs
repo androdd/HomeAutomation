@@ -47,7 +47,6 @@ namespace HomeAutomation.Tools
             {
                 new ValveConfiguration("0 0 00|00 1 0000000"), 
                 new ValveConfiguration("0 0 00|00 1 0000000"),
-                new ValveConfiguration("0 0 00|00 1 0000000"), 
                 new ValveConfiguration("0 0 00|00 1 0000000")
             };
 

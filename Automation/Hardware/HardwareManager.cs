@@ -20,10 +20,11 @@ namespace HomeAutomation.Hardware
         public ScreenPowerButton ScreenPowerButton { get; private set; }
         public Led MbLed { get; private set; }
 
-        public int LightsRelayId { get; private set; }
-        public int AutoTurnOffPumpRelayId { get; private set; }
         public int SouthMainValveRelayId { get; private set; }
         public int NorthMainValveRelayId { get; private set; }
+        public int WateringPumpTurnOffRelayId { get; private set; }
+        public int AutoTurnOffPumpRelayId { get; private set; }
+        public int LightsRelayId { get; private set; }
 
         public HardwareManager(IStorage externalStorage)
         {
@@ -31,14 +32,14 @@ namespace HomeAutomation.Hardware
 
             RelaysArray = new RelaysArray(new[]
             {
-                FEZ_Pin.Digital.Di0,
-                FEZ_Pin.Digital.Di1,
-                FEZ_Pin.Digital.Di4,
-                FEZ_Pin.Digital.Di5,
-                FEZ_Pin.Digital.Di6,
-                FEZ_Pin.Digital.Di7,
-                FEZ_Pin.Digital.Di8,
-                FEZ_Pin.Digital.Di9
+                FEZ_Pin.Digital.Di0, // South Main Valve
+                FEZ_Pin.Digital.Di1, // North Main Valve
+                FEZ_Pin.Digital.Di4, // South Valve 1 - Configured
+                FEZ_Pin.Digital.Di5, // South Valve 2 - Configured
+                FEZ_Pin.Digital.Di6, // South Valve 3 - Configured
+                FEZ_Pin.Digital.Di7, // Watering Pump Auto Turn Off
+                FEZ_Pin.Digital.Di8, // House Pump Auto Turn Off
+                FEZ_Pin.Digital.Di9  // Lights
             });
             PressureSensor = new PressureSensor80(FEZ_Pin.AnalogIn.An1);
             PumpStateSensor = new PumpStateSensor(FEZ_Pin.Digital.An0);
@@ -50,6 +51,7 @@ namespace HomeAutomation.Hardware
             
             SouthMainValveRelayId = 0;
             NorthMainValveRelayId = 1;
+            WateringPumpTurnOffRelayId = 5;
             AutoTurnOffPumpRelayId = 6;
             LightsRelayId = 7;
             

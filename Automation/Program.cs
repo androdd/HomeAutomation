@@ -150,7 +150,8 @@ namespace HomeAutomation
                 _hardwareManager.PressureSensor,
                 _hardwareManager.PumpStateSensor,
                 _hardwareManager.RelaysArray,
-                _hardwareManager.AutoTurnOffPumpRelayId);
+                _hardwareManager.AutoTurnOffPumpRelayId,
+                _hardwareManager.WateringPumpTurnOffRelayId);
             
 #if TEST_AUTO_TURN_OFF_SERVICE
             _remoteCommandsService = new AutoTurnOffPumpServiceTestRemoteCommandService(_log,

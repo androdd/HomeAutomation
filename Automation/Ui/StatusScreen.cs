@@ -36,7 +36,6 @@ namespace HomeAutomation.Ui
         private char _oldValveSouth1;
         private char _oldValveSouth2;
         private char _oldValveSouth3;
-        private char _oldValveSouth4;
 
         public StatusScreen(
             string name,
@@ -125,7 +124,6 @@ namespace HomeAutomation.Ui
                     Screen.WriteChar(GetValveChar(1));
                     Screen.WriteChar(GetValveChar(2));
                     Screen.WriteChar(GetValveChar(3));
-                    Screen.WriteChar(GetValveChar(4));
                 });
 
                 _timer.Change(0, 10 * 1000);
@@ -206,7 +204,6 @@ namespace HomeAutomation.Ui
                 WriteIfChanged(16, 3, ref _oldValveSouth1, GetValveChar(1));
                 WriteIfChanged(17, 3, ref _oldValveSouth2, GetValveChar(2));
                 WriteIfChanged(18, 3, ref _oldValveSouth3, GetValveChar(3));
-                WriteIfChanged(19, 3, ref _oldValveSouth4, GetValveChar(4));
             });
         }
 
