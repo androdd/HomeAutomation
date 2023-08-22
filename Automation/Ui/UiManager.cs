@@ -236,14 +236,14 @@ namespace HomeAutomation.Ui
         {
             _status = UiStatus.ScheduleNextSouthWatering;
 
-            _hardwareManager.Screen.Write(0, 0, "Valve (1..4)");
+            _hardwareManager.Screen.Write(0, 0, "Valve (1..3)");
             _hardwareManager.Screen.Write(0, 2, "Minutes (max 120)");
 
             _numericBox2 = CreateNumericBox(0, 3, 1, 120);
             _numericBox2.Value = 10;
             _numericBox2.Show();
 
-            _numericBox1 = CreateNumericBox(0, 1, 1, 4);
+            _numericBox1 = CreateNumericBox(0, 1, 1, 3);
             _numericBox1.Value = 1;
             _numericBox1.Show();
             _numericBox1.Focus();
