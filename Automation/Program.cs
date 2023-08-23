@@ -57,110 +57,117 @@ namespace HomeAutomation
 
         public static void Main()
         {
-#if DEBUG_SET_RTC
-            RealTimeClock.SetTime(new DateTime(2023, 4, 25, 22, 0, 0));
-#endif
-            Utility.SetLocalTime(RealTimeClock.GetTime());
-
-            Debug.EnableGCMessages(true);
-
-            var usbStick = new UsbStick();
-
-            while (!usbStick.IsLoaded)
+            try
             {
-                Thread.Sleep(500);
-                Debug.Print("Loading configuration...");
-            }
+#if DEBUG_SET_RTC
+                RealTimeClock.SetTime(new DateTime(2023, 4, 25, 22, 0, 0));
+#endif
+                Utility.SetLocalTime(RealTimeClock.GetTime());
 
-            _configuration = new Configuration();
-            _log = new Log(usbStick);
+                Debug.EnableGCMessages(true);
 
-            _log.Write("Starting hardware...");
+                var usbStick = new UsbStick();
 
-            _hardwareManager = new HardwareManager(usbStick);
-            _hardwareManager.Setup();
+                while (!usbStick.IsLoaded)
+                {
+                    Thread.Sleep(500);
+                    Debug.Print("Loading configuration...");
+                }
+
+                _configuration = new Configuration();
+                _log = new Log(usbStick);
+
+                _log.Write("Starting hardware...");
+
+                _hardwareManager = new HardwareManager(usbStick);
+                _hardwareManager.Setup();
             
-            _log.Write("Starting...");
+                _log.Write("Starting...");
 
-            SetupToolsAndServices();
+                SetupToolsAndServices();
 
-            ReloadConfig();
+                ReloadConfig();
 
-            _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
-            _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
+                _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
+                _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
 
-            //_remoteCommandsService.Init();
-            //_pressureLoggingService.Init();
-            _autoTurnOffPumpService.Init();
+                //_remoteCommandsService.Init();
+                //_pressureLoggingService.Init();
+                _autoTurnOffPumpService.Init();
             
-            _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _autoTurnOffPumpService, _wateringService);
-            _uiManager.Setup();
+                _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _autoTurnOffPumpService, _wateringService);
+                _uiManager.Setup();
 
-            ScheduleConfigReload();
+                ScheduleConfigReload();
 
 #if DEBUG_PRESSURE_SENSOR
-            while (true)
-            {
-                var pressure = _pressureSensor.Pressure;
-                var voltage = _pressureSensor.Voltage;
-                
-                pressure = pressure < 0
-                    ? 0
-                    : pressure;
-
-                var pressureByte = (byte)MathEx.Truncate(pressure * 50); // Fit up to 5 bar in 1 byte 5 * 50 = 250 < 256
-
-                Debug.Print("Voltage: " + voltage + " V; Pressure: " + pressure.ToString("F") + " bar; PressureByte: " + pressureByte);
-                
-                for (int i = 0; i <= 7; i++)
+                while (true)
                 {
-                    _relaysArray.Set(7 - i, (pressureByte & (1 << i)) == 1 << i);
-                }
+                    var pressure = _pressureSensor.Pressure;
+                    var voltage = _pressureSensor.Voltage;
+                    
+                    pressure = pressure < 0
+                        ? 0
+                        : pressure;
 
-                Thread.Sleep(10 * 1000);
-            };
+                    var pressureByte = (byte)MathEx.Truncate(pressure * 50); // Fit up to 5 bar in 1 byte 5 * 50 = 250 < 256
+
+                    Debug.Print("Voltage: " + voltage + " V; Pressure: " + pressure.ToString("F") + " bar; PressureByte: " + pressureByte);
+                    
+                    for (int i = 0; i <= 7; i++)
+                    {
+                        _relaysArray.Set(7 - i, (pressureByte & (1 << i)) == 1 << i);
+                    }
+
+                    Thread.Sleep(10 * 1000);
+                };
 #endif
 
-            _log.Write("Started");
+                _log.Write("Started");
 
-            _hardwareManager.MbLed.Blink(3);
+                _hardwareManager.MbLed.Blink(3);
             
 #if DEBUG_FLOW_RATE
-            for (int i = 0; i < 5000; i++)
-            {
-                _hardwareManager.FlowRateSensor.OnInterrupt(0, 0, DateTime.Now);
-                Thread.Sleep(10);
-            }
-
-            Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
-#endif
-            const int SleepSeconds = 10 * 60;
-            const int RestartHour = 12;
-            
-            var now = DateTime.Now;
-            int addDays = 0;
-
-            if (now.Hour >= RestartHour)
-            {
-                addDays = 1;
-            }
-
-            DateTime restart = new DateTime(now.Year, now.Month, now.Day, RestartHour, 2 * SleepSeconds / 60, 0);
-            restart = restart.AddDays(addDays);
-
-            _log.Write("Next daily restart scheduled for around: " + restart);
-            
-            while (true)
-            {
-                Thread.Sleep(SleepSeconds * 1000);
-
-                var secondsToRestart = DateTime.Now.Subtract(restart).Duration().Ticks / 10000000;
-
-                if (secondsToRestart <= SleepSeconds + SleepSeconds / 2)
+                for (int i = 0; i < 5000; i++)
                 {
-                    _log.Write("Daily restart will happen in 1 second.");
-                    Watchdog.Enable(1000);
+                    _hardwareManager.FlowRateSensor.OnInterrupt(0, 0, DateTime.Now);
+                    Thread.Sleep(10);
                 }
+
+                Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
+#endif
+                const int SleepSeconds = 10 * 60;
+                const int RestartHour = 12;
+            
+                var now = DateTime.Now;
+                int addDays = 0;
+
+                if (now.Hour >= RestartHour)
+                {
+                    addDays = 1;
+                }
+
+                DateTime restart = new DateTime(now.Year, now.Month, now.Day, RestartHour, 2 * SleepSeconds / 60, 0);
+                restart = restart.AddDays(addDays);
+
+                _log.Write("Next daily restart scheduled for around: " + restart);
+            
+                while (true)
+                {
+                    Thread.Sleep(SleepSeconds * 1000);
+
+                    var secondsToRestart = DateTime.Now.Subtract(restart).Duration().Ticks / 10000000;
+
+                    if (secondsToRestart <= SleepSeconds + SleepSeconds / 2)
+                    {
+                        _log.Write("Daily restart will happen in 1 second.");
+                        Watchdog.Enable(1000);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Watchdog.Enable(10000);
             }
         }
 
