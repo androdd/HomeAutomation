@@ -25,6 +25,7 @@ namespace HomeAutomation
     using Microsoft.SPOT.Hardware;
 
     using Configuration = HomeAutomation.Tools.Configuration;
+    using Watchdog = GHIElectronics.NETMF.Hardware.LowLevel.Watchdog;
 
     public class Program
     {
@@ -123,7 +124,7 @@ namespace HomeAutomation
             _log.Write("Started");
 
             _hardwareManager.MbLed.Blink(3);
-
+            
 #if DEBUG_FLOW_RATE
             for (int i = 0; i < 5000; i++)
             {
@@ -133,7 +134,34 @@ namespace HomeAutomation
 
             Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
 #endif
-            Thread.Sleep(Timeout.Infinite);
+            const int SleepSeconds = 10 * 60;
+            const int RestartHour = 12;
+            
+            var now = DateTime.Now;
+            int addDays = 0;
+
+            if (now.Hour >= RestartHour)
+            {
+                addDays = 1;
+            }
+
+            DateTime restart = new DateTime(now.Year, now.Month, now.Day, RestartHour, 2 * SleepSeconds / 60, 0);
+            restart = restart.AddDays(addDays);
+
+            _log.Write("Next daily restart scheduled for around: " + restart);
+            
+            while (true)
+            {
+                Thread.Sleep(SleepSeconds * 1000);
+
+                var secondsToRestart = DateTime.Now.Subtract(restart).Duration().Ticks / 10000000;
+
+                if (secondsToRestart <= SleepSeconds + SleepSeconds / 2)
+                {
+                    _log.Write("Daily restart will happen in 1 second.");
+                    Watchdog.Enable(1000);
+                }
+            }
         }
 
         private static void SetupToolsAndServices()

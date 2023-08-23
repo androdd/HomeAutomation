@@ -1,4 +1,3 @@
-Restart using watchdog every noon instead of reloading
 Update all writing and reading operations to be line by line.
 Edit settings
 Add Names in the watering configurations - Show them scroling on the value line or mark the Setting as ComplexWithName, extract the Name  and add it in the menu
