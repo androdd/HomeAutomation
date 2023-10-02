@@ -56,6 +56,8 @@ namespace HomeAutomation.Services.Watering
             _runningTimerKeys = new ArrayList();
 
             _lastManualWateringEnd = DateTime.Now;
+
+            NorthSwitchState = 1;
         }
 
         /// <summary>
@@ -119,7 +121,7 @@ namespace HomeAutomation.Services.Watering
             return true;
         }
 
-        public bool TryStartNorth(int minutes)
+        public bool TryStartNorth(int cornerMinutes, int mainMinutes)
         {
             var isOn = _relaysArray.Get(_northMainValveRelayId);
 
@@ -127,19 +129,31 @@ namespace HomeAutomation.Services.Watering
             {
                 return false;
             }
-            
-            var key = _realTimer.TryScheduleRunAt(DateTime.Now.AddSeconds(3), 
+
+            var dueDateTime = DateTime.Now.AddSeconds(3);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 1);
+
+            dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 2);
+
+            dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
+            AddNorthSchedule(dueDateTime, mainMinutes, 3);
+
+            return true;
+        }
+
+        private void AddNorthSchedule(DateTime dueDateTime, int minutes, int northSwitchState)
+        {
+            var key = _realTimer.TryScheduleRunAt(dueDateTime,
                 NorthTimerCallback,
                 new WateringTimerState { RelayId = _northMainValveRelayId },
                 new TimeSpan(0, minutes, 0),
-                "Valve Main North ");
+                "Valve Main North " + northSwitchState + " ");
 
             if (!key.Equals(Guid.Empty))
             {
                 _manualTimerKeys.Add(key);
             }
-            
-            return true;
         }
 
         public void ScheduleSouthWatering()
@@ -345,6 +359,8 @@ namespace HomeAutomation.Services.Watering
             else
             {
                 _runningTimerKeys.Remove(wateringState.TimerKey);
+
+                NorthSwitchState = NorthSwitchState % 3 + 1;
             }
 
 #if DEBUG_WATERING

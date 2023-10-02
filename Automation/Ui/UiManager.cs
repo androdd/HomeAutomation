@@ -253,10 +253,15 @@ namespace HomeAutomation.Ui
         {
             _status = UiStatus.ScheduleNorthWatering;
 
-            _hardwareManager.Screen.Write(0, 0, "Minutes (max 120)");
+            _hardwareManager.Screen.Write(0, 0, "Corners Minutes (max 15)");
+            _hardwareManager.Screen.Write(0, 2, "Main Minutes (max 120)");
 
-            _numericBox1 = CreateNumericBox(0, 3, 1, 120);
-            _numericBox1.Value = 10;
+            _numericBox2 = CreateNumericBox(0, 3, 1, 120);
+            _numericBox2.Value = 50;
+            _numericBox2.Show();
+
+            _numericBox1 = CreateNumericBox(0, 1, 1, 15);
+            _numericBox1.Value = 5;
             _numericBox1.Show();
             _numericBox1.Focus();
         }
@@ -299,66 +304,49 @@ namespace HomeAutomation.Ui
 
         private void NumericBoxOnKeyPressed(Key key)
         {
-            if (_status == UiStatus.ScheduleNextSouthWatering)
+            switch (key)
             {
-                switch (key)
+                case Key.Enter:
                 {
-                    case Key.Enter:
+                    if (_numericBox1.IsFocused)
                     {
-                        if (_numericBox1.IsFocused)
-                        {
-                            _numericBox1.Unfocus();
-                            _numericBox2.Focus();
-                            return;
-                        }
+                        _numericBox1.Unfocus();
+                        _numericBox2.Focus();
+                        return;
+                    }
 
+                    if (_status == UiStatus.ScheduleNextSouthWatering)
+                    {
                         _wateringService.TryStartSouth(_numericBox1.Value, _numericBox2.Value);
-                        break;
                     }
-                    case Key.Escape:
-                        if (_numericBox2.IsFocused)
-                        {
-                            _numericBox2.Unfocus();
-                            _numericBox1.Focus();
-                            return;
-                        }
-
-                        break;
-                    default:
-                        return;
-                }
-
-                _numericBox1.Show(false);
-                _numericBox2.Show(false);
-                _statusScreen.Show();
-
-                _numericBox1 = null;
-                _numericBox2 = null;
-
-                _status = UiStatus.None;
-            }
-            else if (_status == UiStatus.ScheduleNorthWatering)
-            {
-                switch (key)
-                {
-                    case Key.Enter:
+                    else if (_status == UiStatus.ScheduleNorthWatering)
                     {
-                        _wateringService.TryStartNorth(_numericBox1.Value);
-                        break;
+                        _wateringService.TryStartNorth(_numericBox1.Value, _numericBox2.Value);
                     }
-                    case Key.Escape:
-                        break;
-                    default:
-                        return;
+
+                    break;
                 }
+                case Key.Escape:
+                    if (_numericBox2.IsFocused)
+                    {
+                        _numericBox2.Unfocus();
+                        _numericBox1.Focus();
+                        return;
+                    }
 
-                _numericBox1.Show(false);
-                _statusScreen.Show();
-
-                _numericBox1 = null;
-
-                _status = UiStatus.None;
+                    break;
+                default:
+                    return;
             }
+
+            _numericBox1.Show(false);
+            _numericBox2.Show(false);
+            _statusScreen.Show();
+
+            _numericBox1 = null;
+            _numericBox2 = null;
+
+            _status = UiStatus.None;
         }
 
         #endregion
