@@ -253,8 +253,8 @@ namespace HomeAutomation.Ui
         {
             _status = UiStatus.ScheduleNorthWatering;
 
-            _hardwareManager.Screen.Write(0, 0, "Corners Minutes (max 15)");
-            _hardwareManager.Screen.Write(0, 2, "Main Minutes (max 120)");
+            _hardwareManager.Screen.Write(0, 0, "Corners (max 15 min)");
+            _hardwareManager.Screen.Write(0, 2, "Main (max 120 min)");
 
             _numericBox2 = CreateNumericBox(0, 3, 1, 120);
             _numericBox2.Value = 50;
