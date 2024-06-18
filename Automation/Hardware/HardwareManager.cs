@@ -17,7 +17,6 @@ namespace HomeAutomation.Hardware
         public NecRemote NecRemote { get; private set; }
         public FlowRateSensor FlowRateSensor { get; private set; }
         public Lcd2004 Screen { get; private set; }
-        public ScreenPowerButton ScreenPowerButton { get; private set; }
         public Led MbLed { get; private set; }
 
         public int SouthMainValveRelayId { get; private set; }
@@ -46,7 +45,6 @@ namespace HomeAutomation.Hardware
             NecRemote = new NecRemote(FEZ_Pin.Interrupt.Di11);
             FlowRateSensor = new FlowRateSensor(FEZ_Pin.Interrupt.Di12);
             Screen = new Lcd2004(0x27);
-            ScreenPowerButton = new ScreenPowerButton(FEZ_Pin.Interrupt.An3, Screen);
             MbLed = new Led(FEZ_Pin.Digital.LED);
             
             SouthMainValveRelayId = 0;
@@ -74,7 +72,8 @@ namespace HomeAutomation.Hardware
             PumpStateSensor.Init();
             NecRemote.Init();
             FlowRateSensor.Init();
-            ScreenPowerButton.Init();
+            Screen.Init();
+            Screen.BackLightOn();
             MbLed.Init();
         }
     }

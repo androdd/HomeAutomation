@@ -6,8 +6,6 @@ namespace AdSoft.Fez.Ui
     using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Ui.Interfaces;
 
-    using Microsoft.SPOT;
-
     public class ScreenSaver : IDisposable
     {
         private readonly Lcd2004 _screen;

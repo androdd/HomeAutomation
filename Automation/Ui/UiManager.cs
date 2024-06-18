@@ -76,26 +76,13 @@ namespace HomeAutomation.Ui
             _keyboard.KeyPressed += KeyboardOnKeyPressed;
             
             _screenSaver.Init(3 * 60);
-            _hardwareManager.ScreenPowerButton.AddScreenSaver(_screenSaver);
-            _hardwareManager.ScreenPowerButton.StateChanged += ScreenPowerButtonOnStateChanged;
+            _screenSaver.Enable();
             _hardwareManager.ExternalStorage.StatusChanged += _statusScreen.SetExternalStorageStatus;
 
             _autoTurnOffPumpService.StatusChanged += _statusScreen.SetAutoTurnOffPumpStatus;
             
             _statusScreen.Setup();
             _statusScreen.Show();
-        }
-        
-        private void ScreenPowerButtonOnStateChanged(bool isOn)
-        {
-            if (isOn)
-            {
-                CreateWateringChars();
-
-                _hardwareManager.Screen.Clear();
-
-                _statusScreen.Show();
-            }
         }
 
         private void CreateWateringChars()
