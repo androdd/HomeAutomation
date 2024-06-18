@@ -1,20 +1,14 @@
 namespace HomeAutomation
 {
     using System;
-    using System.Collections;
-    using System.Reflection;
     using System.Threading;
 
-    using AdSoft.Fez;
     using AdSoft.Fez.Configuration;
-    using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Storage;
 
     using GHIElectronics.NETMF.Hardware;
-    using GHIElectronics.NETMF.System;
 
     using HomeAutomation.Hardware;
-    using HomeAutomation.Hardware.Mocks;
     using HomeAutomation.Services;
     using HomeAutomation.Services.AutoTurnOffPump;
     using HomeAutomation.Services.Watering;
@@ -74,6 +68,7 @@ namespace HomeAutomation
             _configuration = new Configuration();
             _log = new Log(usbStick);
 
+            _log.Write("HomeAutomation v.1 2024-06-18");
             _log.Write("Starting hardware...");
 
             _hardwareManager = new HardwareManager(usbStick);
