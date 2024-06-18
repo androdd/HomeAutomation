@@ -137,7 +137,13 @@ namespace HomeAutomation.Services.Watering
             AddNorthSchedule(dueDateTime, cornerMinutes, 2);
 
             dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
-            AddNorthSchedule(dueDateTime, mainMinutes, 3);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 3);
+
+            dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 4);
+
+            dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
+            AddNorthSchedule(dueDateTime, mainMinutes, 5);
 
             return true;
         }
@@ -360,7 +366,7 @@ namespace HomeAutomation.Services.Watering
             {
                 _runningTimerKeys.Remove(wateringState.TimerKey);
 
-                NorthSwitchState = NorthSwitchState % 3 + 1;
+                NorthSwitchState = NorthSwitchState % 5 + 1;
             }
 
 #if DEBUG_WATERING
