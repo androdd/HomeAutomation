@@ -135,6 +135,7 @@ namespace HomeAutomation.Ui
                 new MenuItem(MenuKeys.ResetVolume, "Reset Volume"),
                 new MenuItem(MenuKeys.ToggleLights, "Lights " + (_lightsService.GetLightsState() ? "Off" : "On")),
                 new MenuItem(MenuKeys.ShowConfig, "Show Config"),
+                new MenuItem(MenuKeys.ShowVersion, "Show Version"),
                 new MenuItem(MenuKeys.TestRelays, "Test Relays"),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
@@ -166,6 +167,9 @@ namespace HomeAutomation.Ui
                     break;
                 case MenuKeys.ShowConfig:
                     ShowConfigMenu();
+                    break;
+                case MenuKeys.ShowVersion:
+                    ShowVersion();
                     break;
                 case MenuKeys.ToggleLights:
                     _status = UiStatus.None;
@@ -641,5 +645,14 @@ namespace HomeAutomation.Ui
         }
 
         #endregion
+
+        private void ShowVersion()
+        {
+            _status = UiStatus.None;
+
+            _statusScreen.Show();
+
+            SetStatus(Program.Version);
+        }
     }
 }
