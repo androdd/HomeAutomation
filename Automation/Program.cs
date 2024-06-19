@@ -22,6 +22,8 @@ namespace HomeAutomation
 
     public class Program
     {
+        private const string Version = "1 24-06-19";
+
         private static Log _log;
         private static Configuration _configuration;
         private static ConfigurationManager _configurationManager;
@@ -67,8 +69,8 @@ namespace HomeAutomation
 
             _configuration = new Configuration();
             _log = new Log(usbStick);
-
-            _log.Write("HomeAutomation v.1 2024-06-18");
+            
+            _log.Write("HomeAutomation v." + Version);
             _log.Write("Starting hardware...");
 
             _hardwareManager = new HardwareManager(usbStick);
@@ -118,6 +120,8 @@ namespace HomeAutomation
             _log.Write("Started");
 
             _hardwareManager.MbLed.Blink(3);
+
+            _uiManager.SetStatus(Version);
 
 #if DEBUG_FLOW_RATE
             for (int i = 0; i < 5000; i++)

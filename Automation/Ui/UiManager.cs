@@ -85,6 +85,11 @@ namespace HomeAutomation.Ui
             _statusScreen.Show();
         }
 
+        public void SetStatus(string status)
+        {
+            _statusScreen.SetStatus(status);
+        }
+
         private void CreateWateringChars()
         {
             _hardwareManager.Screen.CreateChar(0, new byte[] { 04, 12, 04, 20, 04, 04, 14, 31 });

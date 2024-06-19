@@ -8,8 +8,6 @@ namespace HomeAutomation.Services.AutoTurnOffPump
 
     using HomeAutomation.Tools;
 
-    using Microsoft.SPOT;
-
     public delegate void PumpStatusChangedEventHandler(Status status);
 
     public class AutoTurnOffPumpService
