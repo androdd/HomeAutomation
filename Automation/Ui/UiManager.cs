@@ -317,7 +317,7 @@ namespace HomeAutomation.Ui
                     }
                     else if (_status == UiStatus.ScheduleNorthWatering)
                     {
-                        _wateringService.TryStartNorth(_numericBox1.Value, _numericBox2.Value);
+                        _wateringService.TryStartNorth(DateTime.Now.AddSeconds(3), _numericBox1.Value, _numericBox2.Value, false);
                     }
 
                     break;

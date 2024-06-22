@@ -4,13 +4,10 @@ namespace HomeAutomation.Services.Watering
     using System.Collections;
     using System.Threading;
 
-    using AdSoft.Fez;
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Interfaces;
 
     using HomeAutomation.Tools;
-
-    using Microsoft.SPOT;
 
     public class WateringService
     {
@@ -121,7 +118,7 @@ namespace HomeAutomation.Services.Watering
             return true;
         }
 
-        public bool TryStartNorth(int cornerMinutes, int mainMinutes)
+        public bool TryStartNorth(DateTime dueDateTime, int cornerMinutes, int mainMinutes, bool isAutomatic)
         {
             var isOn = _relaysArray.Get(_northMainValveRelayId);
 
@@ -130,25 +127,24 @@ namespace HomeAutomation.Services.Watering
                 return false;
             }
 
-            var dueDateTime = DateTime.Now.AddSeconds(3);
-            AddNorthSchedule(dueDateTime, cornerMinutes, 1);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 1, isAutomatic);
 
             dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
-            AddNorthSchedule(dueDateTime, cornerMinutes, 2);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 2, isAutomatic);
 
             dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
-            AddNorthSchedule(dueDateTime, cornerMinutes, 3);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 3, isAutomatic);
 
             dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
-            AddNorthSchedule(dueDateTime, cornerMinutes, 4);
+            AddNorthSchedule(dueDateTime, cornerMinutes, 4, isAutomatic);
 
             dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
-            AddNorthSchedule(dueDateTime, mainMinutes, 5);
+            AddNorthSchedule(dueDateTime, mainMinutes, 5, isAutomatic);
 
             return true;
         }
 
-        private void AddNorthSchedule(DateTime dueDateTime, int minutes, int northSwitchState)
+        private void AddNorthSchedule(DateTime dueDateTime, int minutes, int northSwitchState, bool isAutomatic)
         {
             var key = _realTimer.TryScheduleRunAt(dueDateTime,
                 NorthTimerCallback,
@@ -158,7 +154,14 @@ namespace HomeAutomation.Services.Watering
 
             if (!key.Equals(Guid.Empty))
             {
-                _manualTimerKeys.Add(key);
+                if (isAutomatic)
+                {
+                    _automaticTimerKeys.Add(key);
+                }
+                else
+                {
+                    _manualTimerKeys.Add(key);   
+                }
             }
         }
 
@@ -247,16 +250,7 @@ namespace HomeAutomation.Services.Watering
                 return;
             }
 
-            var key = _realTimer.TryScheduleRunAt(configuration.StartTime,
-                NorthTimerCallback,
-                new WateringTimerState { RelayId = _northMainValveRelayId },
-                new TimeSpan(0, configuration.Duration, 0),
-                "Valve Main North ");
-
-            if (!key.Equals(Guid.Empty))
-            {
-                _automaticTimerKeys.Add(key);
-            }
+            TryStartNorth(configuration.StartTime, configuration.Duration, configuration.Duration * 3, true);
         }
 
         public void CancelManual()
