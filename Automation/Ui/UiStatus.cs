@@ -11,6 +11,7 @@ namespace HomeAutomation.Ui
         ShowConfig,
         ScheduleNextSouthWatering,
         ScheduleNorthWatering,
-        TestRelays
+        TestRelays,
+        TuneNorthSwitchState
     }
 }

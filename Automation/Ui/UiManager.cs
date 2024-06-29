@@ -139,6 +139,7 @@ namespace HomeAutomation.Ui
                 new MenuItem(MenuKeys.TestRelays, "Test Relays"),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
+                new MenuItem(MenuKeys.TuneNorthSwitchState, "Tune N-SwitchState"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date")
             });
@@ -164,6 +165,9 @@ namespace HomeAutomation.Ui
                     break;
                 case MenuKeys.TuneFlowRate:
                     ShowTuneFlowRate();
+                    break;
+                case MenuKeys.TuneNorthSwitchState:
+                    ShowTuneNorthSwitchState();
                     break;
                 case MenuKeys.ShowConfig:
                     ShowConfigMenu();
@@ -304,6 +308,14 @@ namespace HomeAutomation.Ui
             {
                 case Key.Enter:
                 {
+                    if (_status == UiStatus.TuneNorthSwitchState)
+                    {
+                        _wateringService.NorthSwitchState = _numericBox1.Value;
+                        _configurationManager.UpdateNorthSwitchState(_numericBox1.Value);
+                        
+                        break;
+                    }
+
                     if (_numericBox1.IsFocused)
                     {
                         _numericBox1.Unfocus();
@@ -323,6 +335,11 @@ namespace HomeAutomation.Ui
                     break;
                 }
                 case Key.Escape:
+                    if (_status == UiStatus.TuneNorthSwitchState)
+                    {
+                        break;
+                    }
+
                     if (_numericBox2.IsFocused)
                     {
                         _numericBox2.Unfocus();
@@ -336,12 +353,16 @@ namespace HomeAutomation.Ui
             }
 
             _numericBox1.Show(false);
-            _numericBox2.Show(false);
-            _statusScreen.Show();
-
             _numericBox1 = null;
-            _numericBox2 = null;
 
+            if (_numericBox2 != null)
+            {
+                _numericBox2.Show(false);
+                _numericBox2 = null;
+            }
+
+            _statusScreen.Show();
+            
             _status = UiStatus.None;
         }
 
@@ -512,6 +533,18 @@ namespace HomeAutomation.Ui
                                    _hardwareManager.PressureSensor.PressureMultiplier;
                     return pressure.ToString("F5");
                 });
+        }
+
+        private void ShowTuneNorthSwitchState()
+        {
+            _status = UiStatus.TuneNorthSwitchState;
+
+            _hardwareManager.Screen.Write(0, 0, "North switch state:");
+
+            _numericBox1 = CreateNumericBox(0, 1, 1, WateringService.NorthActiveSwitchesCount);
+            _numericBox1.Value = _wateringService.NorthSwitchState;
+            _numericBox1.Show();
+            _numericBox1.Focus();
         }
 
         private void DoublePickerOnKeyPressed(Key key)

@@ -57,7 +57,7 @@ namespace HomeAutomation
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 
-            Debug.EnableGCMessages(true);
+            //Debug.EnableGCMessages(true);
 
             var usbStick = new UsbStick();
 
@@ -84,6 +84,7 @@ namespace HomeAutomation
 
             _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
             _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
+            _wateringService.NorthSwitchState = _configuration.NorthSwitchState;
 
             //_remoteCommandsService.Init();
             //_pressureLoggingService.Init();
@@ -163,6 +164,7 @@ namespace HomeAutomation
             //_pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.ExternalStorage, _hardwareManager.PressureSensor, _realTimer);
             _wateringService = new WateringService(_log,
                 _configuration,
+                _configurationManager,
                 _realTimer,
                 _hardwareManager.NorthMainValveRelayId,
                 _hardwareManager.SouthMainValveRelayId,

@@ -4,15 +4,21 @@ namespace HomeAutomation.Services.Watering
     using System.Collections;
     using System.Threading;
 
+    using AdSoft.Fez;
     using AdSoft.Fez.Hardware;
     using AdSoft.Fez.Hardware.Interfaces;
 
     using HomeAutomation.Tools;
 
+    using Microsoft.SPOT;
+
     public class WateringService
     {
+        public const int NorthActiveSwitchesCount = 5;
+
         private readonly Log _log;
         private readonly Configuration _configuration;
+        private readonly ConfigurationManager _configurationManager;
         private readonly RealTimer _realTimer;
         private readonly int _northMainValveRelayId;
         private readonly int _southMainValveRelayId;
@@ -29,11 +35,12 @@ namespace HomeAutomation.Services.Watering
 
         public double SouthVolume { get; private set; }
 
-        public int NorthSwitchState { get; private set; }
+        public int NorthSwitchState { get; set; }
 
         public WateringService(
             Log log,
             Configuration configuration,
+            ConfigurationManager configurationManager,
             RealTimer realTimer,
             int northMainValveRelayId,
             int southMainValveRelayId,
@@ -42,6 +49,7 @@ namespace HomeAutomation.Services.Watering
         {
             _log = log;
             _configuration = configuration;
+            _configurationManager = configurationManager;
             _realTimer = realTimer;
             _southMainValveRelayId = southMainValveRelayId;
             _northMainValveRelayId = northMainValveRelayId;
@@ -53,8 +61,6 @@ namespace HomeAutomation.Services.Watering
             _runningTimerKeys = new ArrayList();
 
             _lastManualWateringEnd = DateTime.Now;
-
-            NorthSwitchState = 1;
         }
 
         /// <summary>
@@ -127,6 +133,19 @@ namespace HomeAutomation.Services.Watering
                 return false;
             }
 
+            if (NorthSwitchState != 1)
+            {
+                Debug.Print("NorthSwitchState reset from: " + NorthSwitchState);
+                _realTimer.TryScheduleRunAt(dueDateTime,
+                    NorthResetTimerCallback,
+                    new WateringTimerState { RelayId = _northMainValveRelayId },
+                    new TimeSpan(0, 0, 7),
+                    "Valve Main North Reset Switch ");
+
+                Debug.Print("NorthSwitchState reset scheduled at: " + dueDateTime.ToString("HH:mm:ss"));
+                dueDateTime = dueDateTime.AddSeconds((NorthActiveSwitchesCount - NorthSwitchState + 2) * 7 * 2); // +2 just to have some more time
+            }
+            
             AddNorthSchedule(dueDateTime, cornerMinutes, 1, isAutomatic);
 
             dueDateTime = dueDateTime.AddSeconds(cornerMinutes * 60 + 5);
@@ -355,12 +374,14 @@ namespace HomeAutomation.Services.Watering
             if (!isOn)
             {
                 _runningTimerKeys.Add(wateringState.TimerKey);
+
+                _configurationManager.UpdateNorthSwitchState(NorthSwitchState % NorthActiveSwitchesCount + 1);
             }
             else
             {
                 _runningTimerKeys.Remove(wateringState.TimerKey);
 
-                NorthSwitchState = NorthSwitchState % 5 + 1;
+                NorthSwitchState = NorthSwitchState % NorthActiveSwitchesCount + 1;
             }
 
 #if DEBUG_WATERING
@@ -382,6 +403,38 @@ namespace HomeAutomation.Services.Watering
             _flowRateSensor.Volume = 0;
 
             return !isOn;
+        }
+
+        private bool NorthResetTimerCallback(TimerState state)
+        {
+            var wateringState = (WateringTimerState)state;
+
+            var isOn = _relaysArray.Get(wateringState.RelayId);
+
+            Debug.Print("NorthResetTimerCallback start isOn: " + isOn + " State: " + NorthSwitchState);
+
+            if (!isOn)
+            {
+                _runningTimerKeys.Add(wateringState.TimerKey);
+
+                NorthSwitchState = NorthSwitchState % NorthActiveSwitchesCount + 1;
+
+                _configurationManager.UpdateNorthSwitchState(NorthSwitchState);
+            }
+            else
+            {
+                _runningTimerKeys.Remove(wateringState.TimerKey);
+            }
+
+            _relaysArray.Set(wateringState.RelayId, !isOn);
+
+            _log.Write(wateringState.Name + "is " + (isOn ? "closed" : "opened") + ".");
+
+            var result = !isOn || NorthSwitchState != 1;
+
+            Debug.Print("NorthResetTimerCallback end isOn: " + isOn + " State: " + NorthSwitchState + " Result: " + result);
+
+            return result;
         }
 
         private void DisposeTimers(ArrayList keys)

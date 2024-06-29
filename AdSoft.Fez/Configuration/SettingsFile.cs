@@ -73,6 +73,23 @@ namespace AdSoft.Fez.Configuration
             return setting == null ? null : setting.Value;
         }
 
+        public int GetInt32ValueFromFile(string fileName, int defaultValue)
+        {
+            ArrayList lines;
+            if (!_storage.TryReadAllLines(fileName, out lines))
+            {
+                return defaultValue;
+            }
+
+            int result;
+            if (lines.Count > 0 && Converter.TryParse((string)lines[0], out result))
+            {
+                return result;
+            }
+
+            return defaultValue;
+        }
+
         private Setting GetSetting(string key)
         {
             for (var i = 0; i < Settings.Count; i++)
@@ -327,6 +344,22 @@ namespace AdSoft.Fez.Configuration
             }
 
             return _storage.TryDelete(_filename) && _storage.TryRename(newFile, _filename);
+        }
+
+        public bool TrySaveToFile(string filename, string value)
+        {
+            bool exists;
+            if (!_storage.TryIsExists(_filename, out exists))
+            {
+                return false;
+            }
+
+            if (exists && !_storage.TryDelete(filename))
+            {
+                return false;
+            }
+
+            return _storage.TryAppend(filename, value);
         }
 
         private bool StringExists(ArrayList strings, string value)

@@ -14,6 +14,7 @@ namespace HomeAutomation.Tools
         public int PressureLogIntervalMin { get; set; }
         public double PressureSensorMultiplier { get; set; }
         public double FlowRateSensorMultiplier { get; set; }
+        public int NorthSwitchState { get; set; }
 
         public Services.AutoTurnOffPump.Configuration AutoTurnOffPumpConfiguration { get; private set; }
 
@@ -37,6 +38,7 @@ namespace HomeAutomation.Tools
             PressureLogIntervalMin = 5;
             PressureSensorMultiplier = 1;
             FlowRateSensorMultiplier = 1;
+            NorthSwitchState = 1;
 
             AutoTurnOffPumpConfiguration.Interval = 1;
             AutoTurnOffPumpConfiguration.MinPressure = 0.5;
