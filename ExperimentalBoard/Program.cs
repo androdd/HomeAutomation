@@ -31,99 +31,85 @@ namespace ExperimentalBoard
     {
         private static Lcd2004 _lcd2004;
         private static Led _led;
-
-
-        private static ArrayList _timers;
-        private static int _index;
-        private static Timer _timer;
-
+        
         public static void Main()
         {
-            var initialFree = Debug.GC(true);
-
+            // Init ===============================================================================
             Debug.EnableGCMessages(true);
 
             _lcd2004 = new Lcd2004(0x27);
 
             _lcd2004.Init();
             _lcd2004.BackLightOn();
+            // Init ===============================================================================
 
-            var free = Debug.GC(true);
+            uart = new SerialPort("COM2", 115200);
+            uart.Open();
+            uart.DataReceived += uart_DataReceived;
 
-            _timers = new ArrayList();
+            Thread thread1 = new Thread(Thread1Start);
+            Thread thread2 = new Thread(Thread2Start);
 
-            var now = DateTime.Now;
-
-            for (int i = 1; i <= 30; i++)
-            {
-                var timerTask = new TimerTask { DueTime = now.AddSeconds(5 * i + 5) };
-
-                Debug.Print(timerTask.Id + " - " + timerTask.DueTime.ToString("T"));
-
-                _timers.Add(timerTask);
-            }
-
-            _index = 0;
-            var next = (TimerTask)_timers[_index];
-
-            _timer = new Timer(TimerCallbackRunner,
-                null,
-                next.DueTime.Subtract(now),
-                TimeSpan.Zero);
             
+            thread1.Start();
+            //thread2.Start();
 
-            var timersFree = Debug.GC(true);
 
-            _lcd2004.Write(0, 0, "" + initialFree);
-            _lcd2004.Write(0, 1, "" + free);
-            _lcd2004.Write(0, 2, "" + timersFree);
-
-            //Watchdog.Enable(2000);
-
+            // End ================================================================================
             Thread.Sleep(Timeout.Infinite);
         }
 
-        private static void TimerCallbackRunner(object state)
+        static void uart_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            var current = (TimerTask)_timers[_index];
+            Debug.Print("DataReceived: " + e.EventType);
 
-            var noRestart = new TimeSpan(0, 0, 0, 0, -1);
-            if(_index + 1 < _timers.Count)
-            {
-                var next = (TimerTask)_timers[_index + 1];
-                var period = next.DueTime.Subtract(current.DueTime);
-                _timer.Change(new TimeSpan(0), period);
-            }
-            else
-            {
-                _timer.Change(noRestart, noRestart);
-            }
+            byte[] rxByte = new byte[uart.BytesToRead];
 
-            _index++;
             
-            TimerCallback(current.Id);
-        }
+            var readCount = uart.Read(rxByte, 0, rxByte.Length);
 
-        private static void TimerCallback(object state)
-        {
-            Debug.Print("Run: " + state + " - " + DateTime.Now.ToString("T"));
-        }
-
-
-        private class TimerTask
-        {
-            public TimerTask()
+            if (readCount > 0)
             {
-                Id = Guid.NewGuid();
+                var message = new string(Encoding.UTF8.GetChars(rxByte));
+                Debug.Print("Message: " + message);
             }
+        }
 
-            public Guid Id { get; private set; }
+        private static SerialPort uart;
 
-            public DateTime DueTime { get; set; }
+        private static void Thread1Start()
+        {
+            int counter = 0;
+            
+            while (true)
+            {
+                string counterString = "Count: " + counter;
+                Debug.Print("Sends: " + counterString);
+                byte[] buffer = Encoding.UTF8.GetBytes(counterString);
+                uart.Write(buffer, 0, buffer.Length);
+                counter++;
+
+                Thread.Sleep(3000);
+            }
         }
         
+        private static void Thread2Start()
+        {
+            byte[] rxByte = new byte[11];
+            
+            while (true)
+            {
+                var readCount = uart.Read(rxByte, 0, rxByte.Length);
+                
+                if (readCount > 0)
+                {
+                    var message = new string(Encoding.UTF8.GetChars(rxByte));
+                    Debug.Print("Message: " + message);
+                }
 
-
+                Thread.Sleep(100);
+            }
+        }
 
 
 
