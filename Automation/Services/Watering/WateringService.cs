@@ -142,7 +142,6 @@ namespace HomeAutomation.Services.Watering
                     new TimeSpan(0, 0, 7),
                     "Valve Main North Reset Switch ");
 
-                Debug.Print("NorthSwitchState reset scheduled at: " + dueDateTime.ToString("HH:mm:ss"));
                 dueDateTime = dueDateTime.AddSeconds((NorthActiveSwitchesCount - NorthSwitchState + 2) * 7 * 2); // +2 just to have some more time
             }
             
@@ -411,8 +410,6 @@ namespace HomeAutomation.Services.Watering
 
             var isOn = _relaysArray.Get(wateringState.RelayId);
 
-            Debug.Print("NorthResetTimerCallback start isOn: " + isOn + " State: " + NorthSwitchState);
-
             if (!isOn)
             {
                 _runningTimerKeys.Add(wateringState.TimerKey);
@@ -431,8 +428,6 @@ namespace HomeAutomation.Services.Watering
             _log.Write(wateringState.Name + "is " + (isOn ? "closed" : "opened") + ".");
 
             var result = !isOn || NorthSwitchState != 1;
-
-            Debug.Print("NorthResetTimerCallback end isOn: " + isOn + " State: " + NorthSwitchState + " Result: " + result);
 
             return result;
         }
