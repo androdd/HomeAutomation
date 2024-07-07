@@ -84,7 +84,6 @@ namespace HomeAutomation
 
             _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
             _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
-            _wateringService.NorthSwitchState = _configuration.NorthSwitchState;
 
             //_remoteCommandsService.Init();
             //_pressureLoggingService.Init();
@@ -211,6 +210,8 @@ namespace HomeAutomation
 #endif
             }
             #endregion
+
+            _wateringService.NorthSwitchState = _configuration.NorthSwitchState;
 
             _lightsService.ScheduleLights(true);
             _wateringService.ScheduleSouthWatering();

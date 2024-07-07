@@ -22,6 +22,8 @@ namespace HomeAutomation.Tools
         private const string FlowRateSensorMultiplier = "FlowRateSensorMultiplier";
         private const string NorthSwitchState = "NorthSwitchState";
 
+        private const string NorthSwitchStateConfigFile = "config.nss.txt";
+
         private readonly Configuration _configuration;
         private readonly SettingsFile _settingsFile;
         private readonly IStorage _internalStorage;
@@ -127,7 +129,7 @@ namespace HomeAutomation.Tools
             _configuration.PressureLogIntervalMin = _settingsFile.GetInt32Value(PressureLogInterval, _configuration.PressureLogIntervalMin);
             _configuration.PressureSensorMultiplier = _settingsFile.GetDoubleValue(PressureSensorMultiplier, _configuration.PressureSensorMultiplier);
             _configuration.FlowRateSensorMultiplier = _settingsFile.GetDoubleValue(FlowRateSensorMultiplier, _configuration.FlowRateSensorMultiplier);
-            _configuration.NorthSwitchState = _settingsFile.GetInt32ValueFromFile(NorthSwitchState, _configuration.NorthSwitchState);
+            _configuration.NorthSwitchState = _settingsFile.GetInt32ValueFromFile(NorthSwitchStateConfigFile, _configuration.NorthSwitchState);
 
             _configuration.SouthValveConfigurations[0] = new ValveConfiguration(_settingsFile.GetValue("Watering-South1"));
             _configuration.SouthValveConfigurations[1] = new ValveConfiguration(_settingsFile.GetValue("Watering-South2"));
@@ -161,7 +163,7 @@ namespace HomeAutomation.Tools
         {
             _configuration.NorthSwitchState = value;
 
-            if (!_settingsFile.TrySaveToFile(NorthSwitchState, value.ToString()))
+            if (!_settingsFile.TrySaveToFile(NorthSwitchStateConfigFile, value.ToString()))
             {
                 _log.Write("Error updating NorthSwitchState in configuration");
             }

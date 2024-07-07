@@ -15,6 +15,7 @@ namespace HomeAutomation.Services.Watering
     public class WateringService
     {
         public const int NorthActiveSwitchesCount = 5;
+        private const int NorthSwitchResetSeconds = 10;
 
         private readonly Log _log;
         private readonly Configuration _configuration;
@@ -139,10 +140,10 @@ namespace HomeAutomation.Services.Watering
                 _realTimer.TryScheduleRunAt(dueDateTime,
                     NorthResetTimerCallback,
                     new WateringTimerState { RelayId = _northMainValveRelayId },
-                    new TimeSpan(0, 0, 7),
+                    new TimeSpan(0, 0, NorthSwitchResetSeconds),
                     "Valve Main North Reset Switch ");
 
-                dueDateTime = dueDateTime.AddSeconds((NorthActiveSwitchesCount - NorthSwitchState + 2) * 7 * 2); // +2 just to have some more time
+                dueDateTime = dueDateTime.AddSeconds((NorthActiveSwitchesCount - NorthSwitchState + 2) * NorthSwitchResetSeconds * 2); // +2 just to have some more time
             }
             
             AddNorthSchedule(dueDateTime, cornerMinutes, 1, isAutomatic);
