@@ -16,6 +16,7 @@ namespace HomeAutomation.Services.Watering
     {
         public const int NorthActiveSwitchesCount = 5;
         private const int NorthSwitchResetSeconds = 10;
+        private const int NorthMainSprinklerTimeMultiplier = 2;
 
         private readonly Log _log;
         private readonly Configuration _configuration;
@@ -269,7 +270,7 @@ namespace HomeAutomation.Services.Watering
                 return;
             }
 
-            TryStartNorth(configuration.StartTime, configuration.Duration, configuration.Duration * 3, true);
+            TryStartNorth(configuration.StartTime, configuration.Duration, configuration.Duration * NorthMainSprinklerTimeMultiplier, true);
         }
 
         public void CancelManual()
