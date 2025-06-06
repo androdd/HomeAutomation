@@ -46,10 +46,20 @@ static const int RX_BUF_SIZE = 1024;
 
 #define UART UART_NUM_2
 
+#define RESET_PIN GPIO_NUM_4
+
 int num = 0;
 
 void setup(){
   Serial.begin(115200);
+
+  pinMode (ledPin, OUTPUT);
+  digitalWrite (ledPin, LOW);
+
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, LOW);  
+
+  return;
 
   // delete old config
   WiFi.disconnect(true);
@@ -71,9 +81,7 @@ void setup(){
   Serial.println();
   Serial.println("Wait for WiFi... ");
 
-  pinMode (ledPin, OUTPUT);
- 
-
+  
   const uart_config_t uart_config = {
       .baud_rate = 115200,
       .data_bits = UART_DATA_8_BITS,
@@ -125,10 +133,14 @@ static void rx_task(void *arg)
 
 
 void loop(){
+  delay(20000);
   digitalWrite (ledPin, HIGH);	// turn on the LED
-  delay(500);	// wait for half a second or 500 milliseconds
+  digitalWrite(RESET_PIN, HIGH);
+  Serial.println("HIGH");
+  delay(500);	
   digitalWrite (ledPin, LOW);	// turn off the LED
-  delay(500);	// wait for half a second or 500 milliseconds
+  digitalWrite(RESET_PIN, LOW);
+  Serial.println("LOW");
 
   return;
 

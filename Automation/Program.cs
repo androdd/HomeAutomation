@@ -59,21 +59,21 @@ namespace HomeAutomation
 
             //Debug.EnableGCMessages(true);
 
-            var usbStick = new UsbStick();
+            var storage = new SdCard();
 
-            while (!usbStick.IsLoaded)
+            while (!storage.IsLoaded)
             {
                 Thread.Sleep(500);
                 Debug.Print("Loading configuration...");
             }
 
             _configuration = new Configuration();
-            _log = new Log(usbStick);
+            _log = new Log(storage);
             
             _log.Write("HomeAutomation v." + Version);
             _log.Write("Starting hardware...");
 
-            _hardwareManager = new HardwareManager(usbStick);
+            _hardwareManager = new HardwareManager(storage);
             _hardwareManager.Setup();
             
             _log.Write("Starting...");
@@ -132,6 +132,24 @@ namespace HomeAutomation
 
             Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
 #endif
+
+            // Implement watchdog functionality to watch for all active threads
+            var watchdog = new Watchdog();
+            
+            // Add all active threads to the watchdog
+            watchdog.AddThread(Thread.CurrentThread, "Main Thread");
+            watchdog.AddThread(_uiManager.UiThread, "UI Thread");
+            watchdog.AddThread(_lightsService.ServiceThread, "Lights Service Thread");
+            watchdog.AddThread(_autoTurnOffPumpService.ServiceThread, "Auto Turn Off Pump Service Thread");
+            watchdog.AddThread(_wateringService.ServiceThread, "Watering Service Thread");
+            
+            // Start the watchdog
+            watchdog.Start();
+            
+            _log.Write("Watchdog started");
+
+
+
             Thread.Sleep(Timeout.Infinite);
         }
 
