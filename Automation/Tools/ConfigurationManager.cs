@@ -3,15 +3,12 @@ namespace HomeAutomation.Tools
     using System;
     using System.Collections;
 
-    using AdSoft.Fez;
     using AdSoft.Fez.Configuration;
     using AdSoft.Fez.Hardware.Storage;
 
     using GHIElectronics.NETMF.Hardware;
 
     using HomeAutomation.Services.Watering;
-
-    using Microsoft.SPOT;
 
     public class ConfigurationManager
     {
@@ -20,9 +17,6 @@ namespace HomeAutomation.Tools
         private const string PressureLogInterval = "PressureLogInterval";
         private const string PressureSensorMultiplier = "PressureSensorMultiplier";
         private const string FlowRateSensorMultiplier = "FlowRateSensorMultiplier";
-        private const string NorthSwitchState = "NorthSwitchState";
-
-        private const string NorthSwitchStateConfigFile = "config.nss.txt";
 
         private readonly Configuration _configuration;
         private readonly SettingsFile _settingsFile;
@@ -129,7 +123,6 @@ namespace HomeAutomation.Tools
             _configuration.PressureLogIntervalMin = _settingsFile.GetInt32Value(PressureLogInterval, _configuration.PressureLogIntervalMin);
             _configuration.PressureSensorMultiplier = _settingsFile.GetDoubleValue(PressureSensorMultiplier, _configuration.PressureSensorMultiplier);
             _configuration.FlowRateSensorMultiplier = _settingsFile.GetDoubleValue(FlowRateSensorMultiplier, _configuration.FlowRateSensorMultiplier);
-            _configuration.NorthSwitchState = _settingsFile.GetInt32ValueFromFile(NorthSwitchStateConfigFile, _configuration.NorthSwitchState);
 
             _configuration.SouthValveConfigurations[0] = new ValveConfiguration(_settingsFile.GetValue("Watering-South1"));
             _configuration.SouthValveConfigurations[1] = new ValveConfiguration(_settingsFile.GetValue("Watering-South2"));
@@ -157,18 +150,6 @@ namespace HomeAutomation.Tools
         {
             _configuration.FlowRateSensorMultiplier = value;
             _settingsFile.AddOrUpdateValue(FlowRateSensorMultiplier, value.ToString("F7"));
-        }
-
-        public void UpdateNorthSwitchState(int value)
-        {
-            _configuration.NorthSwitchState = value;
-
-            if (!_settingsFile.TrySaveToFile(NorthSwitchStateConfigFile, value.ToString()))
-            {
-                _log.Write("Error updating NorthSwitchState in configuration");
-            }
-
-            Debug.Print("NorthSwitchState file updated to: " + value);
         }
         
         private static DateTime ToTime(DateTime now, string text)

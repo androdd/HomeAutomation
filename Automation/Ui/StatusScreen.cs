@@ -31,7 +31,6 @@ namespace HomeAutomation.Ui
         private double _oldVolumeSouth;
         
         private bool _oldValveMainNorth;
-        private char _oldNorthSwitchState;
         private bool _oldValveMainSouth;
         private char _oldValveSouth1;
         private char _oldValveSouth2;
@@ -117,7 +116,6 @@ namespace HomeAutomation.Ui
                     
                     Screen.Write(0, 3, "North:");
                     Screen.WriteChar(_wateringService.GetValveMainNorth() ? '*' : (char)219);
-                    Screen.WriteChar(_wateringService.NorthSwitchState.ToString()[0]);
                     
                     Screen.Write(9, 3, "South:");
                     Screen.WriteChar(_wateringService.GetValveMainSouth() ? '*' : (char)219);
@@ -199,7 +197,6 @@ namespace HomeAutomation.Ui
             Screen.Sync(() =>
             {
                 WriteIfChanged(6, 3, ref _oldValveMainNorth, _wateringService.GetValveMainNorth(), '*', (char)219);
-                WriteIfChanged(7, 3, ref _oldNorthSwitchState, _wateringService.NorthSwitchState.ToString()[0]);
                 WriteIfChanged(15, 3, ref _oldValveMainSouth, _wateringService.GetValveMainSouth(), '*', (char)219);
                 WriteIfChanged(16, 3, ref _oldValveSouth1, GetValveChar(1));
                 WriteIfChanged(17, 3, ref _oldValveSouth2, GetValveChar(2));

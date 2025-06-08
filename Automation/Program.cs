@@ -163,7 +163,6 @@ namespace HomeAutomation
             //_pressureLoggingService = new PressureLoggingService(_configuration, _log, _hardwareManager.ExternalStorage, _hardwareManager.PressureSensor, _realTimer);
             _wateringService = new WateringService(_log,
                 _configuration,
-                _configurationManager,
                 _realTimer,
                 _hardwareManager.NorthMainValveRelayId,
                 _hardwareManager.SouthMainValveRelayId,
@@ -210,8 +209,6 @@ namespace HomeAutomation
 #endif
             }
             #endregion
-
-            _wateringService.NorthSwitchState = _configuration.NorthSwitchState;
 
             _lightsService.ScheduleLights(true);
             _wateringService.ScheduleSouthWatering();

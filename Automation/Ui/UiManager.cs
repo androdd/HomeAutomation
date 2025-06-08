@@ -14,8 +14,6 @@ namespace HomeAutomation.Ui
     using HomeAutomation.Services.Watering;
     using HomeAutomation.Tools;
 
-    using Microsoft.SPOT;
-
     using Configuration = HomeAutomation.Tools.Configuration;
 
     public class UiManager
@@ -139,7 +137,6 @@ namespace HomeAutomation.Ui
                 new MenuItem(MenuKeys.TestRelays, "Test Relays"),
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
-                new MenuItem(MenuKeys.TuneNorthSwitchState, "Tune N-SwitchState"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
                 new MenuItem(MenuKeys.SetDate, "Set Date")
             });
@@ -165,9 +162,6 @@ namespace HomeAutomation.Ui
                     break;
                 case MenuKeys.TuneFlowRate:
                     ShowTuneFlowRate();
-                    break;
-                case MenuKeys.TuneNorthSwitchState:
-                    ShowTuneNorthSwitchState();
                     break;
                 case MenuKeys.ShowConfig:
                     ShowConfigMenu();
@@ -253,15 +247,10 @@ namespace HomeAutomation.Ui
         {
             _status = UiStatus.ScheduleNorthWatering;
 
-            _hardwareManager.Screen.Write(0, 0, "Corners (max 15 min)");
-            _hardwareManager.Screen.Write(0, 2, "Main (max 120 min)");
+            _hardwareManager.Screen.Write(0, 0, "Min/spr (max 60)");
 
-            _numericBox2 = CreateNumericBox(0, 3, 1, 120);
-            _numericBox2.Value = 50;
-            _numericBox2.Show();
-
-            _numericBox1 = CreateNumericBox(0, 1, 1, 15);
-            _numericBox1.Value = 5;
+            _numericBox1 = CreateNumericBox(0, 1, 1, 60);
+            _numericBox1.Value = 15;
             _numericBox1.Show();
             _numericBox1.Focus();
         }
@@ -308,39 +297,27 @@ namespace HomeAutomation.Ui
             {
                 case Key.Enter:
                 {
-                    if (_status == UiStatus.TuneNorthSwitchState)
-                    {
-                        _wateringService.NorthSwitchState = _numericBox1.Value;
-                        _configurationManager.UpdateNorthSwitchState(_numericBox1.Value);
-                        
-                        break;
-                    }
-
-                    if (_numericBox1.IsFocused)
-                    {
-                        _numericBox1.Unfocus();
-                        _numericBox2.Focus();
-                        return;
-                    }
-
                     if (_status == UiStatus.ScheduleNextSouthWatering)
                     {
+                        if (_numericBox1.IsFocused)
+                        {
+                            _numericBox1.Unfocus();
+                            _numericBox2.Focus();
+
+                            return;
+                        }
+
                         _wateringService.TryStartSouth(_numericBox1.Value, _numericBox2.Value);
                     }
                     else if (_status == UiStatus.ScheduleNorthWatering)
                     {
-                        _wateringService.TryStartNorth(DateTime.Now.AddSeconds(3), _numericBox1.Value, _numericBox2.Value, false);
+                        _wateringService.TryStartNorth(DateTime.Now.AddSeconds(3), _numericBox1.Value, false);
                     }
 
                     break;
                 }
                 case Key.Escape:
-                    if (_status == UiStatus.TuneNorthSwitchState)
-                    {
-                        break;
-                    }
-
-                    if (_numericBox2.IsFocused)
+                    if (_numericBox2 != null &&_numericBox2.IsFocused)
                     {
                         _numericBox2.Unfocus();
                         _numericBox1.Focus();
@@ -533,18 +510,6 @@ namespace HomeAutomation.Ui
                                    _hardwareManager.PressureSensor.PressureMultiplier;
                     return pressure.ToString("F5");
                 });
-        }
-
-        private void ShowTuneNorthSwitchState()
-        {
-            _status = UiStatus.TuneNorthSwitchState;
-
-            _hardwareManager.Screen.Write(0, 0, "North switch state:");
-
-            _numericBox1 = CreateNumericBox(0, 1, 1, WateringService.NorthActiveSwitchesCount);
-            _numericBox1.Value = _wateringService.NorthSwitchState;
-            _numericBox1.Show();
-            _numericBox1.Focus();
         }
 
         private void DoublePickerOnKeyPressed(Key key)
