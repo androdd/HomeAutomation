@@ -4,6 +4,7 @@ namespace HomeAutomation
     using System.Threading;
 
     using AdSoft.Fez.Configuration;
+    using AdSoft.Fez.Hardware.Lcd2004;
     using AdSoft.Fez.Hardware.Storage;
 
     using GHIElectronics.NETMF.Hardware;
@@ -59,24 +60,34 @@ namespace HomeAutomation
 
             //Debug.EnableGCMessages(true);
 
+            var screen = new Lcd2004(0x27);
+            screen.Init();
+            screen.BackLightOn();
+
+            screen.Write(0, 0, "Loading...");
+
             var usbStick = new UsbStick();
 
             while (!usbStick.IsLoaded)
             {
                 Thread.Sleep(500);
+                screen.Write(0, 1, "Loading config...");
                 Debug.Print("Loading configuration...");
             }
 
             _configuration = new Configuration();
             _log = new Log(usbStick);
-            
+
+            screen.Write(0, 2, "HA v." + Version);
             _log.Write("HomeAutomation v." + Version);
             _log.Write("Starting hardware...");
 
-            _hardwareManager = new HardwareManager(usbStick);
+            screen.Write(0, 3, "Starting hardware...");
+            _hardwareManager = new HardwareManager(usbStick, screen);
             _hardwareManager.Setup();
             
             _log.Write("Starting...");
+            screen.Write(0, 0, "Starting...         ");
 
             SetupToolsAndServices();
 
