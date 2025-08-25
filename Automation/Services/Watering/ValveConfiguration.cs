@@ -50,7 +50,7 @@ namespace HomeAutomation.Services.Watering
             StartTime = starTime;
 
             int duration;
-            if (!Converter.TryParse(parts[3], out duration) || duration <= 0 || duration > 60)
+            if (!Converter.TryParse(parts[3], out duration) || duration <= 0 || duration > 99)
             {
                 IsValid = false;
                 return;

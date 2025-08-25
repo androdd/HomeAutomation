@@ -71,8 +71,8 @@ namespace HomeAutomation
             while (!usbStick.IsLoaded)
             {
                 Thread.Sleep(500);
-                screen.Write(0, 1, "Loading config...");
-                Debug.Print("Loading configuration...");
+                screen.Write(0, 1, "Detecting USB mem...");
+                Debug.Print("Detecting USB...");
             }
 
             _configuration = new Configuration();
@@ -86,12 +86,18 @@ namespace HomeAutomation
             _hardwareManager = new HardwareManager(usbStick, screen);
             _hardwareManager.Setup();
             
-            _log.Write("Starting...");
-            screen.Write(0, 0, "Starting...         ");
+            _log.Write("Starting services...");
+            screen.Write(0, 0, "Starting services...");
 
             SetupToolsAndServices();
 
+            screen.Write(0, 1, "Loading config...");
             ReloadConfig();
+
+            ValidateValveConfig(screen, 2);
+
+            _log.Write("Starting...");
+            screen.Write(0, 2, "Starting...         ");
 
             _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
             _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
@@ -144,6 +150,31 @@ namespace HomeAutomation
             Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
 #endif
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        private static void ValidateValveConfig(Lcd2004 screen, int messageRow)
+        {
+            for (var i = 0; i < _configuration.SouthValveConfigurations.Length; i++)
+            {
+                var configuration = _configuration.SouthValveConfigurations[i];
+                if (configuration.IsValid)
+                {
+                    continue;
+                }
+
+                _log.Write("Invalid south valve config: " + (i + 1));
+                screen.Write(0, messageRow, "Invalid S config " + (i + 1));
+
+                Thread.Sleep(Timeout.Infinite);
+            }
+
+            if (!_configuration.NorthValveConfiguration.IsValid)
+            {
+                _log.Write("Invalid north valve config.");
+                screen.Write(0, messageRow, "Invalid North config");
+
+                Thread.Sleep(Timeout.Infinite);
+            }
         }
 
         private static void SetupToolsAndServices()
