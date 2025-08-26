@@ -23,6 +23,23 @@ namespace AdSoft.Fez.Hardware.Storage
             RemovableMedia.Insert += RemovableMediaInsert;
             RemovableMedia.Eject += RemovableMediaEject;
             USBHostController.DeviceConnectedEvent += DeviceConnected;
+            
+            // Start monitoring for USB device status
+            StartDeviceMonitoring();
+        }
+        
+        private void StartDeviceMonitoring()
+        {
+            // Check if we have any USB mass storage devices connected
+            var devices = USBHostController.GetDevices();
+            foreach (var device in devices)
+            {
+                if (device.TYPE == USBH_DeviceType.MassStorage)
+                {
+                    DeviceConnected(device);
+                    break;
+                }
+            }
         }
 
         protected override void InitStorage()
@@ -36,6 +53,17 @@ namespace AdSoft.Fez.Hardware.Storage
                 _volume.FlushAll();
             }
         }
+        
+        public void AttemptReconnection()
+        {
+            Debug.Print("USB - Attempting reconnection...");
+            
+            // Unmount current storage
+            Unmount();
+            
+            // Try to find and reconnect to USB devices
+            StartDeviceMonitoring();
+        }
 
         private void DeviceConnected(USBH_Device device)
         {
@@ -46,8 +74,24 @@ namespace AdSoft.Fez.Hardware.Storage
 
             try
             {
+                if (Storage != null)
+                {
+                    // Clean up existing storage
+                    try
+                    {
+                        Storage.UnmountFileSystem();
+                        Storage.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Print("USB - Error cleaning up existing storage: " + ex.Message);
+                    }
+                }
+
                 Storage = new PersistentStorage(device);
                 Storage.MountFileSystem();
+                
+                Debug.Print("USB - Storage mounted successfully");
             }
             catch (Exception ex)
             {
@@ -65,12 +109,19 @@ namespace AdSoft.Fez.Hardware.Storage
                 return;
             }
 
-            //Debug.Print("RemovableMediaInsert");
+            Debug.Print("USB - Media inserted");
             if(Storage != null)
             {
                 _volume = e.Volume;
                 _root = _volume.RootDirectory;
                 IsLoaded = true;
+                
+                Debug.Print("USB - Storage available at: " + _root);
+            }
+            else
+            {
+                Debug.Print("USB - Storage not mounted, media insert ignored");
+                IsLoaded = false;
             }
 
             RaiseStatusChanged(IsLoaded ? Status.Available : Status.Unavailable);
@@ -78,7 +129,7 @@ namespace AdSoft.Fez.Hardware.Storage
 
         private void RemovableMediaEject(object sender, MediaEventArgs e)
         {
-            //Debug.Print("RemovableMediaEject");
+            Debug.Print("USB - Media ejected");
             RaiseStatusChanged(Status.Unavailable);
             Unmount();
         }

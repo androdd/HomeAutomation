@@ -4,6 +4,7 @@ namespace AdSoft.Fez.Hardware.Storage
     using System.Collections;
     using System.IO;
     using System.Text;
+    using System.Threading;
 
     using GHIElectronics.NETMF.IO;
 
@@ -210,26 +211,56 @@ namespace AdSoft.Fez.Hardware.Storage
                 return false;
             }
 
-            try
-            {
-                string path = GetPath(filename);
+            const int maxRetries = 3;
+            const int retryDelayMs = 1000;
 
-                using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 240))
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                try
                 {
-                    stream.Seek(0, SeekOrigin.End);
+                    string path = GetPath(filename);
 
-                    fileOpenedCallback(stream);
+                    using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, 240))
+                    {
+                        stream.Seek(0, SeekOrigin.End);
+
+                        fileOpenedCallback(stream);
+                    }
+
+                    Flush();
+                    return true;
                 }
-
-                Flush();
+                catch (System.IO.IOException ex)
+                {
+                    Debug.Print("Storage.TryAppend - Attempt " + attempt + " failed: " + ex.Message);
+                    
+                    if (attempt < maxRetries)
+                    {
+                        // For USB storage, try to reconnect if this is a USB stick
+                        if (this is UsbStick usbStick)
+                        {
+                            Debug.Print("Storage.TryAppend - Attempting USB reconnection...");
+                            usbStick.AttemptReconnection();
+                        }
+                        
+                        Thread.Sleep(retryDelayMs);
+                    }
+                    else
+                    {
+                        // Final attempt failed, mark storage as unavailable
+                        IsLoaded = false;
+                        RaiseStatusChanged(Status.Error);
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Print("Storage.TryAppend - Unexpected error: " + ex.Message);
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.Print("Storage.TryAppend - " + ex.Message);
-                return false;
-            }
 
-            return true;
+            return false;
         }
 
         public void Unmount()

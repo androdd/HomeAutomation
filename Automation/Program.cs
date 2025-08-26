@@ -33,6 +33,7 @@ namespace HomeAutomation
         private static AutoTurnOffPumpService _autoTurnOffPumpService;
         //private static PressureLoggingService _pressureLoggingService;
         private static WateringService _wateringService;
+        private static StorageHealthService _storageHealthService;
         
         private static HardwareManager _hardwareManager;
         private static UiManager _uiManager;
@@ -221,6 +222,9 @@ namespace HomeAutomation
                 _hardwareManager.SouthMainValveRelayId,
                 _hardwareManager.RelaysArray,
                 _hardwareManager.FlowRateSensor);
+                
+            _storageHealthService = new StorageHealthService(_hardwareManager.ExternalStorage, _log, _realTimer);
+            _storageHealthService.StartMonitoring();
         }
 
         private static void TryReloadConfig()

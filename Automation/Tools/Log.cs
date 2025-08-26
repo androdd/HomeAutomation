@@ -29,7 +29,17 @@ namespace HomeAutomation.Tools
 
             var logFile = "Log_" + DateTime.Today.ToString("yyyy_MM_dd") + ".txt";
 
-            _storage.TryAppend(logFile, text + "\r\n");
+            try
+            {
+                if (!_storage.TryAppend(logFile, text + "\r\n"))
+                {
+                    Debug.Print("Log.Write - Failed to write to storage, message: " + message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Print("Log.Write - Exception writing to storage: " + ex.Message);
+            }
         }
     }
 }
