@@ -122,6 +122,15 @@ namespace AdSoft.Fez.Hardware.Lcd2004
             }
         }
 
+        public void WriteLineClearNext(int row, string text)
+        {
+            WriteLine(row, text, true);
+            if (row < Rows - 1)
+            {
+                WriteLine(row + 1, string.Empty, true);
+            }
+        }
+
         public void Write(string text)
         {
             lock (_screenLock)

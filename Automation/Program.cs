@@ -66,40 +66,40 @@ namespace HomeAutomation
             screen.Init();
             screen.BackLightOn();
 
-            screen.Write(0, 0, "Loading...");
+            screen.WriteLineClearNext(0, "Loading...");
 
             var usbStick = new UsbStick();
 
             while (!usbStick.IsLoaded)
             {
                 Thread.Sleep(500);
-                screen.Write(0, 1, "Detecting USB mem...");
+                screen.WriteLineClearNext(1, "Detecting USB mem...");
                 Debug.Print("Detecting USB...");
             }
 
             _configuration = new Configuration();
             _log = new Log(usbStick);
 
-            screen.Write(0, 2, "HA v." + Version);
+            screen.WriteLineClearNext(2, "HA v." + Version);
             _log.Write("HomeAutomation v." + Version);
             _log.Write("Starting hardware...");
 
-            screen.Write(0, 3, "Starting hardware...");
+            screen.WriteLineClearNext(3, "Starting hardware...");
             _hardwareManager = new HardwareManager(usbStick, screen);
             _hardwareManager.Setup();
             
             _log.Write("Starting services...");
-            screen.Write(0, 0, "Starting services...");
+            screen.WriteLineClearNext(0, "Starting services...");
 
             SetupToolsAndServices();
 
-            screen.Write(0, 1, "Loading config...");
+            screen.WriteLineClearNext(1, "Loading config...");
             TryReloadConfig();
 
             ValidateValveConfig(screen, 2);
 
             _log.Write("Starting...");
-            screen.Write(0, 2, "Starting...         ");
+            screen.WriteLineClearNext(2, "Starting...");
 
             _hardwareManager.PressureSensor.PressureMultiplier = _configuration.PressureSensorMultiplier;
             _hardwareManager.FlowRateSensor.FlowRateMultiplier = _configuration.FlowRateSensorMultiplier;
@@ -174,7 +174,7 @@ namespace HomeAutomation
                 }
 
                 _log.Write("Invalid south valve config: " + (i + 1));
-                screen.Write(0, messageRow, "Invalid S config " + (i + 1));
+                screen.WriteLineClearNext(messageRow, "Invalid S config " + (i + 1));
 
                 Thread.Sleep(Timeout.Infinite);
             }
@@ -182,7 +182,7 @@ namespace HomeAutomation
             if (!_configuration.NorthValveConfiguration.IsValid)
             {
                 _log.Write("Invalid north valve config.");
-                screen.Write(0, messageRow, "Invalid North config");
+                screen.WriteLineClearNext(messageRow, "Invalid North config");
 
                 Thread.Sleep(Timeout.Infinite);
             }
