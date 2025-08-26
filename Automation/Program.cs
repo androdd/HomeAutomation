@@ -38,6 +38,8 @@ namespace HomeAutomation
         private static UiManager _uiManager;
         private static SettingsFile _settingsFile;
 
+        private static DateTime lastReloaDateTime;
+
         public static DateTime Now
         {
             get
@@ -58,7 +60,7 @@ namespace HomeAutomation
 #endif
             Utility.SetLocalTime(RealTimeClock.GetTime());
 
-            //Debug.EnableGCMessages(true);
+            Debug.EnableGCMessages(false);
 
             var screen = new Lcd2004(0x27);
             screen.Init();
@@ -92,7 +94,7 @@ namespace HomeAutomation
             SetupToolsAndServices();
 
             screen.Write(0, 1, "Loading config...");
-            ReloadConfig();
+            TryReloadConfig();
 
             ValidateValveConfig(screen, 2);
 
@@ -108,8 +110,6 @@ namespace HomeAutomation
             
             _uiManager = new UiManager(_configuration, _configurationManager, _hardwareManager, _lightsService, _autoTurnOffPumpService, _wateringService);
             _uiManager.Setup();
-
-            ScheduleConfigReload();
 
 #if DEBUG_PRESSURE_SENSOR
             while (true)
@@ -149,7 +149,18 @@ namespace HomeAutomation
 
             Debug.Print(_hardwareManager.FlowRateSensor.Volume + " l.");
 #endif
-            Thread.Sleep(Timeout.Infinite);
+            while (true)
+            {
+                Thread.Sleep(10 * 60 * 1000);   
+
+                if (Now.Day == lastReloaDateTime.Day)
+                {
+                    Debug.Print("It's still today. Bye!");
+                    continue;
+                }
+
+                TryReloadConfig();
+            }
         }
 
         private static void ValidateValveConfig(Lcd2004 screen, int messageRow)
@@ -212,49 +223,45 @@ namespace HomeAutomation
                 _hardwareManager.FlowRateSensor);
         }
 
-        private static void ScheduleConfigReload()
+        private static void TryReloadConfig()
         {
-            var nextDay = Now.AddDays(1);
-            var nextMidnight = new DateTime(nextDay.Year, nextDay.Month, nextDay.Day, 0, 1, 0);
-
-            _realTimer.TryScheduleRunAt(nextMidnight, ReloadConfigCallback, new TimeSpan(24, 0, 0), "Config Reload ");
-        }
-
-        private static bool ReloadConfigCallback(object state)
-        {
-            ReloadConfig();
-
-            return true;
-        }
-
-        private static void ReloadConfig()
-        {
-            _configurationManager.Load();
-
-            #region Automatic DST Adjustment
-            // https://www.timeanddate.com/time/change/bulgaria
-            if (IsLastSunday(3)) // Last Sunday of March add 1 hour
+            try
             {
+                _configurationManager.Load();
+
+                #region Automatic DST Adjustment
+                // https://www.timeanddate.com/time/change/bulgaria
+                if (IsLastSunday(3)) // Last Sunday of March add 1 hour
+                {
 #if DEBUG_DST
                 _timerEx.TryScheduleRunAt(Now.AddMinutes(1), DstStart, "DST Start ");
 #else
-                _realTimer.TryScheduleRunAt(Now.AddHours(3), DstStart, "DST Start ");
+                    _realTimer.TryScheduleRunAt(Now.AddHours(3), DstStart, "DST Start ");
 #endif
-            }
+                }
 
-            if (IsLastSunday(10)) // Last Sunday of October subtract 1 hour
-            {
+                if (IsLastSunday(10)) // Last Sunday of October subtract 1 hour
+                {
 #if DEBUG_DST
                 _timerEx.TryScheduleRunAt(Now.AddMinutes(1), DstEnd, "DST End ");
 #else
-                _realTimer.TryScheduleRunAt(Now.AddHours(4), DstEnd, "DST End ");
+                    _realTimer.TryScheduleRunAt(Now.AddHours(4), DstEnd, "DST End ");
 #endif
-            }
-            #endregion
+                }
+                #endregion
 
-            _lightsService.ScheduleLights(true);
-            _wateringService.ScheduleSouthWatering();
-            _wateringService.ScheduleNorthWatering();
+                _lightsService.ScheduleLights(true);
+                _wateringService.ScheduleSouthWatering();
+                _wateringService.ScheduleNorthWatering();
+
+                lastReloaDateTime = Now;
+            }
+            catch (Exception ex)
+            {
+                Debug.Print("Config reload failed: " + ex.Message);
+            }
+
+            _log.Write("Config loaded.");
         }
 
         private static void DstStart(TimerState state)
@@ -274,8 +281,8 @@ namespace HomeAutomation
 
             _log.Write("Time adjusted with " + hours + " hour.");
 
-            ReloadConfig();
-            ScheduleConfigReload();
+            lastReloaDateTime = Now.AddDays(-1); // Set yesterday to reload automatically on error
+            TryReloadConfig();
         }
 
 #if DEBUG_DST
