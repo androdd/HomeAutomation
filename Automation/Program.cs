@@ -23,7 +23,7 @@ namespace HomeAutomation
 
     public class Program
     {
-        internal const string Version = "1 25-06-08";
+        internal const string Version = "1 25-08-29";
 
         private static Log _log;
         private static Configuration _configuration;
