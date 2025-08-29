@@ -1,12 +1,16 @@
 namespace AdSoft.Fez.Hardware.Storage
 {
     using System;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
 
     using GHIElectronics.NETMF.IO;
     using GHIElectronics.NETMF.USBHost;
 
     using Microsoft.SPOT;
     using Microsoft.SPOT.IO;
+
+    using Math = System.Math;
 
     public class UsbStick : StorageBase
     {
@@ -27,6 +31,37 @@ namespace AdSoft.Fez.Hardware.Storage
 
         protected override void InitStorage()
         {
+            if (IsLoaded)
+            {
+                return;
+            }
+
+
+            USBH_Device[] devices = USBHostController.GetDevices();
+
+            foreach (var device in devices)
+            {
+                if (device.TYPE != USBH_DeviceType.MassStorage)
+                {
+                    continue;
+                }
+
+                Debug.Print("InitStorage");
+                DeviceConnected(device);
+                break;
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                // Exponential back-off: 1s, 2s, 4s, 8s, etc. with a cap at 10 seconds
+                int delayMs = Math.Min(1000 * (1 << i), 10000);
+                Thread.Sleep(delayMs);
+
+                if (IsLoaded)
+                {
+                    return;
+                }
+            }
         }
 
         protected override void Flush()
@@ -37,6 +72,7 @@ namespace AdSoft.Fez.Hardware.Storage
             }
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         private void DeviceConnected(USBH_Device device)
         {
             if (device.TYPE != USBH_DeviceType.MassStorage)

@@ -4,10 +4,15 @@ namespace AdSoft.Fez.Hardware.Storage
     using System.Collections;
     using System.IO;
     using System.Text;
+    using System.Threading;
+
+    using AdSoft.Fez.Ui;
 
     using GHIElectronics.NETMF.IO;
 
     using Microsoft.SPOT;
+
+    using Math = System.Math;
 
     public delegate void StorageStatusChangedEventHandler(Status status);
 
@@ -210,26 +215,21 @@ namespace AdSoft.Fez.Hardware.Storage
                 return false;
             }
 
-            try
-            {
-                string path = GetPath(filename);
-
-                using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 240))
+            return TryExecute("Storage.TryAppend",
+                () =>
                 {
-                    stream.Seek(0, SeekOrigin.End);
+                    string path = GetPath(filename);
 
-                    fileOpenedCallback(stream);
-                }
+                    using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, 240))
+                    {
+                        stream.Seek(0, SeekOrigin.End);
 
-                Flush();
-            }
-            catch (Exception ex)
-            {
-                Debug.Print("Storage.TryAppend - " + ex.Message);
-                return false;
-            }
+                        fileOpenedCallback(stream);
+                    }
 
-            return true;
+                    Flush();
+                    return true;
+                });
         }
 
         public void Unmount()
@@ -326,6 +326,35 @@ namespace AdSoft.Fez.Hardware.Storage
             }
 
             return result;
+        }
+
+        private delegate bool Action();
+
+        private bool TryExecute(string title, Action action, int count = 3)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                try
+                {
+                    var result = action();
+
+                    return result;
+                }
+                catch (IOException ex)
+                {
+                    DebugEx.Print("TryExecute exception in: " + title, ex);
+
+                    Unmount();
+                    
+                    // Exponential back-off: 1s, 2s, 4s, 8s, etc. with a cap at 10 seconds
+                    int delayMs = Math.Min(1000 * (1 << i), 10000);
+                    Thread.Sleep(delayMs);
+                    
+                    InitStorage();
+                } 
+            }
+
+            return false;
         }
     }
 }
