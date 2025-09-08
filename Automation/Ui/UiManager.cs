@@ -5,6 +5,7 @@ namespace HomeAutomation.Ui
     using System.Collections;
 
     using AdSoft.Fez.Configuration;
+    using Microsoft.SPOT.Hardware;
     using AdSoft.Fez.Ui;
     using AdSoft.Fez.Ui.Menu;
 
@@ -138,7 +139,8 @@ namespace HomeAutomation.Ui
                 new MenuItem(MenuKeys.TunePressure, "Tune Pressure"),
                 new MenuItem(MenuKeys.TuneFlowRate, "Tune Flow"),
                 new MenuItem(MenuKeys.SetTime, "Set Time"),
-                new MenuItem(MenuKeys.SetDate, "Set Date")
+                new MenuItem(MenuKeys.SetDate, "Set Date"),
+                new MenuItem(MenuKeys.Restart, "Restart System")
             });
             menu.MenuItemEnter += MenuOnMenuItemEnter;
             menu.KeyPressed += MenuOnKeyPressed;
@@ -198,6 +200,9 @@ namespace HomeAutomation.Ui
                     break;
                 case MenuKeys.TestRelays:
                     TestRelays();
+                    break;
+                case MenuKeys.Restart:
+                    RestartSystem();
                     break;
             }
         }
@@ -651,6 +656,20 @@ namespace HomeAutomation.Ui
             _statusScreen.Show();
 
             SetStatus(Program.Version);
+        }
+
+        private void RestartSystem()
+        {
+            _status = UiStatus.None;
+
+            _statusScreen.Show();
+            SetStatus("Restarting...");
+
+            // Give a moment for the message to display
+            System.Threading.Thread.Sleep(1000);
+
+            // Restart the FEZ Domino using PowerState.RebootDevice
+            PowerState.RebootDevice(false);
         }
     }
 }
