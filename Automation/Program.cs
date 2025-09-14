@@ -155,11 +155,12 @@ namespace HomeAutomation
 
                 if (Now.Day == lastReloaDateTime.Day)
                 {
-                    Debug.Print("It's still today. Bye!");
                     continue;
                 }
 
-                TryReloadConfig();
+                _log.Write("Restarting device");
+
+                PowerState.RebootDevice(true);
             }
         }
 

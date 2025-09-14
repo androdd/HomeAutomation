@@ -665,11 +665,9 @@ namespace HomeAutomation.Ui
             _statusScreen.Show();
             SetStatus("Restarting...");
 
-            // Give a moment for the message to display
             System.Threading.Thread.Sleep(1000);
 
-            // Restart the FEZ Domino using PowerState.RebootDevice
-            PowerState.RebootDevice(false);
+            PowerState.RebootDevice(true);
         }
     }
 }
